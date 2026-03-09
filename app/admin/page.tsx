@@ -396,11 +396,11 @@ export default async function AdminPage() {
               );
 
               const rowClass =
-                normalizedStatus === "inside"
-                  ? isLate
-                    ? "bg-orange-50"
-                    : "bg-green-50"
-                  : "";
+  normalizedStatus === "inside"
+    ? isLate
+      ? "bg-orange-50 border-l-4 border-orange-400"
+      : "bg-green-50 border-l-4 border-green-400"
+    : "";
 
               return (
                 <tr key={booking.id} className={`border-b ${rowClass}`}>
@@ -425,7 +425,10 @@ export default async function AdminPage() {
                   <td className="p-3">{meta.showers || "-"}</td>
                   <td className="p-3">{meta.combo || "-"}</td>
                   <td className="p-3">{meta.time_in ?? "-"}</td>
-                  <td className="p-3">{meta.time_out ?? meta.checkout_time ?? "-"}</td>
+                  <td className={`p-3 ${isLate ? "text-orange-600 font-semibold" : ""}`}>
+  {meta.time_out ?? meta.checkout_time ?? "-"}
+  {isLate && " ⚠"}
+</td>
 
                   <td className="p-3 font-medium">
                     {formatCurrency(Number(booking.total_amount), booking.currency)}
