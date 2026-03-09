@@ -8,6 +8,7 @@ import AdminQrScanner from "@/components/admin-qr-scanner";
 import AdminFinishQrScanner from "@/components/admin-finish-qr-scanner";
 import LogoutButton from "@/components/logout-button";
 import FinishAllInsideButton from "@/components/finish-all-inside-button";
+import { redirect } from "next/navigation";
 
 type BookingRow = {
   id: string;
@@ -348,8 +349,8 @@ export default async function AdminPage({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <div className="p-6">Sem sessão.</div>;
-  }
+  redirect("/login");
+}
 
   const { data: profile } = await supabase
     .from("profiles")
