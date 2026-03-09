@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import QuickFinishButton from "./QuickFinishButton";
 import AdminQrScanner from "@/components/admin-qr-scanner";
 import AdminFinishQrScanner from "@/components/admin-finish-qr-scanner";
+import LogoutButton from "@/components/logout-button";
 
 type BookingRow = {
   id: string;
@@ -301,6 +302,11 @@ export default async function AdminPage() {
           <h1 className="text-3xl font-bold">Admin · Reservas</h1>
           <p className="text-sm text-gray-600">Sessão: {profile.email}</p>
         </div>
+
+<div className="flex justify-between items-center">
+  <h1 className="text-2xl font-bold">Admin · Reservas</h1>
+  <LogoutButton />
+</div>
 
         <div className="flex items-center gap-3">
   <AdminQrScanner />
