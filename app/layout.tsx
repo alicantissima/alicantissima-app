@@ -6,8 +6,8 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Alicantíssima Desk",
-  description: "Desk app for Alicantíssima operations",
+  title: "Alicantíssima",
+  description: "Alicantíssima app",
 };
 
 export default function RootLayout({
@@ -17,6 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.webmanifest" />
+      </head>
       <body>
         {children}
 
