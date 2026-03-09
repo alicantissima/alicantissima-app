@@ -188,6 +188,7 @@ export default async function AdminPage() {
 
   let bagsInside = 0;
   let showersInside = 0;
+  let overdueCount = 0;
 
   for (const booking of ((bookings as BookingRow[]) ?? [])) {
     const itemsForBooking =
@@ -212,6 +213,9 @@ export default async function AdminPage() {
     const normalizedStatus = normalizeStatus(booking.status);
 
     if (normalizedStatus === "inside") {
+if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
+  overdueCount++;
+}
       for (const item of itemsForBooking) {
         const code = getItemCode(item);
 
@@ -329,6 +333,11 @@ export default async function AdminPage() {
           <div className="text-sm text-gray-500">Bags today</div>
           <div className="text-2xl font-bold">{bagsToday}</div>
         </div>
+
+<div className="rounded-xl border p-4 bg-orange-50">
+  <div className="text-sm text-orange-600">Overdue</div>
+  <div className="text-2xl font-bold text-orange-700">{overdueCount}</div>
+</div>
 
         <div className="rounded-xl border p-4">
           <div className="text-sm text-gray-500">Showers today</div>
