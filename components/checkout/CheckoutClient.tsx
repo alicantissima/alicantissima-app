@@ -52,8 +52,7 @@ export default function CheckoutClient() {
       const result = await submitCheckout(payload);
 
       if (!result.ok) {
-        setError(result.error);
-        return;
+setError(result.error ?? "Ocorreu um erro no checkout.");        return;
       }
 
       clearItems();
