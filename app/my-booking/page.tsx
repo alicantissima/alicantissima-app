@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -15,6 +13,10 @@ export default function MyBookingPage() {
   function handleClearBooking() {
     clearItems();
     router.push("/");
+  }
+
+  function handleCheckout() {
+    router.push("/checkout");
   }
 
   return (
@@ -81,6 +83,7 @@ export default function MyBookingPage() {
             </button>
 
             <button
+              onClick={handleCheckout}
               className="w-full border rounded-2xl p-4 font-semibold uppercase"
               type="button"
             >

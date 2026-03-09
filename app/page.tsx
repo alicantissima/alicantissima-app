@@ -1,8 +1,10 @@
+
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 type Product = {
   id: number;
@@ -19,6 +21,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = createClient();
+
     async function loadProducts() {
       const { data, error } = await supabase
         .from("products")
@@ -71,7 +75,7 @@ export default function HomePage() {
               <div className="flex items-center justify-between gap-4">
                 <div className="font-semibold uppercase">
                   {product.name}
-                  {product.is_popular ? "   ★ Popular" : ""}
+                  {product.is_popular ? " ★ Popular" : ""}
                 </div>
                 <div className="text-sm font-bold">€ {product.price}</div>
               </div>
