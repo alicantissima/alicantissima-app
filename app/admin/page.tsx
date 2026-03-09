@@ -437,19 +437,23 @@ export default async function AdminPage({
     }
 
     if (normalizedStatus === "inside") {
-      if (
-        isPastScheduledTime(bookingCheckoutTime, booking.status, bookingTimeOut)
-      ) {
-        overdueCount++;
-      }
+  if (
+    isPastScheduledTime(
+      bookingCheckoutTime,
+      booking.status,
+      bookingTimeOut
+    )
+  ) {
+    overdueCount++;
+  }
 
-      for (const item of itemsForBooking) {
-        const code = getItemCode(item);
+  for (const item of itemsForBooking) {
+    const code = getItemCode(item);
 
-        if (code === "luggage") bagsInside += item.quantity;
-        if (code === "shower") showersInside += item.quantity;
-      }
-    }
+    if (code === "luggage") bagsInside += item.quantity;
+    if (code === "shower") showersInside += item.quantity;
+  }
+}
   }
 
   const bookingMetaMap = new Map<string, BookingMetaSummary>();
