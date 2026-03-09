@@ -10,6 +10,7 @@ import LogoutButton from "@/components/logout-button";
 import FinishAllInsideButton from "@/components/finish-all-inside-button";
 import { redirect } from "next/navigation";
 
+
 type BookingRow = {
   id: string;
   created_at: string;
