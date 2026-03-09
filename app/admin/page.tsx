@@ -32,7 +32,32 @@ type BookingItemRow = {
     time_out?: string;
     city?: string;
     checkout_time?: string;
+    date?: string;
+    dropOffTime?: string | null;
+    pickUpTime?: string | null;
+    showerTime?: string | null;
+    comments?: string | null;
+    breakdown?: Array<{
+      label: string;
+      quantity: number;
+      unitPrice: number;
+      totalPrice: number;
+    }>;
   } | null;
+};
+
+type BookingMetaSummary = {
+  bags: number;
+  showers: number;
+  combo: number;
+  date: string | null;
+  drop_off: string | null;
+  pick_up: string | null;
+  shower_time: string | null;
+  time_in: string | null;
+  time_out: string | null;
+  city: string | null;
+  checkout_time: string | null;
 };
 
 function formatCurrency(amount: number, currency: string) {
@@ -44,9 +69,11 @@ function formatCurrency(amount: number, currency: string) {
 
 function normalizeStatus(status: string) {
   if (status === "received") return "booked";
+  if (status === "pending") return "booked";
   if (status === "inside") return "inside";
   if (status === "completed") return "completed";
   if (status === "finished") return "completed";
+  if (status === "cancelled") return "cancelled";
   return status;
 }
 
@@ -56,6 +83,7 @@ function getStatusLabel(status: string) {
   if (normalized === "booked") return "BOOKED";
   if (normalized === "inside") return "INSIDE";
   if (normalized === "completed") return "FINISHED";
+  if (normalized === "cancelled") return "CANCELLED";
 
   return status.toUpperCase();
 }
@@ -75,17 +103,11 @@ function getStatusClass(status: string) {
     return "bg-gray-200 text-gray-800 border-gray-300";
   }
 
+  if (normalized === "cancelled") {
+    return "bg-red-100 text-red-700 border-red-200";
+  }
+
   return "bg-gray-100 text-gray-700 border-gray-200";
-}
-
-function getStatusOrder(status: string) {
-  const normalized = normalizeStatus(status);
-
-  if (normalized === "booked") return 1;
-  if (normalized === "inside") return 2;
-  if (normalized === "completed") return 3;
-
-  return 99;
 }
 
 function getItemCode(item: BookingItemRow) {
@@ -147,7 +169,178 @@ function isPastScheduledTime(
   return currentMinutes > targetMinutes;
 }
 
-export default async function AdminPage() {
+function isToday(date: string | null) {
+  if (!date) return false;
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  return date === `${yyyy}-${mm}-${dd}`;
+}
+
+function emptyMeta(): BookingMetaSummary {
+  return {
+    bags: 0,
+    showers: 0,
+    combo: 0,
+    date: null,
+    drop_off: null,
+    pick_up: null,
+    shower_time: null,
+    time_in: null,
+    time_out: null,
+    city: null,
+    checkout_time: null,
+  };
+}
+
+function renderSectionTable({
+  title,
+  bookings,
+  bookingMetaMap,
+  codeFilter,
+  cancelled = false,
+}: {
+  title: string;
+  bookings: BookingRow[];
+  bookingMetaMap: Map<string, BookingMetaSummary>;
+  codeFilter: string | null;
+  cancelled?: boolean;
+}) {
+  if (!bookings.length) return null;
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold">{title}</h2>
+        <div
+          className={`rounded-xl border px-3 py-1 text-sm ${
+            cancelled
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-gray-200 bg-gray-50 text-gray-700"
+          }`}
+        >
+          {bookings.length}
+        </div>
+      </div>
+
+      <section
+        className={`overflow-x-auto rounded-2xl border ${
+          cancelled ? "border-red-200" : ""
+        }`}
+      >
+        <table className="w-full text-sm">
+          <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
+            <tr className="border-b text-left">
+              <th className="p-3">Código</th>
+              <th className="p-3">Cliente</th>
+              <th className="p-3">City</th>
+              <th className="p-3">Bags</th>
+              <th className="p-3">Showers</th>
+              <th className="p-3">Luggage + Shower</th>
+              <th className="p-3">In</th>
+              <th className="p-3">Out</th>
+              <th className="p-3">Total</th>
+              <th className="p-3">Estado</th>
+              <th className="p-3">Ação</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {bookings.map((booking) => {
+              const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+
+              const normalizedStatus = normalizeStatus(booking.status);
+              const isLate = isPastScheduledTime(
+                meta.checkout_time,
+                booking.status,
+                meta.time_out
+              );
+
+              const isFilteredMatch = codeFilter === booking.booking_code;
+
+              const rowClass = cancelled
+                ? "bg-red-50/40"
+                : isFilteredMatch
+                ? "bg-blue-50 border-l-4 border-blue-400"
+                : normalizedStatus === "inside"
+                ? isLate
+                  ? "bg-orange-50 border-l-4 border-orange-400"
+                  : "bg-green-50 border-l-4 border-green-400"
+                : "";
+
+              return (
+                <tr key={booking.id} className={`border-b ${rowClass}`}>
+                  <td className="p-3 font-semibold">
+                    <Link
+                      href={`/admin/booking/${booking.id}`}
+                      className="underline hover:text-blue-600"
+                    >
+                      {booking.booking_code}
+                    </Link>
+                  </td>
+
+                  <td className="p-3">
+                    <div className="font-medium">{booking.customer_name}</div>
+                    <div className="text-xs text-gray-500">
+                      {booking.customer_email}
+                    </div>
+                  </td>
+
+                  <td className="p-3">{meta.city ?? "-"}</td>
+                  <td className="p-3">{meta.bags || "-"}</td>
+                  <td className="p-3">{meta.showers || "-"}</td>
+                  <td className="p-3">{meta.combo || "-"}</td>
+                  <td className="p-3">{meta.time_in ?? "-"}</td>
+                  <td
+                    className={`p-3 ${
+                      !cancelled && isLate ? "font-semibold text-orange-600" : ""
+                    }`}
+                  >
+                    {meta.time_out ?? meta.checkout_time ?? "-"}
+                    {!cancelled && isLate && " ⚠"}
+                  </td>
+
+                  <td className="p-3 font-medium">
+                    {formatCurrency(Number(booking.total_amount), booking.currency)}
+                  </td>
+
+                  <td className="p-3">
+                    <span
+                      className={`inline-flex rounded-full border px-2 py-1 text-xs ${getStatusClass(
+                        booking.status
+                      )}`}
+                    >
+                      {getStatusLabel(booking.status)}
+                    </span>
+                  </td>
+
+                  <td className="p-3">
+                    {!cancelled && normalizeStatus(booking.status) === "inside" ? (
+                      <QuickFinishButton bookingId={booking.id} />
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </section>
+    </section>
+  );
+}
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string }>;
+}) {
+  const params = await searchParams;
+  const codeFilter = params.code?.trim() || null;
   const supabase = await createClient();
 
   const {
@@ -168,10 +361,16 @@ export default async function AdminPage() {
     return <div className="p-6">Acesso negado.</div>;
   }
 
-  const { data: bookings } = await supabase
+  let bookingsQuery = supabase
     .from("bookings")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (codeFilter) {
+    bookingsQuery = bookingsQuery.eq("booking_code", codeFilter);
+  }
+
+  const { data: bookings } = await bookingsQuery;
 
   const bookingIds = (bookings ?? []).map((b) => b.id);
 
@@ -192,8 +391,15 @@ export default async function AdminPage() {
   let overdueCount = 0;
 
   for (const booking of ((bookings as BookingRow[]) ?? [])) {
+    const normalizedStatus = normalizeStatus(booking.status);
+
+    if (normalizedStatus === "cancelled") {
+      continue;
+    }
+
     const itemsForBooking =
-      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
+      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ??
+      [];
 
     const computedRevenue = itemsForBooking.reduce(
       (sum, item) => sum + Number(item.line_total ?? 0),
@@ -203,20 +409,40 @@ export default async function AdminPage() {
     revenueToday +=
       computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
 
+    let bookingCheckoutTime: string | null = null;
+    let bookingTimeOut: string | null = null;
+
     for (const item of itemsForBooking) {
       const code = getItemCode(item);
 
       if (code === "luggage") bagsToday += item.quantity;
       if (code === "shower") showersToday += item.quantity;
       if (code === "combo") combosToday += item.quantity;
+
+      if (
+        !bookingCheckoutTime &&
+        typeof item.meta?.checkout_time === "string" &&
+        item.meta.checkout_time.trim() !== ""
+      ) {
+        bookingCheckoutTime = item.meta.checkout_time;
+      }
+
+      if (
+        !bookingTimeOut &&
+        typeof item.meta?.time_out === "string" &&
+        item.meta.time_out.trim() !== ""
+      ) {
+        bookingTimeOut = item.meta.time_out;
+      }
     }
 
-    const normalizedStatus = normalizeStatus(booking.status);
-
     if (normalizedStatus === "inside") {
-if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
-  overdueCount++;
-}
+      if (
+        isPastScheduledTime(bookingCheckoutTime, booking.status, bookingTimeOut)
+      ) {
+        overdueCount++;
+      }
+
       for (const item of itemsForBooking) {
         const code = getItemCode(item);
 
@@ -226,29 +452,10 @@ if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
     }
   }
 
-  const bookingMetaMap = new Map<
-    string,
-    {
-      bags: number;
-      showers: number;
-      combo: number;
-      time_in: string | null;
-      time_out: string | null;
-      city: string | null;
-      checkout_time: string | null;
-    }
-  >();
+  const bookingMetaMap = new Map<string, BookingMetaSummary>();
 
   for (const item of ((items as BookingItemRow[]) ?? [])) {
-    const current = bookingMetaMap.get(item.booking_id) ?? {
-      bags: 0,
-      showers: 0,
-      combo: 0,
-      time_in: null,
-      time_out: null,
-      city: null,
-      checkout_time: null,
-    };
+    const current = bookingMetaMap.get(item.booking_id) ?? emptyMeta();
 
     const code = getItemCode(item);
 
@@ -266,7 +473,8 @@ if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
         : current.time_in;
 
     const timeOut =
-      typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
+      typeof item.meta?.time_out === "string" &&
+      item.meta.time_out.trim() !== ""
         ? item.meta.time_out
         : current.time_out;
 
@@ -281,10 +489,34 @@ if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
         ? item.meta.checkout_time
         : current.checkout_time;
 
+    const date =
+      typeof item.meta?.date === "string" && item.meta.date.trim() !== ""
+        ? item.meta.date
+        : current.date;
+
+    const dropOff =
+      typeof item.meta?.dropOffTime === "string"
+        ? item.meta.dropOffTime
+        : current.drop_off;
+
+    const pickUp =
+      typeof item.meta?.pickUpTime === "string"
+        ? item.meta.pickUpTime
+        : current.pick_up;
+
+    const showerTime =
+      typeof item.meta?.showerTime === "string"
+        ? item.meta.showerTime
+        : current.shower_time;
+
     bookingMetaMap.set(item.booking_id, {
       bags,
       showers,
       combo,
+      date,
+      drop_off: dropOff,
+      pick_up: pickUp,
+      shower_time: showerTime,
       time_in: timeIn,
       time_out: timeOut,
       city,
@@ -293,12 +525,41 @@ if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
   }
 
   const sortedBookings = [...((bookings as BookingRow[]) ?? [])].sort((a, b) => {
-    const statusDiff = getStatusOrder(a.status) - getStatusOrder(b.status);
-
-    if (statusDiff !== 0) return statusDiff;
-
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
+
+  const todayBookings: BookingRow[] = [];
+  const insideBookings: BookingRow[] = [];
+  const finishedBookings: BookingRow[] = [];
+  const upcomingBookings: BookingRow[] = [];
+  const cancelledBookings: BookingRow[] = [];
+
+  for (const booking of sortedBookings) {
+    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+    const date = meta.date;
+    const status = normalizeStatus(booking.status);
+
+    if (status === "cancelled") {
+      cancelledBookings.push(booking);
+      continue;
+    }
+
+    if (status === "inside") {
+      insideBookings.push(booking);
+      continue;
+    }
+
+    if (status === "completed") {
+      finishedBookings.push(booking);
+      continue;
+    }
+
+    if (isToday(date)) {
+      todayBookings.push(booking);
+    } else {
+      upcomingBookings.push(booking);
+    }
+  }
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
@@ -314,32 +575,43 @@ if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
       </div>
 
       <div className="flex items-center gap-3">
-  <AdminQrScanner />
-  <AdminFinishQrScanner />
-  <FinishAllInsideButton count={bagsInside + showersInside} />
+        <AdminQrScanner />
+        <AdminFinishQrScanner />
+        <FinishAllInsideButton count={bagsInside + showersInside} />
 
-  <Link
-    href="/admin/new"
-    className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
-  >
-    + Nova reserva
-  </Link>
+        <Link
+          href="/admin/new"
+          className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+        >
+          + Nova reserva
+        </Link>
 
-  <div className="rounded-xl border px-4 py-2 text-sm">
-    Total reservas: <strong>{sortedBookings.length}</strong>
-  </div>
-</div>
+        <div className="rounded-xl border px-4 py-2 text-sm">
+          Total reservas: <strong>{sortedBookings.length}</strong>
+        </div>
+      </div>
 
-      <section className="grid grid-cols-6 gap-4">
+      {codeFilter && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          Showing booking: <strong>{codeFilter}</strong>
+          <Link href="/admin" className="ml-3 underline">
+            Clear filter
+          </Link>
+        </div>
+      )}
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-xl border p-4">
           <div className="text-sm text-gray-500">Bags today</div>
           <div className="text-2xl font-bold">{bagsToday}</div>
         </div>
 
-<div className="rounded-xl border p-4 bg-orange-50">
-  <div className="text-sm text-orange-600">Overdue</div>
-  <div className="text-2xl font-bold text-orange-700">{overdueCount}</div>
-</div>
+        <div className="rounded-xl border bg-orange-50 p-4">
+          <div className="text-sm text-orange-600">Overdue</div>
+          <div className="text-2xl font-bold text-orange-700">
+            {overdueCount}
+          </div>
+        </div>
 
         <div className="rounded-xl border p-4">
           <div className="text-sm text-gray-500">Showers today</div>
@@ -369,105 +641,45 @@ if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
         </div>
       </section>
 
-      <section className="overflow-x-auto rounded-2xl border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr className="border-b text-left">
-              <th className="p-3">Código</th>
-              <th className="p-3">Cliente</th>
-              <th className="p-3">City</th>
-              <th className="p-3">Bags</th>
-              <th className="p-3">Showers</th>
-              <th className="p-3">Luggage + Shower</th>
-              <th className="p-3">In</th>
-              <th className="p-3">Out</th>
-              <th className="p-3">Total</th>
-              <th className="p-3">Estado</th>
-              <th className="p-3">Ação</th>
-            </tr>
-          </thead>
+      {renderSectionTable({
+        title: "Today",
+        bookings: todayBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
 
-          <tbody>
-            {sortedBookings.map((booking) => {
-              const meta = bookingMetaMap.get(booking.id) ?? {
-                bags: 0,
-                showers: 0,
-                combo: 0,
-                time_in: null,
-                time_out: null,
-                city: null,
-                checkout_time: null,
-              };
+      {renderSectionTable({
+        title: "Inside",
+        bookings: insideBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
 
-              const normalizedStatus = normalizeStatus(booking.status);
-              const isLate = isPastScheduledTime(
-                meta.checkout_time,
-                booking.status,
-                meta.time_out
-              );
+      {renderSectionTable({
+        title: "Finished",
+        bookings: finishedBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
 
-              const rowClass =
-  normalizedStatus === "inside"
-    ? isLate
-      ? "bg-orange-50 border-l-4 border-orange-400"
-      : "bg-green-50 border-l-4 border-green-400"
-    : "";
+      {upcomingBookings.length > 0 && (
+        <div className="border-t pt-6" />
+      )}
 
-              return (
-                <tr key={booking.id} className={`border-b ${rowClass}`}>
-                  <td className="p-3 font-semibold">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="underline hover:text-blue-600"
-                    >
-                      {booking.booking_code}
-                    </Link>
-                  </td>
+      {renderSectionTable({
+        title: "Upcoming",
+        bookings: upcomingBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
 
-                  <td className="p-3">
-                    <div className="font-medium">{booking.customer_name}</div>
-                    <div className="text-xs text-gray-500">
-                      {booking.customer_email}
-                    </div>
-                  </td>
-
-                  <td className="p-3">{meta.city ?? "-"}</td>
-                  <td className="p-3">{meta.bags || "-"}</td>
-                  <td className="p-3">{meta.showers || "-"}</td>
-                  <td className="p-3">{meta.combo || "-"}</td>
-                  <td className="p-3">{meta.time_in ?? "-"}</td>
-                  <td className={`p-3 ${isLate ? "text-orange-600 font-semibold" : ""}`}>
-  {meta.time_out ?? meta.checkout_time ?? "-"}
-  {isLate && " ⚠"}
-</td>
-
-                  <td className="p-3 font-medium">
-                    {formatCurrency(Number(booking.total_amount), booking.currency)}
-                  </td>
-
-                  <td className="p-3">
-                    <span
-                      className={`inline-flex rounded-full border px-2 py-1 text-xs ${getStatusClass(
-                        booking.status
-                      )}`}
-                    >
-                      {getStatusLabel(booking.status)}
-                    </span>
-                  </td>
-
-                  <td className="p-3">
-                    {normalizeStatus(booking.status) === "inside" ? (
-                      <QuickFinishButton bookingId={booking.id} />
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
+      {renderSectionTable({
+        title: "Cancelled",
+        bookings: cancelledBookings,
+        bookingMetaMap,
+        codeFilter,
+        cancelled: true,
+      })}
     </main>
   );
 }

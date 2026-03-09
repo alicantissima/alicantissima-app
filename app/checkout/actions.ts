@@ -1,15 +1,16 @@
 
 
+
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type CheckoutItem = {
   id: string;
   title: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
+  quantity: number | string;
+  unitPrice: number | string;
+  totalPrice: number | string;
   productType?: string;
   meta?: Record<string, unknown>;
 };
@@ -33,7 +34,6 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const customerEmail = payload.customerEmail?.trim();
     const customerPhone = payload.customerPhone?.trim() || null;
     const notes = payload.notes?.trim() || null;
-    const items = payload.items ?? [];
 
     if (!customerName) {
       return { ok: false, error: "Missing name." };
@@ -43,16 +43,51 @@ export async function submitCheckout(payload: CheckoutPayload) {
       return { ok: false, error: "Missing email." };
     }
 
-    if (!items.length) {
+    const rawItems = payload.items ?? [];
+
+    if (!rawItems.length) {
       return { ok: false, error: "Your booking is empty." };
     }
 
-    const totalAmount = items.reduce(
-      (sum, item) => sum + Number(item.totalPrice || 0),
-      0
-    );
+    const items = rawItems.map((item, index) => {
+      const quantity = Number(item.quantity);
+      const unitPrice = Number(item.unitPrice);
+      const totalPrice = Number(item.totalPrice);
 
-    const supabase = await createClient();
+      if (!item.id) {
+        throw new Error(`Item ${index + 1} is missing product id.`);
+      }
+
+      if (!item.title?.trim()) {
+        throw new Error(`Item ${index + 1} is missing title.`);
+      }
+
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        throw new Error(`Item ${index + 1} has invalid quantity.`);
+      }
+
+      if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+        throw new Error(`Item ${index + 1} has invalid unit price.`);
+      }
+
+      if (!Number.isFinite(totalPrice) || totalPrice < 0) {
+        throw new Error(`Item ${index + 1} has invalid total price.`);
+      }
+
+      return {
+        id: item.id,
+        title: item.title.trim(),
+        quantity,
+        unitPrice,
+        totalPrice,
+        productType: item.productType ?? "booking",
+        meta: item.meta ?? {},
+      };
+    });
+
+    const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+
+    const supabase = createAdminClient();
     const bookingCode = generateBookingCode();
 
     const { data: booking, error: bookingError } = await supabase
@@ -72,18 +107,21 @@ export async function submitCheckout(payload: CheckoutPayload) {
 
     if (bookingError || !booking) {
       console.error("bookingError:", bookingError);
-      return { ok: false, error: "Could not create booking." };
+      return {
+        ok: false,
+        error: bookingError?.message || "Could not create booking.",
+      };
     }
 
     const bookingItems = items.map((item) => ({
       booking_id: booking.id,
       product_id: item.id,
-      product_type: item.productType ?? "booking",
+      product_type: item.productType,
       title: item.title,
       quantity: item.quantity,
       unit_price: item.unitPrice,
       line_total: item.totalPrice,
-      meta: item.meta ?? {},
+      meta: item.meta,
     }));
 
     const { error: itemsError } = await supabase
@@ -92,7 +130,13 @@ export async function submitCheckout(payload: CheckoutPayload) {
 
     if (itemsError) {
       console.error("itemsError:", itemsError);
-      return { ok: false, error: "Booking created, but items failed." };
+
+      await supabase.from("bookings").delete().eq("id", booking.id);
+
+      return {
+        ok: false,
+        error: itemsError.message || "Booking created, but items failed.",
+      };
     }
 
     return {
@@ -101,6 +145,13 @@ export async function submitCheckout(payload: CheckoutPayload) {
     };
   } catch (error) {
     console.error("submitCheckout error:", error);
-    return { ok: false, error: "Unexpected checkout error." };
+
+    return {
+      ok: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unexpected checkout error.",
+    };
   }
 }

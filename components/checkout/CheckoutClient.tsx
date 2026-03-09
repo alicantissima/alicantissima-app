@@ -1,5 +1,6 @@
 
 
+
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
@@ -20,6 +21,8 @@ export default function CheckoutClient() {
   }, [items]);
 
   async function handleSubmit(formData: FormData) {
+    if (pending) return;
+
     setError(null);
 
     const payload = {
@@ -28,31 +31,32 @@ export default function CheckoutClient() {
       customerPhone: String(formData.get("customerPhone") || ""),
       notes: String(formData.get("notes") || ""),
       items: items.map((item) => ({
-        id: item.productName,
-        title: item.productName,
-        quantity: Number(item.quantity || 1),
-        unitPrice:
-          item.quantity && Number(item.quantity) > 0
-            ? Number(item.totalPrice) / Number(item.quantity)
-            : Number(item.totalPrice),
-        totalPrice: Number(item.totalPrice),
-        productType: "booking",
-        meta: {
-          date: item.date,
-          dropOffTime: item.dropOffTime ?? null,
-          pickUpTime: item.pickUpTime ?? null,
-          showerTime: item.showerTime ?? null,
-          comments: item.comments ?? null,
-          breakdown: item.breakdown ?? [],
-        },
-      })),
-    };
+  id: item.productCode,
+  title: item.productName,
+  quantity: Number(item.quantity || 1),
+  unitPrice:
+    item.quantity && Number(item.quantity) > 0
+      ? Number(item.totalPrice) / Number(item.quantity)
+      : Number(item.totalPrice),
+  totalPrice: Number(item.totalPrice),
+  productType: "booking",
+  meta: {
+    date: item.date,
+    dropOffTime: item.dropOffTime ?? null,
+    pickUpTime: item.pickUpTime ?? null,
+    showerTime: item.showerTime ?? null,
+    comments: item.comments ?? null,
+    breakdown: item.breakdown ?? [],
+  },
+}))   
+};     
 
     startTransition(async () => {
       const result = await submitCheckout(payload);
 
       if (!result.ok) {
-setError(result.error ?? "Ocorreu um erro no checkout.");        return;
+        setError(result.error ?? "Ocorreu um erro no checkout.");
+        return;
       }
 
       clearItems();
@@ -79,7 +83,8 @@ setError(result.error ?? "Ocorreu um erro no checkout.");        return;
             id="customerName"
             name="customerName"
             required
-            className="w-full rounded-xl border px-3 py-2"
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
           />
         </div>
 
@@ -92,7 +97,8 @@ setError(result.error ?? "Ocorreu um erro no checkout.");        return;
             name="customerEmail"
             type="email"
             required
-            className="w-full rounded-xl border px-3 py-2"
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
           />
         </div>
 
@@ -103,7 +109,8 @@ setError(result.error ?? "Ocorreu um erro no checkout.");        return;
           <input
             id="customerPhone"
             name="customerPhone"
-            className="w-full rounded-xl border px-3 py-2"
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
           />
         </div>
 
@@ -115,7 +122,8 @@ setError(result.error ?? "Ocorreu um erro no checkout.");        return;
             id="notes"
             name="notes"
             rows={4}
-            className="w-full rounded-xl border px-3 py-2"
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
           />
         </div>
 
@@ -128,9 +136,10 @@ setError(result.error ?? "Ocorreu um erro no checkout.");        return;
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-xl bg-black p-4 font-semibold text-white disabled:opacity-50"
+          aria-disabled={pending}
+          className="mt-2 w-full rounded-[28px] border border-black bg-black px-6 py-5 text-center text-2xl font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? "Processing..." : "Confirm booking"}
+          {pending ? "Creating booking..." : "Create booking"}
         </button>
       </form>
 

@@ -1,18 +1,60 @@
 
 
+
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
+
+function pad(value: number) {
+  return value.toString().padStart(2, "0");
+}
+
+function generateTimeSlots(startHour: number, endHour: number) {
+  const slots: string[] = [];
+
+  for (let hour = startHour; hour < endHour; hour++) {
+    for (const minute of [0, 30]) {
+      const startH = hour;
+      const startM = minute;
+
+      let endH = hour;
+      let endM = minute + 30;
+
+      if (endM === 60) {
+        endH += 1;
+        endM = 0;
+      }
+
+      const start = `${pad(startH)}h${pad(startM)}`;
+      const end = `${pad(endH)}h${pad(endM)}`;
+
+      slots.push(`${start}-${end}`);
+    }
+  }
+
+  return slots;
+}
+
+function getTodayString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = pad(now.getMonth() + 1);
+  const day = pad(now.getDate());
+  return `${year}-${month}-${day}`;
+}
 
 export default function BookComboPage() {
   const router = useRouter();
   const addItem = useBookingStore((state) => state.addItem);
 
+  const luggageTimeSlots = useMemo(() => generateTimeSlots(10, 20), []);
+  const showerTimeSlots = useMemo(() => generateTimeSlots(10, 20), []);
+
   const [date, setDate] = useState("");
-  const [dropOffTime, setDropOffTime] = useState("10:00");
-  const [showerTime, setShowerTime] = useState("18:00");
+  const [dropOffTime, setDropOffTime] = useState(luggageTimeSlots[0] ?? "");
+  const [showerTime, setShowerTime] = useState(showerTimeSlots[0] ?? "");
 
   const [comboQty, setComboQty] = useState(1);
   const [extraLuggageQty, setExtraLuggageQty] = useState(0);
@@ -46,36 +88,36 @@ export default function BookComboPage() {
     }
 
     addItem({
-  productCode: "combo",
-  productName: "Luggage + Shower",
-  quantity: comboQty,
-  date,
-  dropOffTime,
-  showerTime,
-  comments,
-  unitPrice: comboPrice,
-  totalPrice,
-  breakdown: [
-    {
-      label: "Luggage + Shower",
+      productCode: "combo",
+      productName: "Luggage + Shower",
       quantity: comboQty,
+      date,
+      dropOffTime,
+      showerTime,
+      comments,
       unitPrice: comboPrice,
-      totalPrice: comboQty * comboPrice,
-    },
-    {
-      label: "Additional luggage",
-      quantity: extraLuggageQty,
-      unitPrice: extraLuggagePrice,
-      totalPrice: extraLuggageQty * extraLuggagePrice,
-    },
-    {
-      label: "Additional shower",
-      quantity: extraShowerQty,
-      unitPrice: extraShowerPrice,
-      totalPrice: extraShowerQty * extraShowerPrice,
-    },
-  ].filter((item) => item.quantity > 0),
-});
+      totalPrice,
+      breakdown: [
+        {
+          label: "Luggage + Shower",
+          quantity: comboQty,
+          unitPrice: comboPrice,
+          totalPrice: comboQty * comboPrice,
+        },
+        {
+          label: "Additional luggage",
+          quantity: extraLuggageQty,
+          unitPrice: extraLuggagePrice,
+          totalPrice: extraLuggageQty * extraLuggagePrice,
+        },
+        {
+          label: "Additional shower",
+          quantity: extraShowerQty,
+          unitPrice: extraShowerPrice,
+          totalPrice: extraShowerQty * extraShowerPrice,
+        },
+      ].filter((item) => item.quantity > 0),
+    });
 
     router.push("/my-booking");
   }
@@ -93,7 +135,7 @@ export default function BookComboPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md p-6 space-y-6">
+    <main className="mx-auto max-w-md space-y-6 p-6">
       <h1 className="text-2xl font-bold uppercase">
         Luggage + Shower ★ Popular
       </h1>
@@ -107,7 +149,8 @@ export default function BookComboPage() {
           <label className="text-sm font-semibold">Choose the date</label>
           <input
             type="date"
-            className="w-full border rounded p-2 mt-1"
+            min={getTodayString()}
+            className="mt-1 w-full rounded border p-2"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
@@ -115,31 +158,41 @@ export default function BookComboPage() {
 
         <div>
           <label className="text-sm font-semibold">Luggage drop-off time</label>
-          <input
-            type="time"
-            className="w-full border rounded p-2 mt-1"
+          <select
+            className="mt-1 w-full rounded border p-2"
             value={dropOffTime}
             onChange={(e) => setDropOffTime(e.target.value)}
-          />
+          >
+            {luggageTimeSlots.map((slot) => (
+              <option key={slot} value={slot}>
+                {slot}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
           <label className="text-sm font-semibold">
             Shower time (approx.)
           </label>
-          <input
-            type="time"
-            className="w-full border rounded p-2 mt-1"
+          <select
+            className="mt-1 w-full rounded border p-2"
             value={showerTime}
             onChange={(e) => setShowerTime(e.target.value)}
-          />
-          <p className="text-xs text-gray-500 mt-1">
+          >
+            {showerTimeSlots.map((slot) => (
+              <option key={slot} value={slot}>
+                {slot}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">
             You can take your shower and still come back later to collect your
             luggage.
           </p>
         </div>
 
-        <div className="border rounded-2xl p-4 space-y-3">
+        <div className="space-y-3 rounded-2xl border p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold">Luggage + Shower</p>
@@ -150,7 +203,7 @@ export default function BookComboPage() {
               <button
                 type="button"
                 onClick={() => decrease(comboQty, setComboQty, 1)}
-                className="border px-3 py-1 rounded"
+                className="rounded border px-3 py-1"
               >
                 -
               </button>
@@ -158,7 +211,7 @@ export default function BookComboPage() {
               <button
                 type="button"
                 onClick={() => increase(comboQty, setComboQty)}
-                className="border px-3 py-1 rounded"
+                className="rounded border px-3 py-1"
               >
                 +
               </button>
@@ -166,7 +219,7 @@ export default function BookComboPage() {
           </div>
         </div>
 
-        <div className="border rounded-2xl p-4 space-y-3">
+        <div className="space-y-3 rounded-2xl border p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold">Additional luggage</p>
@@ -177,7 +230,7 @@ export default function BookComboPage() {
               <button
                 type="button"
                 onClick={() => decrease(extraLuggageQty, setExtraLuggageQty)}
-                className="border px-3 py-1 rounded"
+                className="rounded border px-3 py-1"
               >
                 -
               </button>
@@ -185,7 +238,7 @@ export default function BookComboPage() {
               <button
                 type="button"
                 onClick={() => increase(extraLuggageQty, setExtraLuggageQty)}
-                className="border px-3 py-1 rounded"
+                className="rounded border px-3 py-1"
               >
                 +
               </button>
@@ -193,7 +246,7 @@ export default function BookComboPage() {
           </div>
         </div>
 
-        <div className="border rounded-2xl p-4 space-y-3">
+        <div className="space-y-3 rounded-2xl border p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold">Additional shower</p>
@@ -204,7 +257,7 @@ export default function BookComboPage() {
               <button
                 type="button"
                 onClick={() => decrease(extraShowerQty, setExtraShowerQty)}
-                className="border px-3 py-1 rounded"
+                className="rounded border px-3 py-1"
               >
                 -
               </button>
@@ -212,7 +265,7 @@ export default function BookComboPage() {
               <button
                 type="button"
                 onClick={() => increase(extraShowerQty, setExtraShowerQty)}
-                className="border px-3 py-1 rounded"
+                className="rounded border px-3 py-1"
               >
                 +
               </button>
@@ -223,21 +276,21 @@ export default function BookComboPage() {
         <div>
           <label className="text-sm font-semibold">Comments (optional)</label>
           <textarea
-            className="w-full border rounded p-2 mt-1"
+            className="mt-1 w-full rounded border p-2"
             value={comments}
             onChange={(e) => setComments(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="border rounded-2xl p-4 space-y-2">
+      <div className="space-y-2 rounded-2xl border p-4">
         <p className="text-sm font-semibold">Total price</p>
         <p className="text-2xl font-bold">€ {totalPrice}</p>
       </div>
 
       <button
         onClick={handleAddToBooking}
-        className="w-full border rounded-2xl p-4 font-semibold uppercase"
+        className="w-full rounded-2xl border p-4 font-semibold uppercase"
       >
         Add to booking
       </button>

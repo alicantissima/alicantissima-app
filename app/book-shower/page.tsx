@@ -45,20 +45,19 @@ function getTodayString() {
   return `${year}-${month}-${day}`;
 }
 
-export default function BookLuggagePage() {
+export default function BookShowerPage() {
   const router = useRouter();
   const addItem = useBookingStore((state) => state.addItem);
 
-  const timeSlots = useMemo(() => generateTimeSlots(10, 20), []);
+  const showerSlots = useMemo(() => generateTimeSlots(10, 20), []);
 
   const [date, setDate] = useState("");
-  const [dropOff, setDropOff] = useState(timeSlots[0] ?? "");
-  const [pickUp, setPickUp] = useState(timeSlots[0] ?? "");
-  const [luggage, setLuggage] = useState(1);
+  const [showerTime, setShowerTime] = useState(showerSlots[0] ?? "");
+  const [showers, setShowers] = useState(1);
   const [comments, setComments] = useState("");
 
-  const unitPrice = 8;
-  const totalPrice = luggage * unitPrice;
+  const unitPrice = 12;
+  const totalPrice = showers * unitPrice;
 
   function handleAddToBooking() {
     if (!date) {
@@ -66,23 +65,17 @@ export default function BookLuggagePage() {
       return;
     }
 
-    if (!dropOff) {
-      alert("Please choose a drop-off time.");
-      return;
-    }
-
-    if (!pickUp) {
-      alert("Please choose an estimated pick-up time.");
+    if (!showerTime) {
+      alert("Please choose a shower time.");
       return;
     }
 
     addItem({
-      productCode: "luggage",
-      productName: "Store Luggage",
-      quantity: luggage,
+      productCode: "shower",
+      productName: "Shower",
+      quantity: showers,
       date,
-      dropOffTime: dropOff,
-      pickUpTime: pickUp,
+      showerTime,
       comments,
       unitPrice,
       totalPrice,
@@ -93,13 +86,14 @@ export default function BookLuggagePage() {
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-      <h1 className="text-2xl font-bold uppercase">Store Luggage</h1>
+      <h1 className="text-2xl font-bold uppercase">Take a Shower</h1>
 
       <p className="text-sm text-gray-600">
-        Safe & fast luggage storage in Alicante city center
+        Refresh yourself before your trip or after the beach
       </p>
 
       <div className="space-y-4">
+
         <div>
           <label className="text-sm font-semibold">Choose date</label>
           <input
@@ -112,15 +106,13 @@ export default function BookLuggagePage() {
         </div>
 
         <div>
-          <label className="text-sm font-semibold">
-            Choose drop-off time
-          </label>
+          <label className="text-sm font-semibold">Choose shower time</label>
           <select
             className="mt-1 w-full rounded border p-2"
-            value={dropOff}
-            onChange={(e) => setDropOff(e.target.value)}
+            value={showerTime}
+            onChange={(e) => setShowerTime(e.target.value)}
           >
-            {timeSlots.map((slot) => (
+            {showerSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
               </option>
@@ -129,43 +121,23 @@ export default function BookLuggagePage() {
         </div>
 
         <div>
-          <label className="text-sm font-semibold">
-            Estimated pick-up time
-          </label>
-          <select
-            className="mt-1 w-full rounded border p-2"
-            value={pickUp}
-            onChange={(e) => setPickUp(e.target.value)}
-          >
-            {timeSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
-              </option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-gray-500">
-            Helps us organize luggage during the day.
-          </p>
-        </div>
-
-        <div>
-          <label className="text-sm font-semibold">Number of luggage</label>
+          <label className="text-sm font-semibold">Number of showers</label>
 
           <div className="mt-1 flex items-center gap-4">
             <button
-              onClick={() => setLuggage(Math.max(1, luggage - 1))}
-              className="rounded border px-3 py-1"
               type="button"
+              onClick={() => setShowers(Math.max(1, showers - 1))}
+              className="border px-3 py-1 rounded"
             >
               -
             </button>
 
-            <span>{luggage}</span>
+            <span>{showers}</span>
 
             <button
-              onClick={() => setLuggage(luggage + 1)}
-              className="rounded border px-3 py-1"
               type="button"
+              onClick={() => setShowers(showers + 1)}
+              className="border px-3 py-1 rounded"
             >
               +
             </button>
@@ -180,6 +152,7 @@ export default function BookLuggagePage() {
             onChange={(e) => setComments(e.target.value)}
           />
         </div>
+
       </div>
 
       <div className="rounded-2xl border p-4">

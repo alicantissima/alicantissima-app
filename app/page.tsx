@@ -60,51 +60,61 @@ export default function HomePage() {
         <p className="text-sm">🟢 Open every day · 10:00–22:00</p>
       </section>
 
-      <section className="space-y-3">
-        {loading ? (
-          <div className="rounded-2xl border p-4 text-sm text-gray-600">
-            Loading services...
+      <section className="space-y-8">
+  <div className="space-y-3">
+    {loading ? (
+      <div className="rounded-3xl border border-black bg-white p-4 text-sm text-gray-600 shadow-sm">
+        Loading services...
+      </div>
+    ) : (
+      products.map((product) => (
+        <Link
+          key={product.id}
+          href={getHref(product.code)}
+          className="block rounded-3xl border border-black bg-white p-5 shadow-sm transition hover:-translate-y-0.5"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="font-semibold uppercase tracking-wide">
+              {product.name}
+              {product.is_popular ? " ★ Popular" : ""}
+            </div>
+
+            <div className="rounded-full border border-black px-3 py-1 text-sm font-bold">
+              € {product.price}
+            </div>
           </div>
-        ) : (
-          products.map((product) => (
-            <Link
-              key={product.id}
-              href={getHref(product.code)}
-              className="block rounded-2xl border p-4"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="font-semibold uppercase">
-                  {product.name}
-                  {product.is_popular ? " ★ Popular" : ""}
-                </div>
-                <div className="text-sm font-bold">€ {product.price}</div>
-              </div>
 
-              <div className="mt-1 text-sm text-gray-600">
-                {product.description}
-              </div>
-            </Link>
-          ))
-        )}
-
-        <Link href="/extras" className="block rounded-2xl border p-4">
-          <div className="font-semibold uppercase">Explore Alicante</div>
-          <div className="mt-1 text-sm text-gray-600">
-            Restaurants · Activities · Beaches · Events
+          <div className="mt-2 text-sm leading-relaxed text-gray-600">
+            {product.description}
           </div>
         </Link>
-      </section>
+      ))
+    )}
+  </div>
 
-      <section className="rounded-2xl border p-4 space-y-2">
-        <p className="font-semibold uppercase">Free extras included</p>
-        <p className="text-sm text-gray-600">
-          Wi-Fi · Coffee · Cold water · Phone charging · Beach towels
-        </p>
-        <Link href="/extras" className="text-sm font-semibold">
-          WHAT&apos;S INCLUDED 🧞‍♂️
-        </Link>
-      </section>
+  <section className="space-y-2 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-900">
+      Free extras included
+    </p>
+    <p className="text-sm leading-relaxed text-emerald-950">
+      Wi-Fi · Coffee · Cold water · Phone charging · Beach towels
+    </p>
+    <Link href="/extras" className="inline-block text-sm font-semibold text-emerald-900">
+      WHAT&apos;S INCLUDED 🧞‍♂️
+    </Link>
+  </section>
 
+  <section className="rounded-3xl border border-sky-200 bg-sky-50 p-5">
+    <Link href="/extras" className="block space-y-1">
+      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-800">
+        Explore Alicante
+      </div>
+      <div className="text-sm leading-relaxed text-sky-950">
+        Restaurants · Activities · Beaches · Events
+      </div>
+    </Link>
+  </section>
+  </section>
       <Link
         href="/my-booking"
         className="block rounded-2xl border p-4 text-center font-semibold uppercase"

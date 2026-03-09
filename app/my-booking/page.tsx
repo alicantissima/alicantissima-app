@@ -1,3 +1,6 @@
+
+
+
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -20,18 +23,18 @@ export default function MyBookingPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md p-6 space-y-6">
+    <main className="mx-auto max-w-md space-y-6 p-6">
       <h1 className="text-2xl font-bold uppercase">My Booking</h1>
 
       {items.length === 0 ? (
-        <div className="border rounded-2xl p-4">
+        <div className="rounded-2xl border p-4">
           <p className="font-semibold">Your booking is empty.</p>
         </div>
       ) : (
         <>
           <div className="space-y-4">
             {items.map((item, index) => (
-              <div key={index} className="border rounded-2xl p-4 space-y-3">
+              <div key={index} className="space-y-3 rounded-2xl border p-4">
                 <p className="font-bold uppercase">{item.productName}</p>
 
                 <div className="space-y-1 text-sm">
@@ -45,7 +48,7 @@ export default function MyBookingPage() {
                 </div>
 
                 {item.breakdown && item.breakdown.length > 0 ? (
-                  <div className="border-t pt-3 space-y-2">
+                  <div className="space-y-2 border-t pt-3">
                     {item.breakdown.map((part, partIndex) => (
                       <div
                         key={partIndex}
@@ -59,7 +62,7 @@ export default function MyBookingPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="border-t pt-3 space-y-1 text-sm">
+                  <div className="space-y-1 border-t pt-3 text-sm">
                     <p>Quantity: {item.quantity}</p>
                     <p>€ {item.totalPrice}</p>
                   </div>
@@ -68,26 +71,31 @@ export default function MyBookingPage() {
             ))}
           </div>
 
-          <div className="border rounded-2xl p-4">
+          <div className="rounded-2xl border p-4">
             <p className="text-sm font-semibold">Total</p>
             <p className="text-2xl font-bold">€ {total}</p>
           </div>
 
-          <div className="space-y-3">
-            <button
-              onClick={handleClearBooking}
-              className="w-full border rounded-2xl p-4 font-semibold uppercase"
-              type="button"
-            >
-              Clear Booking
-            </button>
-
+          <div className="space-y-4">
             <button
               onClick={handleCheckout}
-              className="w-full border rounded-2xl p-4 font-semibold uppercase"
+              className="w-full rounded-[28px] border border-black bg-black p-5 text-xl font-bold uppercase text-white"
               type="button"
             >
               Checkout
+            </button>
+
+            <button
+              onClick={() => {
+                const confirmed = window.confirm("Clear this booking?");
+                if (confirmed) {
+                  handleClearBooking();
+                }
+              }}
+              className="w-full rounded-[28px] border border-black bg-white p-4 text-lg font-semibold uppercase text-black"
+              type="button"
+            >
+              Clear Booking
             </button>
           </div>
         </>
