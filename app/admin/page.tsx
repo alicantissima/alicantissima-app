@@ -296,29 +296,30 @@ export default async function AdminPage() {
   });
 
   return (
-    <main className="mx-auto max-w-7xl space-y-6 p-6">
-     
-<div className="flex justify-between items-center">
-  <h1 className="text-2xl font-bold">Admin · Reservas</h1>
+  <main className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="flex items-start justify-between">
+      <div>
+        <h1 className="text-2xl font-bold">Admin · Reservas</h1>
+        <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
+      <div className="mt-1">
   <LogoutButton />
 </div>
 
-        <div className="flex items-center gap-3">
-  <AdminQrScanner />
-  <AdminFinishQrScanner />
+    <div className="flex items-center gap-3">
+      <AdminQrScanner />
+      <AdminFinishQrScanner />
 
-  <Link
-    href="/admin/new"
-    className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
-  >
-    + Nova reserva
-  </Link>
+      <Link
+        href="/admin/new"
+        className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+      >
+        + Nova reserva
+      </Link>
 
-  <div className="rounded-xl border px-4 py-2 text-sm">
-    Total reservas: <strong>{sortedBookings.length}</strong>
-  </div>
-</div>
-      </section>
+      <div className="rounded-xl border px-4 py-2 text-sm">
+        Total reservas: <strong>{sortedBookings.length}</strong>
+      </div>
+    </div>
 
       <section className="grid grid-cols-6 gap-4">
         <div className="rounded-xl border p-4">
