@@ -7,6 +7,7 @@ import QuickFinishButton from "./QuickFinishButton";
 import AdminQrScanner from "@/components/admin-qr-scanner";
 import AdminFinishQrScanner from "@/components/admin-finish-qr-scanner";
 import LogoutButton from "@/components/logout-button";
+import FinishAllInsideButton from "@/components/finish-all-inside-button";
 
 type BookingRow = {
   id: string;
@@ -313,20 +314,21 @@ if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
       </div>
 
       <div className="flex items-center gap-3">
-        <AdminQrScanner />
-        <AdminFinishQrScanner />
+  <AdminQrScanner />
+  <AdminFinishQrScanner />
+  <FinishAllInsideButton />
 
-        <Link
-          href="/admin/new"
-          className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
-        >
-          + Nova reserva
-        </Link>
+  <Link
+    href="/admin/new"
+    className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+  >
+    + Nova reserva
+  </Link>
 
-        <div className="rounded-xl border px-4 py-2 text-sm">
-          Total reservas: <strong>{sortedBookings.length}</strong>
-        </div>
-      </div>
+  <div className="rounded-xl border px-4 py-2 text-sm">
+    Total reservas: <strong>{sortedBookings.length}</strong>
+  </div>
+</div>
 
       <section className="grid grid-cols-6 gap-4">
         <div className="rounded-xl border p-4">
