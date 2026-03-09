@@ -7,14 +7,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function FinishAllInsideButton() {
+type Props = {
+  count: number;
+};
+
+export default function FinishAllInsideButton({ count }: Props) {
   const supabase = createClient();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  if (count === 0) return null;
+
   async function handleFinishAll() {
     const confirmed = window.confirm(
-      "Finalizar todas as reservas com estado INSIDE?"
+      `Finalizar ${count} reservas com estado INSIDE?`
     );
 
     if (!confirmed) return;
@@ -32,7 +38,7 @@ export default function FinishAllInsideButton() {
     setLoading(false);
 
     if (error) {
-      alert("Não foi possível finalizar todas as reservas.");
+      alert("Erro ao finalizar reservas.");
       return;
     }
 
@@ -43,9 +49,9 @@ export default function FinishAllInsideButton() {
     <button
       onClick={handleFinishAll}
       disabled={loading}
-      className="rounded-xl border px-4 py-2 text-sm disabled:opacity-50"
+      className="rounded-xl border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700 hover:bg-red-100 disabled:opacity-50"
     >
-      {loading ? "A finalizar..." : "Finish all inside"}
+      {loading ? "A finalizar..." : `Finish all inside (${count})`}
     </button>
   );
 }

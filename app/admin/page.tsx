@@ -316,7 +316,7 @@ if (isPastScheduledTime(meta.checkout_time, booking.status, meta.time_out)) {
       <div className="flex items-center gap-3">
   <AdminQrScanner />
   <AdminFinishQrScanner />
-  <FinishAllInsideButton />
+  <FinishAllInsideButton count={bagsInside + showersInside} />
 
   <Link
     href="/admin/new"
