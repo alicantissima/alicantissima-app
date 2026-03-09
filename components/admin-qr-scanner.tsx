@@ -116,13 +116,19 @@ export default function AdminQrScanner() {
                   void handleScan(rawValue);
                 }
               }}
-              onError={(err) => {
-                if (err?.name === "NotAllowedError") {
-                  setError("Permissão da câmara recusada.");
-                } else {
-                  setError("Erro ao iniciar a câmara.");
-                }
-              }}
+              onError={(err: unknown) => {
+  const isCameraPermissionError =
+    typeof err === "object" &&
+    err !== null &&
+    "name" in err &&
+    (err as { name?: string }).name === "NotAllowedError";
+
+  if (isCameraPermissionError) {
+    setError("Permissão da câmara recusada.");
+  } else {
+    setError("Erro ao iniciar a câmara.");
+  }
+}}
               constraints={{ facingMode: "environment" }}
             />
           </div>
