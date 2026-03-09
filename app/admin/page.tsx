@@ -45,6 +45,7 @@ function normalizeStatus(status: string) {
   if (status === "received") return "booked";
   if (status === "inside") return "inside";
   if (status === "completed") return "completed";
+  if (status === "finished") return "completed";
   return status;
 }
 
@@ -188,10 +189,9 @@ export default async function AdminPage() {
   let bagsInside = 0;
   let showersInside = 0;
 
-  for (const booking of (bookings as BookingRow[]) ?? []) {
+  for (const booking of ((bookings as BookingRow[]) ?? [])) {
     const itemsForBooking =
-      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ??
-      [];
+      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
 
     const computedRevenue = itemsForBooking.reduce(
       (sum, item) => sum + Number(item.line_total ?? 0),
@@ -234,7 +234,7 @@ export default async function AdminPage() {
     }
   >();
 
-  for (const item of (items as BookingItemRow[]) ?? []) {
+  for (const item of ((items as BookingItemRow[]) ?? [])) {
     const current = bookingMetaMap.get(item.booking_id) ?? {
       bags: 0,
       showers: 0,
@@ -296,30 +296,33 @@ export default async function AdminPage() {
   });
 
   return (
-  <main className="mx-auto max-w-7xl space-y-6 p-6">
-    <div className="flex items-start justify-between">
-      <div>
-        <h1 className="text-2xl font-bold">Admin · Reservas</h1>
-        <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
-      <div className="mt-1">
-  <LogoutButton />
-</div>
+    <main className="mx-auto max-w-7xl space-y-6 p-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Admin · Reservas</h1>
+          <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
+        </div>
 
-    <div className="flex items-center gap-3">
-      <AdminQrScanner />
-      <AdminFinishQrScanner />
-
-      <Link
-        href="/admin/new"
-        className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
-      >
-        + Nova reserva
-      </Link>
-
-      <div className="rounded-xl border px-4 py-2 text-sm">
-        Total reservas: <strong>{sortedBookings.length}</strong>
+        <div className="mt-1">
+          <LogoutButton />
+        </div>
       </div>
-    </div>
+
+      <div className="flex items-center gap-3">
+        <AdminQrScanner />
+        <AdminFinishQrScanner />
+
+        <Link
+          href="/admin/new"
+          className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+        >
+          + Nova reserva
+        </Link>
+
+        <div className="rounded-xl border px-4 py-2 text-sm">
+          Total reservas: <strong>{sortedBookings.length}</strong>
+        </div>
+      </div>
 
       <section className="grid grid-cols-6 gap-4">
         <div className="rounded-xl border p-4">
@@ -418,11 +421,9 @@ export default async function AdminPage() {
                   </td>
 
                   <td className="p-3">{meta.city ?? "-"}</td>
-
                   <td className="p-3">{meta.bags || "-"}</td>
                   <td className="p-3">{meta.showers || "-"}</td>
                   <td className="p-3">{meta.combo || "-"}</td>
-
                   <td className="p-3">{meta.time_in ?? "-"}</td>
                   <td className="p-3">{meta.time_out ?? meta.checkout_time ?? "-"}</td>
 
