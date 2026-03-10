@@ -4,7 +4,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
 
 function pad(value: number) {
@@ -45,65 +45,21 @@ function getTodayString() {
   return `${year}-${month}-${day}`;
 }
 
-type ProductKey = "bags" | "shower" | "combo";
-
 export default function BookLuggagePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
   const addItem = useBookingStore((state) => state.addItem);
   const clearItems = useBookingStore((state) => state.clearItems);
 
   const timeSlots = useMemo(() => generateTimeSlots(10, 20), []);
 
-  const rawProduct = searchParams.get("product");
-  const product: ProductKey =
-    rawProduct === "shower" || rawProduct === "combo" ? rawProduct : "bags";
-
   const [date, setDate] = useState("");
   const [dropOff, setDropOff] = useState(timeSlots[0] ?? "");
   const [pickUp, setPickUp] = useState(timeSlots[0] ?? "");
-  const [showerTime, setShowerTime] = useState(timeSlots[0] ?? "");
-  const [quantity, setQuantity] = useState(1);
+  const [luggage, setLuggage] = useState(1);
   const [comments, setComments] = useState("");
 
-  const config = {
-    bags: {
-      productCode: "luggage" as const,
-      productName: "Store Luggage",
-      pageTitle: "Store Luggage",
-      subtitle: "Safe & fast luggage storage in Alicante city center",
-      quantityLabel: "Number of luggage",
-      unitPrice: 8,
-      showDropOff: true,
-      showPickUp: true,
-      showShowerTime: false,
-    },
-    shower: {
-      productCode: "shower" as const,
-      productName: "Shower Service",
-      pageTitle: "Book Shower",
-      subtitle: "Freshen up in Alicante city center",
-      quantityLabel: "Number of showers",
-      unitPrice: 12,
-      showDropOff: false,
-      showPickUp: false,
-      showShowerTime: true,
-    },
-    combo: {
-      productCode: "combo" as const,
-      productName: "Luggage + Shower Combo",
-      pageTitle: "Book Combo",
-      subtitle: "Luggage storage + shower in one booking",
-      quantityLabel: "Number of combos",
-      unitPrice: 18,
-      showDropOff: true,
-      showPickUp: true,
-      showShowerTime: true,
-    },
-  }[product];
-
-  const totalPrice = quantity * config.unitPrice;
+  const unitPrice = 8;
+  const totalPrice = luggage * unitPrice;
 
   function handleAddToBooking() {
     if (!date) {
@@ -111,33 +67,27 @@ export default function BookLuggagePage() {
       return;
     }
 
-    if (config.showDropOff && !dropOff) {
+    if (!dropOff) {
       alert("Please choose a drop-off time.");
       return;
     }
 
-    if (config.showPickUp && !pickUp) {
+    if (!pickUp) {
       alert("Please choose an estimated pick-up time.");
-      return;
-    }
-
-    if (config.showShowerTime && !showerTime) {
-      alert("Please choose a shower time.");
       return;
     }
 
     clearItems();
 
     addItem({
-      productCode: config.productCode,
-      productName: config.productName,
-      quantity,
+      productCode: "luggage",
+      productName: "Store Luggage",
+      quantity: luggage,
       date,
-      dropOffTime: config.showDropOff ? dropOff : undefined,
-      pickUpTime: config.showPickUp ? pickUp : undefined,
-      showerTime: config.showShowerTime ? showerTime : undefined,
+      dropOffTime: dropOff,
+      pickUpTime: pickUp,
       comments,
-      unitPrice: config.unitPrice,
+      unitPrice,
       totalPrice,
     });
 
@@ -146,9 +96,11 @@ export default function BookLuggagePage() {
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-      <h1 className="text-2xl font-bold uppercase">{config.pageTitle}</h1>
+      <h1 className="text-2xl font-bold uppercase">Store Luggage</h1>
 
-      <p className="text-sm text-gray-600">{config.subtitle}</p>
+      <p className="text-sm text-gray-600">
+        Safe & fast luggage storage in Alicante city center
+      </p>
 
       <div className="space-y-4">
         <div>
@@ -162,78 +114,59 @@ export default function BookLuggagePage() {
           />
         </div>
 
-        {config.showDropOff && (
-          <div>
-            <label className="text-sm font-semibold">Choose drop-off time</label>
-            <select
-              className="mt-1 w-full rounded border p-2"
-              value={dropOff}
-              onChange={(e) => setDropOff(e.target.value)}
-            >
-              {timeSlots.map((slot) => (
-                <option key={slot} value={slot}>
-                  {slot}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {config.showPickUp && (
-          <div>
-            <label className="text-sm font-semibold">
-              Estimated pick-up time
-            </label>
-            <select
-              className="mt-1 w-full rounded border p-2"
-              value={pickUp}
-              onChange={(e) => setPickUp(e.target.value)}
-            >
-              {timeSlots.map((slot) => (
-                <option key={slot} value={slot}>
-                  {slot}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-gray-500">
-              Helps us organize luggage during the day.
-            </p>
-          </div>
-        )}
-
-        {config.showShowerTime && (
-          <div>
-            <label className="text-sm font-semibold">Choose shower time</label>
-            <select
-              className="mt-1 w-full rounded border p-2"
-              value={showerTime}
-              onChange={(e) => setShowerTime(e.target.value)}
-            >
-              {timeSlots.map((slot) => (
-                <option key={slot} value={slot}>
-                  {slot}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div>
+          <label className="text-sm font-semibold">
+            Choose drop-off time
+          </label>
+          <select
+            className="mt-1 w-full rounded border p-2"
+            value={dropOff}
+            onChange={(e) => setDropOff(e.target.value)}
+          >
+            {timeSlots.map((slot) => (
+              <option key={slot} value={slot}>
+                {slot}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div>
-          <label className="text-sm font-semibold">{config.quantityLabel}</label>
+          <label className="text-sm font-semibold">
+            Estimated pick-up time
+          </label>
+          <select
+            className="mt-1 w-full rounded border p-2"
+            value={pickUp}
+            onChange={(e) => setPickUp(e.target.value)}
+          >
+            {timeSlots.map((slot) => (
+              <option key={slot} value={slot}>
+                {slot}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">
+            Helps us organize luggage during the day.
+          </p>
+        </div>
+
+        <div>
+          <label className="text-sm font-semibold">Number of luggage</label>
 
           <div className="mt-1 flex items-center gap-4">
             <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              onClick={() => setLuggage(Math.max(1, luggage - 1))}
               className="rounded border px-3 py-1"
               type="button"
             >
               -
             </button>
 
-            <span>{quantity}</span>
+            <span>{luggage}</span>
 
             <button
-              onClick={() => setQuantity(quantity + 1)}
+              onClick={() => setLuggage(luggage + 1)}
               className="rounded border px-3 py-1"
               type="button"
             >
