@@ -249,17 +249,17 @@ function renderSectionTable({
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
             <tr className="border-b text-left">
               <th className="p-3">Código</th>
-              <th className="p-3">Source</th>
-              <th className="p-3">Cliente</th>
-              <th className="p-3">City</th>
-              <th className="p-3">Bags</th>
-              <th className="p-3">Showers</th>
-              <th className="p-3">Luggage + Shower</th>
-              <th className="p-3">In</th>
-              <th className="p-3">Out</th>
-              <th className="p-3">Total</th>
-              <th className="p-3">Estado</th>
-              <th className="p-3">Ação</th>
+<th className="p-3">Cliente</th>
+<th className="p-3">Source</th>
+<th className="p-3">City</th>
+<th className="p-3">Bags</th>
+<th className="p-3">Showers</th>
+<th className="p-3">Luggage + Shower</th>
+<th className="p-3">In</th>
+<th className="p-3">Out</th>
+<th className="p-3">Total</th>
+<th className="p-3">Estado</th>
+<th className="p-3">Ação</th>
             </tr>
           </thead>
 
