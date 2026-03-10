@@ -292,7 +292,7 @@ export default function BookComboPage() {
         onClick={handleAddToBooking}
         className="w-full rounded-2xl border p-4 font-semibold uppercase"
       >
-        Add to booking
+        BOOK NOW
       </button>
     </main>
   );
