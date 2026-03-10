@@ -670,13 +670,7 @@ const sourceTodayRevenue = {
         <AdminFinishQrScanner />
         <FinishAllInsideButton count={bagsInside + showersInside} />
 
-        <Link
-          href="/admin/new"
-          className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
-        >
-          + Nova reserva
-        </Link>
-
+      
         <Link
           href="/admin/history"
           className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
@@ -792,13 +786,6 @@ const sourceTodayRevenue = {
     </span>
   </div>
 </section>
-
-{renderSectionTable({
-  title: "Today",
-  bookings: todayBookings,
-  bookingMetaMap,
-  codeFilter,
-})}
 
       {renderSectionTable({
         title: "Today",
