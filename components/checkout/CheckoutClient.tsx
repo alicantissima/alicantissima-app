@@ -31,25 +31,25 @@ export default function CheckoutClient() {
       customerPhone: String(formData.get("customerPhone") || ""),
       notes: String(formData.get("notes") || ""),
       items: items.map((item) => ({
-  id: item.productCode,
-  title: item.productName,
-  quantity: Number(item.quantity || 1),
-  unitPrice:
-    item.quantity && Number(item.quantity) > 0
-      ? Number(item.totalPrice) / Number(item.quantity)
-      : Number(item.totalPrice),
-  totalPrice: Number(item.totalPrice),
-  productType: "booking",
-  meta: {
-    date: item.date,
-    dropOffTime: item.dropOffTime ?? null,
-    pickUpTime: item.pickUpTime ?? null,
-    showerTime: item.showerTime ?? null,
-    comments: item.comments ?? null,
-    breakdown: item.breakdown ?? [],
-  },
-}))   
-};     
+        id: item.productCode,
+        title: item.productName,
+        quantity: Number(item.quantity || 1),
+        unitPrice:
+          item.quantity && Number(item.quantity) > 0
+            ? Number(item.totalPrice) / Number(item.quantity)
+            : Number(item.totalPrice),
+        totalPrice: Number(item.totalPrice),
+        productType: "booking",
+        meta: {
+          date: item.date,
+          dropOffTime: item.dropOffTime ?? null,
+          pickUpTime: item.pickUpTime ?? null,
+          showerTime: item.showerTime ?? null,
+          comments: item.comments ?? null,
+          breakdown: item.breakdown ?? [],
+        },
+      })),
+    };
 
     startTransition(async () => {
       const result = await submitCheckout(payload);
@@ -151,22 +151,40 @@ export default function CheckoutClient() {
             <div key={index} className="border-b pb-3 last:border-b-0">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold">{item.productName}</p>
+                  <p className="font-semibold">
+                    {item.quantity} × {item.productName}
+                  </p>
+
                   <p className="text-sm text-gray-600">Date: {item.date}</p>
+
                   {item.dropOffTime && (
-                    <p className="text-sm text-gray-600">Drop-off: {item.dropOffTime}</p>
+                    <p className="text-sm text-gray-600">
+                      Drop-off: {item.dropOffTime}
+                    </p>
                   )}
+
                   {item.pickUpTime && (
                     <p className="text-sm text-gray-600">
                       Estimated pick-up: {item.pickUpTime}
                     </p>
                   )}
+
                   {item.showerTime && (
-                    <p className="text-sm text-gray-600">Shower time: {item.showerTime}</p>
+                    <p className="text-sm text-gray-600">
+                      Shower time: {item.showerTime}
+                    </p>
+                  )}
+
+                  {item.comments && (
+                    <p className="text-sm text-gray-600">
+                      Comments: {item.comments}
+                    </p>
                   )}
                 </div>
 
-                <div className="font-semibold">€ {item.totalPrice}</div>
+                <div className="font-semibold">
+                  € {Number(item.totalPrice).toFixed(2)}
+                </div>
               </div>
             </div>
           ))}
@@ -174,7 +192,7 @@ export default function CheckoutClient() {
 
         <div className="mt-5 border-t pt-4">
           <p className="text-sm font-semibold">Total</p>
-          <p className="text-2xl font-bold">€ {total}</p>
+          <p className="text-2xl font-bold">€ {total.toFixed(2)}</p>
         </div>
       </aside>
     </div>
