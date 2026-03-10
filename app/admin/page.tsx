@@ -505,6 +505,7 @@ const sourceTodayCounts = {
   bokun: 0,
   porta: 0,
   na: 0,
+};
 
 const sourceTodayRevenue = {
   site: 0,
