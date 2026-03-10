@@ -31,10 +31,54 @@ export default function FindBookingPage() {
 useEffect(() => {
   const urlCode = params.get("code");
 
-  if (urlCode) {
-    setCode(urlCode);
+  if (!urlCode) return;
+
+  setCode(urlCode);
+
+  async function runSearch() {
+    setError("");
+    setBookings([]);
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from("bookings")
+.select(`
+  id,
+  booking_code,
+  customer_name,
+  customer_email,
+  status,
+  created_at,
+  total_amount,
+  currency,
+  booking_items (
+    title,
+    quantity,
+    line_total
+  )
+`)
+        .eq("booking_code", urlCode.trim().toUpperCase())
+        .limit(1);
+
+      if (error) {
+        setError(`Error: ${error.message}`);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        setError("Booking not found");
+        return;
+      }
+
+      setBookings(data);
+    } finally {
+      setLoading(false);
+    }
   }
-}, []);
+
+  runSearch();
+}, [params, supabase]);
 
   async function searchBooking() {
     setError("");
@@ -142,6 +186,24 @@ useEffect(() => {
               <p>
                 <strong>Status:</strong> {booking.status}
               </p>
+{booking.booking_items && booking.booking_items.length > 0 && (
+  <div className="pt-3">
+    <p className="font-semibold pt-2">Products</p>
+    <ul className="mt-2 space-y-1">
+      {booking.booking_items.map((item, i) => (
+        <li key={i}>
+          {item.quantity} × {item.title}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
+{booking.total_amount && (
+  <p className="pt-2">
+    <strong>Total:</strong> {booking.currency} {booking.total_amount}
+  </p>
+)}
 
               <div className="pt-3 flex justify-center">
                 <BookingQr code={booking.booking_code} />
