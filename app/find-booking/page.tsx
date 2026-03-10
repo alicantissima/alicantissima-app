@@ -3,11 +3,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import BookingQr from "@/components/booking-qr";
 import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import BookingQr from "@/components/booking-qr";
+
 
 type Booking = {
   id: string;
@@ -24,8 +24,17 @@ export default function FindBookingPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const params = useSearchParams();
 
   const supabase = createClient();
+
+useEffect(() => {
+  const urlCode = params.get("code");
+
+  if (urlCode) {
+    setCode(urlCode);
+  }
+}, []);
 
   async function searchBooking() {
     setError("");
