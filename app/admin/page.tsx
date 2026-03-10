@@ -505,6 +505,14 @@ const sourceTodayCounts = {
   bokun: 0,
   porta: 0,
   na: 0,
+
+const sourceTodayRevenue = {
+  site: 0,
+  viator: 0,
+  booking: 0,
+  bokun: 0,
+  porta: 0,
+  na: 0,
 };
 
   for (const booking of ((bookings as BookingRow[]) ?? [])) {
@@ -538,30 +546,34 @@ const sourceTodayCounts = {
     }
 
     if (isToday(bookingDate) && normalizedStatus !== "cancelled") {
-      const currentSource = (booking.source ?? "na") as keyof typeof sourceTodayCounts;
+  const currentSource = (booking.source ?? "na") as keyof typeof sourceTodayCounts;
 
-if (currentSource in sourceTodayCounts) {
-  sourceTodayCounts[currentSource]++;
-} else {
-  sourceTodayCounts.na++;
+  const computedRevenue = itemsForBooking.reduce(
+    (sum, item) => sum + Number(item.line_total ?? 0),
+    0
+  );
+
+  const bookingRevenue =
+    computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
+
+  revenueToday += bookingRevenue;
+
+  if (currentSource in sourceTodayCounts) {
+    sourceTodayCounts[currentSource]++;
+    sourceTodayRevenue[currentSource] += bookingRevenue;
+  } else {
+    sourceTodayCounts.na++;
+    sourceTodayRevenue.na += bookingRevenue;
+  }
+
+  for (const item of itemsForBooking) {
+    const code = getItemCode(item);
+
+    if (code === "luggage") bagsToday += item.quantity;
+    if (code === "shower") showersToday += item.quantity;
+    if (code === "combo") combosToday += item.quantity;
+  }
 }
-
-const computedRevenue = itemsForBooking.reduce(
-        (sum, item) => sum + Number(item.line_total ?? 0),
-        0
-      );
-
-      revenueToday +=
-        computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
-
-      for (const item of itemsForBooking) {
-        const code = getItemCode(item);
-
-        if (code === "luggage") bagsToday += item.quantity;
-        if (code === "shower") showersToday += item.quantity;
-        if (code === "combo") combosToday += item.quantity;
-      }
-    }
 
     if (normalizedStatus === "inside") {
       if (
@@ -790,6 +802,33 @@ const computedRevenue = itemsForBooking.reduce(
     </span>
     <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
       na: {sourceTodayCounts.na}
+    </span>
+  </div>
+</section>
+
+<section className="rounded-xl border p-4">
+  <div className="mb-3 text-sm font-semibold text-gray-700">
+    Revenue by source today
+  </div>
+
+  <div className="flex flex-wrap gap-2 text-sm">
+    <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
+      site: {formatCurrency(sourceTodayRevenue.site, "EUR")}
+    </span>
+    <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+      viator: {formatCurrency(sourceTodayRevenue.viator, "EUR")}
+    </span>
+    <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
+      booking: {formatCurrency(sourceTodayRevenue.booking, "EUR")}
+    </span>
+    <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
+      bokun: {formatCurrency(sourceTodayRevenue.bokun, "EUR")}
+    </span>
+    <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
+      porta: {formatCurrency(sourceTodayRevenue.porta, "EUR")}
+    </span>
+    <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
+      na: {formatCurrency(sourceTodayRevenue.na, "EUR")}
     </span>
   </div>
 </section>
