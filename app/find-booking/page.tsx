@@ -61,6 +61,9 @@ useEffect(() => {
   created_at,
   total_amount,
   currency,
+  service_date,
+  check_in_time,
+  check_out_time,
   booking_items (
     title,
     quantity,
@@ -212,6 +215,24 @@ useEffect(() => {
 {booking.total_amount && (
   <p className="pt-2">
     <strong>Total:</strong> {booking.currency} {booking.total_amount}
+  </p>
+)}
+
+{booking.service_date && (
+  <p className="pt-2">
+    <strong>Service date:</strong> {formatDate(booking.service_date)}
+  </p>
+)}
+
+{booking.check_in_time && (
+  <p>
+    <strong>Check-in:</strong> {formatDateTime(booking.check_in_time)}
+  </p>
+)}
+
+{booking.check_out_time && (
+  <p>
+    <strong>Check-out:</strong> {formatDateTime(booking.check_out_time)}
   </p>
 )}
 
