@@ -6,7 +6,8 @@
 import QRCode from "react-qr-code";
 
 export default function BookingQr({ code }: { code: string }) {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://app.alicantissima.es";
   const url = `${base}/b/${code}`;
 
   async function copyLink() {
@@ -26,6 +27,7 @@ export default function BookingQr({ code }: { code: string }) {
         <a
           href={url}
           target="_blank"
+          rel="noopener noreferrer"
           className="rounded-lg border px-3 py-2 text-sm font-medium"
         >
           Open
