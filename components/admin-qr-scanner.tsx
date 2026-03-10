@@ -15,78 +15,74 @@ export default function AdminQrScanner() {
   const router = useRouter();
   const supabase = createClient();
 
-  async function openAdminBookingFromCode(code: string) {
-    setLoading(true);
-    setError("");
+async function openAdminBookingFromCode(code: string) {
+  setLoading(true);
+  setError("");
 
-    const cleaned = code.trim().toUpperCase();
+  const cleaned = code.trim().toUpperCase();
 
-const { data: booking, error: fetchError } = await supabase
-  .from("bookings")
-  .select("id, booking_code, status, check_in_time")
-  .eq("booking_code", cleaned)
-  .maybeSingle();
-
-if (fetchError || !booking) {
-  setLoading(false);
-  setError("Reserva não encontrada.");
-  return;
-}
-
-if (!booking.check_in_time) {
-  const { error: updateError } = await supabase
+  const { data: booking, error: fetchError } = await supabase
     .from("bookings")
-    .update({
-      check_in_time: new Date().toISOString(),
-      status: "inside",
-    })
-    .eq("id", booking.id);
+    .select("id, booking_code, status, check_in_time")
+    .eq("booking_code", cleaned)
+    .maybeSingle();
 
-  if (updateError) {
-    setError("Could not register check-in");
+  if (fetchError || !booking) {
     setLoading(false);
+    setError("Reserva não encontrada.");
     return;
   }
-}
+
+  if (booking.status === "pending" || booking.status === "inside") {
+    const updateData: {
+      status?: string;
+      updated_at?: string;
+      check_in_time?: string;
+    } = {};
 
     if (booking.status === "pending") {
+      updateData.status = "inside";
+      updateData.updated_at = new Date().toISOString();
+    }
+
+    if (!booking.check_in_time) {
+      updateData.check_in_time = new Date().toISOString();
+    }
+
+    if (Object.keys(updateData).length > 0) {
       const { error: updateError } = await supabase
         .from("bookings")
-        .update({
-          status: "inside",
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq("id", booking.id);
 
       if (updateError) {
         setLoading(false);
-        setError("Não foi possível marcar a reserva como INSIDE.");
+        setError("Não foi possível registar a entrada da reserva.");
         return;
       }
-    } else if (booking.status === "inside") {
-      // já entrou, apenas abre a reserva
-    } else if (booking.status === "finished") {
-      setLoading(false);
-      setError("Esta reserva já foi finalizada.");
-      return;
-    } else if (booking.status === "cancelled") {
-      setLoading(false);
-      setError("Esta reserva está cancelada.");
-      return;
-    } else {
-      setLoading(false);
-      setError(`Estado inválido: ${booking.status}`);
-      return;
     }
-
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate(100);
-    }
-
+  } else if (booking.status === "finished") {
     setLoading(false);
-    setOpen(false);
-    router.push(`/admin/booking/${booking.id}`);
+    setError("Esta reserva já foi finalizada.");
+    return;
+  } else if (booking.status === "cancelled") {
+    setLoading(false);
+    setError("Esta reserva está cancelada.");
+    return;
+  } else {
+    setLoading(false);
+    setError(`Estado inválido: ${booking.status}`);
+    return;
   }
+
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    navigator.vibrate(100);
+  }
+
+  setLoading(false);
+  setOpen(false);
+  router.push(`/admin/booking/${booking.id}`);
+}
 
   async function handleScan(result: string) {
     try {

@@ -15,81 +15,75 @@ export default function AdminFinishQrScanner() {
   const router = useRouter();
   const supabase = createClient();
 
-  async function finishBookingFromCode(code: string) {
-    setLoading(true);
-    setError("");
+async function finishBookingFromCode(code: string) {
+  setLoading(true);
+  setError("");
 
-    const cleaned = code.trim().toUpperCase();
+  const cleaned = code.trim().toUpperCase();
 
-    const { data: booking, error: fetchError } = await supabase
-      .from("bookings")
-      .select("id, booking_code, status")
-      .eq("booking_code", cleaned)
-      .maybeSingle();
-
-    if (fetchError || !booking) {
-      setLoading(false);
-      setError("Reserva não encontrada.");
-      return;
-    }
-
-    if (booking.status === "inside") {
-      const { error: updateError } = await supabase
-        .from("bookings")
-        .update({
-          status: "finished",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", booking.id);
-
-      if (updateError) {
-        setLoading(false);
-        setError("Não foi possível finalizar a reserva.");
-        return;
-      }
-
-if (!booking.check_out_time) {
-  const { error: updateError } = await supabase
+  const { data: booking, error: fetchError } = await supabase
     .from("bookings")
-    .update({
-      check_out_time: new Date().toISOString(),
-      status: "finished",
-    })
-    .eq("id", booking.id);
+    .select("id, booking_code, status, check_out_time")
+    .eq("booking_code", cleaned)
+    .maybeSingle();
 
-  if (updateError) {
-    setError("Could not register check-out");
+  if (fetchError || !booking) {
     setLoading(false);
+    setError("Reserva não encontrada.");
     return;
   }
-}
-    } else if (booking.status === "finished") {
-      setLoading(false);
-      setOpen(false);
-      router.push(`/admin/booking/${booking.id}`);
-      return;
-    } else if (booking.status === "pending") {
-      setLoading(false);
-      setError("Esta reserva ainda não entrou. Use primeiro o Scan QR.");
-      return;
-    } else if (booking.status === "cancelled") {
-      setLoading(false);
-      setError("Esta reserva está cancelada.");
-      return;
-    } else {
-      setLoading(false);
-      setError(`Estado inválido: ${booking.status}`);
-      return;
+
+  if (booking.status === "inside") {
+    const updateData: {
+      status: string;
+      updated_at: string;
+      check_out_time?: string;
+    } = {
+      status: "finished",
+      updated_at: new Date().toISOString(),
+    };
+
+    if (!booking.check_out_time) {
+      updateData.check_out_time = new Date().toISOString();
     }
 
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate(120);
-    }
+    const { error: updateError } = await supabase
+      .from("bookings")
+      .update(updateData)
+      .eq("id", booking.id);
 
+    if (updateError) {
+      setLoading(false);
+      setError("Não foi possível finalizar a reserva.");
+      return;
+    }
+  } else if (booking.status === "finished") {
     setLoading(false);
     setOpen(false);
     router.push(`/admin/booking/${booking.id}`);
+    return;
+  } else if (booking.status === "pending") {
+    setLoading(false);
+    setError("Esta reserva ainda não entrou. Use primeiro o Scan QR.");
+    return;
+  } else if (booking.status === "cancelled") {
+    setLoading(false);
+    setError("Esta reserva está cancelada.");
+    return;
+  } else {
+    setLoading(false);
+    setError(`Estado inválido: ${booking.status}`);
+    return;
   }
+
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    navigator.vibrate(120);
+  }
+
+  setLoading(false);
+  setOpen(false);
+  router.push(`/admin/booking/${booking.id}`);
+}
 
   async function handleScan(result: string) {
     try {
