@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import BookingQr from "@/components/booking-qr";
 
 type Booking = {
   id: string;
@@ -24,45 +25,32 @@ export default function FindBookingPage() {
   const supabase = createClient();
 
   async function searchBooking() {
-    setError("");
-    setBookings([]);
-    setLoading(true);
+  setError("");
+  setBookings([]);
+  setLoading(true);
 
-    try {
-      if (!code.trim() && !email.trim()) {
-        setError("Please enter booking code or email");
-        return;
-      }
+  try {
+    console.log("SEARCH START");
+    console.log("code:", code);
+    console.log("email:", email);
 
-      if (code.trim()) {
-        const { data, error } = await supabase
-          .from("bookings")
-          .select("id, booking_code, customer_name, customer_email, status, created_at")
-          .eq("booking_code", code.trim().toUpperCase())
-          .limit(1);
+    if (!code.trim() && !email.trim()) {
+      setError("Please enter booking code or email");
+      return;
+    }
 
-        if (error) {
-          setError("Error searching booking");
-          return;
-        }
-
-        if (!data || data.length === 0) {
-          setError("Booking not found");
-          return;
-        }
-
-        setBookings(data);
-        return;
-      }
-
+    if (code.trim()) {
       const { data, error } = await supabase
         .from("bookings")
         .select("id, booking_code, customer_name, customer_email, status, created_at")
-        .ilike("customer_email", email.trim())
-        .order("created_at", { ascending: false });
+        .eq("booking_code", code.trim().toUpperCase())
+        .limit(1);
+
+      console.log("CODE SEARCH DATA:", data);
+      console.log("CODE SEARCH ERROR:", error);
 
       if (error) {
-        setError("Error searching booking");
+        setError(`Error: ${error.message}`);
         return;
       }
 
@@ -72,10 +60,33 @@ export default function FindBookingPage() {
       }
 
       setBookings(data);
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("id, booking_code, customer_name, customer_email, status, created_at")
+      .ilike("customer_email", email.trim())
+      .order("created_at", { ascending: false });
+
+    console.log("EMAIL SEARCH DATA:", data);
+    console.log("EMAIL SEARCH ERROR:", error);
+
+    if (error) {
+      setError(`Error: ${error.message}`);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setError("Booking not found");
+      return;
+    }
+
+    setBookings(data);
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div className="max-w-md mx-auto p-6 space-y-6">
@@ -117,6 +128,19 @@ export default function FindBookingPage() {
               <p><strong>Name:</strong> {booking.customer_name}</p>
               <p><strong>Email:</strong> {booking.customer_email}</p>
               <p><strong>Status:</strong> {booking.status}</p>
+
+<div className="pt-3 flex justify-center">
+      <BookingQr code={booking.booking_code} />
+    </div>
+
+  </div>
+))}
+
+<img
+  src={`/api/qr/${booking.booking_code}`}
+  alt="QR Code"
+  className="w-32 h-32"
+/>
             </div>
           ))}
         </div>
