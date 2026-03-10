@@ -88,7 +88,7 @@ export default function BookLuggagePage() {
       totalPrice,
     });
 
-    router.push("/my-booking");
+    router.push("/checkout");
   }
 
   return (

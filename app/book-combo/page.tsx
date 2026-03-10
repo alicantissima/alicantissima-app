@@ -119,7 +119,7 @@ export default function BookComboPage() {
       ].filter((item) => item.quantity > 0),
     });
 
-    router.push("/my-booking");
+    router.push("/checkout");
   }
 
   function decrease(
