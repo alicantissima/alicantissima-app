@@ -116,6 +116,17 @@ function getStatusClass(status: string) {
   return "bg-gray-100 text-gray-700 border-gray-200";
 }
 
+function getSourceRowClass(source: string | null) {
+  const current = source ?? "na";
+
+  if (current === "site") return "bg-pink-50";
+  if (current === "viator") return "bg-green-50";
+  if (current === "booking") return "bg-blue-50";
+  if (current === "bokun") return "bg-yellow-50";
+  if (current === "porta") return "bg-gray-50";
+  return "";
+}
+
 function getItemCode(item: BookingItemRow) {
   const productCode = item.meta?.product_code?.toLowerCase();
 
@@ -276,15 +287,18 @@ function renderSectionTable({
 
               const isFilteredMatch = codeFilter === booking.booking_code;
 
-              const rowClass = cancelled
-                ? "bg-red-50/40"
-                : isFilteredMatch
-                ? "bg-blue-50 border-l-4 border-blue-400"
-                : normalizedStatus === "inside"
-                ? isLate
-                  ? "bg-orange-50 border-l-4 border-orange-400"
-                  : "bg-green-50 border-l-4 border-green-400"
-                : "";
+              const isFilteredMatch = codeFilter === booking.booking_code;
+const sourceRowClass = getSourceRowClass(booking.source);
+
+const rowClass = cancelled
+  ? "bg-red-50/40"
+  : isFilteredMatch
+  ? "bg-blue-50 border-l-4 border-blue-400"
+  : normalizedStatus === "inside"
+  ? isLate
+    ? "bg-orange-50 border-l-4 border-orange-400"
+    : "bg-green-50 border-l-4 border-green-400"
+  : sourceRowClass;
 
               return (
                 <tr key={booking.id} className={`border-b ${rowClass}`}>
@@ -485,6 +499,15 @@ export default async function AdminPage({
   let showersInside = 0;
   let overdueCount = 0;
 
+const sourceTodayCounts = {
+  site: 0,
+  viator: 0,
+  booking: 0,
+  bokun: 0,
+  porta: 0,
+  na: 0,
+};
+
   for (const booking of ((bookings as BookingRow[]) ?? [])) {
     const normalizedStatus = normalizeStatus(booking.status);
     const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
@@ -516,7 +539,15 @@ export default async function AdminPage({
     }
 
     if (isToday(bookingDate) && normalizedStatus !== "cancelled") {
-      const computedRevenue = itemsForBooking.reduce(
+      const currentSource = (booking.source ?? "na") as keyof typeof sourceTodayCounts;
+
+if (currentSource in sourceTodayCounts) {
+  sourceTodayCounts[currentSource]++;
+} else {
+  sourceTodayCounts.na++;
+}
+
+const computedRevenue = itemsForBooking.reduce(
         (sum, item) => sum + Number(item.line_total ?? 0),
         0
       );
@@ -695,6 +726,81 @@ export default async function AdminPage({
           </div>
         </div>
       </section>
+
+<section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div className="rounded-xl border p-4">
+    <div className="text-sm text-gray-500">Bags today</div>
+    <div className="text-2xl font-bold">{bagsToday}</div>
+  </div>
+
+  <div className="rounded-xl border bg-orange-50 p-4">
+    <div className="text-sm text-orange-600">Overdue</div>
+    <div className="text-2xl font-bold text-orange-700">
+      {overdueCount}
+    </div>
+  </div>
+
+  <div className="rounded-xl border p-4">
+    <div className="text-sm text-gray-500">Showers today</div>
+    <div className="text-2xl font-bold">{showersToday}</div>
+  </div>
+
+  <div className="rounded-xl border p-4">
+    <div className="text-sm text-gray-500">Combos today</div>
+    <div className="text-2xl font-bold">{combosToday}</div>
+  </div>
+
+  <div className="rounded-xl border p-4">
+    <div className="text-sm text-gray-500">Bags inside</div>
+    <div className="text-2xl font-bold">{bagsInside}</div>
+  </div>
+
+  <div className="rounded-xl border p-4">
+    <div className="text-sm text-gray-500">Showers inside</div>
+    <div className="text-2xl font-bold">{showersInside}</div>
+  </div>
+
+  <div className="rounded-xl border p-4">
+    <div className="text-sm text-gray-500">Revenue today</div>
+    <div className="text-2xl font-bold">
+      {formatCurrency(revenueToday, "EUR")}
+    </div>
+  </div>
+</section>
+
+<section className="rounded-xl border p-4">
+  <div className="mb-3 text-sm font-semibold text-gray-700">
+    Sources today
+  </div>
+
+  <div className="flex flex-wrap gap-2 text-sm">
+    <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
+      site: {sourceTodayCounts.site}
+    </span>
+    <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+      viator: {sourceTodayCounts.viator}
+    </span>
+    <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
+      booking: {sourceTodayCounts.booking}
+    </span>
+    <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
+      bokun: {sourceTodayCounts.bokun}
+    </span>
+    <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
+      porta: {sourceTodayCounts.porta}
+    </span>
+    <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
+      na: {sourceTodayCounts.na}
+    </span>
+  </div>
+</section>
+
+{renderSectionTable({
+  title: "Today",
+  bookings: todayBookings,
+  bookingMetaMap,
+  codeFilter,
+})}
 
       {renderSectionTable({
         title: "Today",

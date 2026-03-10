@@ -10,6 +10,7 @@ type BookingRow = {
   id: string;
   created_at: string;
   booking_code: string;
+  source: string | null;
   customer_name: string;
   customer_email: string;
   total_amount: number;
@@ -62,6 +63,17 @@ function normalizeStatus(status: string) {
   if (status === "finished") return "completed";
   if (status === "cancelled") return "cancelled";
   return status;
+}
+
+function getSourceRowClass(source: string | null) {
+  const current = source ?? "na";
+
+  if (current === "site") return "bg-pink-50";
+  if (current === "viator") return "bg-green-50";
+  if (current === "booking") return "bg-blue-50";
+  if (current === "bokun") return "bg-yellow-50";
+  if (current === "porta") return "bg-gray-50";
+  return "";
 }
 
 function getStatusLabel(status: string) {
@@ -271,6 +283,25 @@ export default async function AdminHistoryPage() {
   }
 );
 
+const sourceHistoryCounts = {
+  site: 0,
+  viator: 0,
+  booking: 0,
+  bokun: 0,
+  porta: 0,
+  na: 0,
+};
+
+for (const booking of historyBookings) {
+  const currentSource = (booking.source ?? "na") as keyof typeof sourceHistoryCounts;
+
+  if (currentSource in sourceHistoryCounts) {
+    sourceHistoryCounts[currentSource]++;
+  } else {
+    sourceHistoryCounts.na++;
+  }
+}
+
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
       <div className="flex items-start justify-between">
@@ -296,6 +327,33 @@ export default async function AdminHistoryPage() {
           Total histórico: <strong>{historyBookings.length}</strong>
         </div>
       </div>
+
+<section className="rounded-xl border p-4">
+  <div className="mb-3 text-sm font-semibold text-gray-700">
+    Sources in history
+  </div>
+
+  <div className="flex flex-wrap gap-2 text-sm">
+    <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
+      site: {sourceHistoryCounts.site}
+    </span>
+    <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+      viator: {sourceHistoryCounts.viator}
+    </span>
+    <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
+      booking: {sourceHistoryCounts.booking}
+    </span>
+    <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
+      bokun: {sourceHistoryCounts.bokun}
+    </span>
+    <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
+      porta: {sourceHistoryCounts.porta}
+    </span>
+    <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
+      na: {sourceHistoryCounts.na}
+    </span>
+  </div>
+</section>
 
       {!historyBookings.length ? (
         <div className="rounded-2xl border p-6 text-sm text-gray-600">
@@ -325,7 +383,7 @@ export default async function AdminHistoryPage() {
                 const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
 
                 return (
-                  <tr key={booking.id} className="border-b">
+                  <tr key={booking.id} className={`border-b ${getSourceRowClass(booking.source)}`}>
                     <td className="p-3 font-semibold">
                       <Link
                         href={`/admin/booking/${booking.id}`}
