@@ -121,19 +121,18 @@ export default function FindBookingPage() {
       {error && <p className="text-red-500">{error}</p>}
 
       {bookings.length > 0 && (
-        <div className="space-y-4">
-          {bookings.map((booking) => (
-  <div key={booking.id} className="border rounded-xl p-4 space-y-2">
+  <div className="space-y-4">
+    {bookings.map((booking) => (
+      <div key={booking.id} className="border rounded-xl p-4 space-y-2">
+        <p><strong>Booking:</strong> {booking.booking_code}</p>
+        <p><strong>Name:</strong> {booking.customer_name}</p>
+        <p><strong>Email:</strong> {booking.customer_email}</p>
+        <p><strong>Status:</strong> {booking.status}</p>
 
-    <p><strong>Booking:</strong> {booking.booking_code}</p>
-    <p><strong>Name:</strong> {booking.customer_name}</p>
-    <p><strong>Email:</strong> {booking.customer_email}</p>
-    <p><strong>Status:</strong> {booking.status}</p>
-
-    <div className="pt-3 flex justify-center">
-      <BookingQr code={booking.booking_code} />
-    </div>
-            </div>
-          ))}
+        <div className="pt-3 flex justify-center">
+          <BookingQr code={booking.booking_code} />
         </div>
-      )}
+      </div>
+    ))}
+  </div>
+)}
