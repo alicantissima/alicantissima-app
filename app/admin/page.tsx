@@ -10,6 +10,7 @@ import LogoutButton from "@/components/logout-button";
 import FinishAllInsideButton from "@/components/finish-all-inside-button";
 import { redirect } from "next/navigation";
 import AdminAutoRefresh from "./AdminAutoRefresh";
+import AdminSourceSelect from "@/components/admin-source-select";
 
 export const revalidate = 0;
 
@@ -21,7 +22,7 @@ type BookingRow = {
   customer_email: string;
   total_amount: number;
   currency: string;
-  status: string;
+  source: string | null;
 };
 
 type BookingItemRow = {
@@ -247,6 +248,7 @@ function renderSectionTable({
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
             <tr className="border-b text-left">
               <th className="p-3">Código</th>
+              <th className="p-3">Source</th>
               <th className="p-3">Cliente</th>
               <th className="p-3">City</th>
               <th className="p-3">Bags</th>
@@ -300,6 +302,13 @@ function renderSectionTable({
                       {booking.customer_email}
                     </div>
                   </td>
+
+<td className="p-3">
+  <AdminSourceSelect
+    bookingId={booking.id}
+    value={booking.source}
+  />
+</td>
 
                   <td className="p-3">{meta.city ?? "-"}</td>
                   <td className="p-3">{meta.bags || "-"}</td>
