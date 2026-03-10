@@ -11,14 +11,62 @@ type PageProps = {
   }>;
 };
 
+function formatDateTime(value?: string | null) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatCurrency(amount?: number | string | null) {
+  if (amount === null || amount === undefined) return "";
+  return new Intl.NumberFormat("pt-PT", {
+    style: "currency",
+    currency: "EUR",
+  }).format(Number(amount));
+}
+
 export default async function BookingByCodePage({ params }: PageProps) {
   const supabase = await createClient();
   const { code } = await params;
-  const bookingCode = code.trim();
+  const bookingCode = code.trim().toUpperCase();
 
   const { data: booking, error } = await supabase
     .from("bookings")
-    .select("*")
+    .select(`
+      id,
+      booking_code,
+      customer_name,
+      customer_email,
+      customer_phone,
+      notes,
+      status,
+      created_at,
+      updated_at,
+      total_amount,
+      currency,
+      service_date,
+      check_in_time,
+      check_out_time,
+      booking_items (
+        title,
+        quantity,
+        line_total
+      )
+    `)
     .eq("booking_code", bookingCode)
     .maybeSingle();
 
@@ -57,6 +105,85 @@ export default async function BookingByCodePage({ params }: PageProps) {
             <div className="text-gray-500">Email</div>
             <div className="font-semibold break-all">
               {booking.customer_email}
+            </div>
+          </div>
+
+          {booking.customer_phone && (
+            <div className="border rounded-xl p-3 sm:col-span-2">
+              <div className="text-gray-500">Phone</div>
+              <div className="font-semibold break-all">
+                {booking.customer_phone}
+              </div>
+            </div>
+          )}
+
+          {booking.service_date && (
+            <div className="border rounded-xl p-3">
+              <div className="text-gray-500">Service date</div>
+              <div className="font-semibold">
+                {formatDate(booking.service_date)}
+              </div>
+            </div>
+          )}
+
+          {booking.total_amount !== null && booking.total_amount !== undefined && (
+            <div className="border rounded-xl p-3">
+              <div className="text-gray-500">Total</div>
+              <div className="font-semibold">
+                {formatCurrency(booking.total_amount)}
+              </div>
+            </div>
+          )}
+
+          {booking.check_in_time && (
+            <div className="border rounded-xl p-3">
+              <div className="text-gray-500">Check-in</div>
+              <div className="font-semibold">
+                {formatDateTime(booking.check_in_time)}
+              </div>
+            </div>
+          )}
+
+          {booking.check_out_time && (
+            <div className="border rounded-xl p-3">
+              <div className="text-gray-500">Check-out</div>
+              <div className="font-semibold">
+                {formatDateTime(booking.check_out_time)}
+              </div>
+            </div>
+          )}
+
+          {booking.booking_items && booking.booking_items.length > 0 && (
+            <div className="border rounded-xl p-3 sm:col-span-2">
+              <div className="text-gray-500 mb-2">Products</div>
+              <ul className="space-y-1">
+                {booking.booking_items.map((item, index) => (
+                  <li key={index} className="flex justify-between gap-4">
+                    <span>
+                      {item.quantity} × {item.title}
+                    </span>
+                    <span className="whitespace-nowrap">
+                      {formatCurrency(item.line_total)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {booking.notes && (
+            <div className="border rounded-xl p-3 sm:col-span-2">
+              <div className="text-gray-500">Notes</div>
+              <div className="font-semibold whitespace-pre-wrap">
+                {booking.notes}
+              </div>
+            </div>
+          )}
+
+          <div className="border rounded-xl p-3 sm:col-span-2">
+            <div className="text-gray-500">Reservation created</div>
+            <div className="font-semibold">
+              {formatDateTime(booking.created_at)}
             </div>
           </div>
         </div>
