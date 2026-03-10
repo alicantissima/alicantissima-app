@@ -6,6 +6,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import BookingQr from "@/components/booking-qr";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 type Booking = {
   id: string;
