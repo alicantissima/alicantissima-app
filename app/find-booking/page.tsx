@@ -9,6 +9,12 @@ import { useSearchParams } from "next/navigation";
 import BookingQr from "@/components/booking-qr";
 
 
+type BookingItem = {
+  title: string;
+  quantity: number;
+  line_total: number;
+};
+
 type Booking = {
   id: string;
   booking_code: string;
@@ -16,6 +22,9 @@ type Booking = {
   customer_email: string;
   status: string;
   created_at?: string;
+  total_amount?: number;
+  currency?: string;
+  booking_items?: BookingItem[];
 };
 
 export default function FindBookingPage() {
@@ -184,11 +193,12 @@ useEffect(() => {
                 <strong>Email:</strong> {booking.customer_email}
               </p>
               <p>
-                <strong>Status:</strong> {booking.status}
-              </p>
+  <strong>Status:</strong> {booking.status}
+</p>
+
 {booking.booking_items && booking.booking_items.length > 0 && (
   <div className="pt-3">
-    <p className="font-semibold pt-2">Products</p>
+    <strong>Products</strong>
     <ul className="mt-2 space-y-1">
       {booking.booking_items.map((item, i) => (
         <li key={i}>
@@ -205,9 +215,9 @@ useEffect(() => {
   </p>
 )}
 
-              <div className="pt-3 flex justify-center">
-                <BookingQr code={booking.booking_code} />
-              </div>
+<div className="pt-3 flex justify-center">
+  <BookingQr code={booking.booking_code} />
+</div>
             </div>
           ))}
         </div>
