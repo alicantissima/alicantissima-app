@@ -47,6 +47,22 @@ export default function AdminFinishQrScanner() {
         setError("Não foi possível finalizar a reserva.");
         return;
       }
+
+if (!booking.check_out_time) {
+  const { error: updateError } = await supabase
+    .from("bookings")
+    .update({
+      check_out_time: new Date().toISOString(),
+      status: "finished",
+    })
+    .eq("id", booking.id);
+
+  if (updateError) {
+    setError("Could not register check-out");
+    setLoading(false);
+    return;
+  }
+}
     } else if (booking.status === "finished") {
       setLoading(false);
       setOpen(false);
