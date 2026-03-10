@@ -5,7 +5,6 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useSearchParams } from "next/navigation";
 import BookingQr from "@/components/booking-qr";
 
 
@@ -56,12 +55,13 @@ export default function FindBookingPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const params = useSearchParams();
 
   const supabase = createClient();
 
 useEffect(() => {
-  const urlCode = params.get("code");
+  if (typeof window === "undefined") return;
+
+  const urlCode = new URLSearchParams(window.location.search).get("code");
   const safeCode = urlCode?.trim().toUpperCase();
 
   if (!safeCode) return;
@@ -114,7 +114,7 @@ useEffect(() => {
   }
 
   runSearch();
-}, [params, supabase]);
+}, [supabase]);
 
   async function searchBooking() {
     setError("");
