@@ -89,6 +89,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
 
     const supabase = createAdminClient();
     const bookingCode = generateBookingCode();
+    const serviceDate = new Date().toISOString().split("T")[0];
 
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
@@ -101,6 +102,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
         total_amount: totalAmount,
         currency: "EUR",
         status: "pending",
+        service_date: serviceDate,
       })
       .select("id, booking_code")
       .single();

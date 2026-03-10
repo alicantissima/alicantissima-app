@@ -238,7 +238,7 @@ useEffect(() => {
 
 {booking.total_amount && (
   <p className="pt-2">
-    <strong>Total:</strong> {booking.currency} {booking.total_amount}
+    <strong>Total:</strong> {booking.total_amount} €
   </p>
 )}
 
