@@ -148,6 +148,19 @@ function isPast(date: string | null) {
   return date < getTodayString();
 }
 
+function getLocalDateFromCreatedAt(createdAt: string) {
+  const date = new Date(createdAt);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function getBookingDate(booking: BookingRow, meta: BookingMetaSummary) {
+  if (meta.date) return meta.date;
+  return getLocalDateFromCreatedAt(booking.created_at);
+}
 function emptyMeta(): BookingMetaSummary {
   return {
     bags: 0,
@@ -251,11 +264,12 @@ export default async function AdminHistoryPage() {
   }
 
   const historyBookings = [...((bookings as BookingRow[]) ?? [])].filter(
-    (booking) => {
-      const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-      return isPast(meta.date);
-    }
-  );
+  (booking) => {
+    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+    const bookingDate = getBookingDate(booking, meta);
+    return isPast(bookingDate);
+  }
+);
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
@@ -328,7 +342,7 @@ export default async function AdminHistoryPage() {
                       </div>
                     </td>
 
-                    <td className="p-3">{meta.date ?? "-"}</td>
+                    <td className="p-3">{getBookingDate(booking, meta)}</td>
                     <td className="p-3">{meta.city ?? "-"}</td>
                     <td className="p-3">{meta.bags || "-"}</td>
                     <td className="p-3">{meta.showers || "-"}</td>
