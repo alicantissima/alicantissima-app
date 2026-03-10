@@ -134,13 +134,13 @@ export default function CheckoutClient() {
         )}
 
         <button
-          type="submit"
-          disabled={pending}
-          aria-disabled={pending}
-          className="mt-2 w-full rounded-[28px] border border-black bg-black px-6 py-5 text-center text-2xl font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {pending ? "Creating booking..." : "Create booking"}
-        </button>
+  type="submit"
+  disabled={pending}
+  aria-disabled={pending}
+  className="mt-2 w-full rounded-[28px] border border-black bg-black px-6 py-5 text-center text-2xl font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+>
+  {pending ? "Creating booking..." : "Confirm booking"}
+</button>
       </form>
 
       <aside className="rounded-2xl border p-6">
