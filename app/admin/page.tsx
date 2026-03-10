@@ -22,6 +22,7 @@ type BookingRow = {
   customer_email: string;
   total_amount: number;
   currency: string;
+  status: string;
   source: string | null;
 };
 
