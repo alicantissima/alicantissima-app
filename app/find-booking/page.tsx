@@ -62,10 +62,11 @@ export default function FindBookingPage() {
 
 useEffect(() => {
   const urlCode = params.get("code");
+  const safeCode = urlCode?.trim().toUpperCase();
 
-  if (!urlCode) return;
+  if (!safeCode) return;
 
-  setCode(urlCode);
+  setCode(safeCode);
 
   async function runSearch() {
     setError("");
@@ -75,25 +76,25 @@ useEffect(() => {
     try {
       const { data, error } = await supabase
         .from("bookings")
-.select(`
-  id,
-  booking_code,
-  customer_name,
-  customer_email,
-  status,
-  created_at,
-  total_amount,
-  currency,
-  service_date,
-  check_in_time,
-  check_out_time,
-  booking_items (
-    title,
-    quantity,
-    line_total
-  )
-`)
-        .eq("booking_code", urlCode.trim().toUpperCase())
+        .select(`
+          id,
+          booking_code,
+          customer_name,
+          customer_email,
+          status,
+          created_at,
+          total_amount,
+          currency,
+          service_date,
+          check_in_time,
+          check_out_time,
+          booking_items (
+            title,
+            quantity,
+            line_total
+          )
+        `)
+        .eq("booking_code", safeCode)
         .limit(1);
 
       if (error) {
