@@ -10,7 +10,6 @@ import LogoutButton from "@/components/logout-button";
 import FinishAllInsideButton from "@/components/finish-all-inside-button";
 import { redirect } from "next/navigation";
 
-
 type BookingRow = {
   id: string;
   created_at: string;
@@ -171,15 +170,23 @@ function isPastScheduledTime(
   return currentMinutes > targetMinutes;
 }
 
-function isToday(date: string | null) {
-  if (!date) return false;
-
+function getTodayString() {
   const today = new Date();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
 
-  return date === `${yyyy}-${mm}-${dd}`;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function isToday(date: string | null) {
+  if (!date) return false;
+  return date === getTodayString();
+}
+
+function isFuture(date: string | null) {
+  if (!date) return false;
+  return date > getTodayString();
 }
 
 function emptyMeta(): BookingMetaSummary {
@@ -350,8 +357,8 @@ export default async function AdminPage({
   } = await supabase.auth.getUser();
 
   if (!user) {
-  redirect("/login");
-}
+    redirect("/login");
+  }
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -382,81 +389,6 @@ export default async function AdminPage({
         .select("booking_id, quantity, line_total, title, product_type, meta")
         .in("booking_id", bookingIds)
     : { data: [] };
-
-  let bagsToday = 0;
-  let showersToday = 0;
-  let combosToday = 0;
-  let revenueToday = 0;
-
-  let bagsInside = 0;
-  let showersInside = 0;
-  let overdueCount = 0;
-
-  for (const booking of ((bookings as BookingRow[]) ?? [])) {
-    const normalizedStatus = normalizeStatus(booking.status);
-
-    if (normalizedStatus === "cancelled") {
-      continue;
-    }
-
-    const itemsForBooking =
-      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ??
-      [];
-
-    const computedRevenue = itemsForBooking.reduce(
-      (sum, item) => sum + Number(item.line_total ?? 0),
-      0
-    );
-
-    revenueToday +=
-      computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
-
-    let bookingCheckoutTime: string | null = null;
-    let bookingTimeOut: string | null = null;
-
-    for (const item of itemsForBooking) {
-      const code = getItemCode(item);
-
-      if (code === "luggage") bagsToday += item.quantity;
-      if (code === "shower") showersToday += item.quantity;
-      if (code === "combo") combosToday += item.quantity;
-
-      if (
-        !bookingCheckoutTime &&
-        typeof item.meta?.checkout_time === "string" &&
-        item.meta.checkout_time.trim() !== ""
-      ) {
-        bookingCheckoutTime = item.meta.checkout_time;
-      }
-
-      if (
-        !bookingTimeOut &&
-        typeof item.meta?.time_out === "string" &&
-        item.meta.time_out.trim() !== ""
-      ) {
-        bookingTimeOut = item.meta.time_out;
-      }
-    }
-
-    if (normalizedStatus === "inside") {
-  if (
-    isPastScheduledTime(
-      bookingCheckoutTime,
-      booking.status,
-      bookingTimeOut
-    )
-  ) {
-    overdueCount++;
-  }
-
-  for (const item of itemsForBooking) {
-    const code = getItemCode(item);
-
-    if (code === "luggage") bagsInside += item.quantity;
-    if (code === "shower") showersInside += item.quantity;
-  }
-}
-  }
 
   const bookingMetaMap = new Map<string, BookingMetaSummary>();
 
@@ -530,6 +462,83 @@ export default async function AdminPage({
     });
   }
 
+  let bagsToday = 0;
+  let showersToday = 0;
+  let combosToday = 0;
+  let revenueToday = 0;
+
+  let bagsInside = 0;
+  let showersInside = 0;
+  let overdueCount = 0;
+
+  for (const booking of ((bookings as BookingRow[]) ?? [])) {
+    const normalizedStatus = normalizeStatus(booking.status);
+    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+    const bookingDate = meta.date;
+
+    const itemsForBooking =
+      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ??
+      [];
+
+    let bookingCheckoutTime: string | null = null;
+    let bookingTimeOut: string | null = null;
+
+    for (const item of itemsForBooking) {
+      if (
+        !bookingCheckoutTime &&
+        typeof item.meta?.checkout_time === "string" &&
+        item.meta.checkout_time.trim() !== ""
+      ) {
+        bookingCheckoutTime = item.meta.checkout_time;
+      }
+
+      if (
+        !bookingTimeOut &&
+        typeof item.meta?.time_out === "string" &&
+        item.meta.time_out.trim() !== ""
+      ) {
+        bookingTimeOut = item.meta.time_out;
+      }
+    }
+
+    if (isToday(bookingDate) && normalizedStatus !== "cancelled") {
+      const computedRevenue = itemsForBooking.reduce(
+        (sum, item) => sum + Number(item.line_total ?? 0),
+        0
+      );
+
+      revenueToday +=
+        computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
+
+      for (const item of itemsForBooking) {
+        const code = getItemCode(item);
+
+        if (code === "luggage") bagsToday += item.quantity;
+        if (code === "shower") showersToday += item.quantity;
+        if (code === "combo") combosToday += item.quantity;
+      }
+    }
+
+    if (normalizedStatus === "inside") {
+      if (
+        isPastScheduledTime(
+          bookingCheckoutTime,
+          booking.status,
+          bookingTimeOut
+        )
+      ) {
+        overdueCount++;
+      }
+
+      for (const item of itemsForBooking) {
+        const code = getItemCode(item);
+
+        if (code === "luggage") bagsInside += item.quantity;
+        if (code === "shower") showersInside += item.quantity;
+      }
+    }
+  }
+
   const sortedBookings = [...((bookings as BookingRow[]) ?? [])].sort((a, b) => {
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
@@ -545,27 +554,44 @@ export default async function AdminPage({
     const date = meta.date;
     const status = normalizeStatus(booking.status);
 
-    if (status === "cancelled") {
-      cancelledBookings.push(booking);
-      continue;
-    }
-
     if (status === "inside") {
       insideBookings.push(booking);
       continue;
     }
 
+    if (status === "cancelled") {
+      if (isToday(date)) {
+        cancelledBookings.push(booking);
+      }
+      continue;
+    }
+
     if (status === "completed") {
-      finishedBookings.push(booking);
+      if (isToday(date)) {
+        finishedBookings.push(booking);
+      }
       continue;
     }
 
     if (isToday(date)) {
       todayBookings.push(booking);
-    } else {
-      upcomingBookings.push(booking);
+      continue;
     }
+
+    if (isFuture(date)) {
+      upcomingBookings.push(booking);
+      continue;
+    }
+
+    // passado -> não mostrar no desk
   }
+
+  const visibleBookingsCount =
+    todayBookings.length +
+    insideBookings.length +
+    finishedBookings.length +
+    upcomingBookings.length +
+    cancelledBookings.length;
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
@@ -592,8 +618,15 @@ export default async function AdminPage({
           + Nova reserva
         </Link>
 
+        <Link
+          href="/admin/history"
+          className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
+        >
+          Histórico
+        </Link>
+
         <div className="rounded-xl border px-4 py-2 text-sm">
-          Total reservas: <strong>{sortedBookings.length}</strong>
+          Total visíveis: <strong>{visibleBookingsCount}</strong>
         </div>
       </div>
 
@@ -668,9 +701,7 @@ export default async function AdminPage({
         codeFilter,
       })}
 
-      {upcomingBookings.length > 0 && (
-        <div className="border-t pt-6" />
-      )}
+      {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
 
       {renderSectionTable({
         title: "Upcoming",
