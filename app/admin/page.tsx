@@ -287,7 +287,6 @@ function renderSectionTable({
 
               const isFilteredMatch = codeFilter === booking.booking_code;
 
-              const isFilteredMatch = codeFilter === booking.booking_code;
 const sourceRowClass = getSourceRowClass(booking.source);
 
 const rowClass = cancelled
