@@ -698,47 +698,6 @@ const sourceTodayRevenue = {
         </div>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Bags today</div>
-          <div className="text-2xl font-bold">{bagsToday}</div>
-        </div>
-
-        <div className="rounded-xl border bg-orange-50 p-4">
-          <div className="text-sm text-orange-600">Overdue</div>
-          <div className="text-2xl font-bold text-orange-700">
-            {overdueCount}
-          </div>
-        </div>
-
-        <div className="rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Showers today</div>
-          <div className="text-2xl font-bold">{showersToday}</div>
-        </div>
-
-        <div className="rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Combos today</div>
-          <div className="text-2xl font-bold">{combosToday}</div>
-        </div>
-
-        <div className="rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Bags inside</div>
-          <div className="text-2xl font-bold">{bagsInside}</div>
-        </div>
-
-        <div className="rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Showers inside</div>
-          <div className="text-2xl font-bold">{showersInside}</div>
-        </div>
-
-        <div className="rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Revenue today</div>
-          <div className="text-2xl font-bold">
-            {formatCurrency(revenueToday, "EUR")}
-          </div>
-        </div>
-      </section>
-
 <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
   <div className="rounded-xl border p-4">
     <div className="text-sm text-gray-500">Bags today</div>
