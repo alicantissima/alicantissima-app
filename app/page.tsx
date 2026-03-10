@@ -116,10 +116,10 @@ export default function HomePage() {
   </section>
   </section>
       <Link
-        href="/my-booking"
+        href="/find-booking"
         className="block rounded-2xl border p-4 text-center font-semibold uppercase"
       >
-        My Booking
+        FIND MY BOOKING
       </Link>
     </main>
   );
