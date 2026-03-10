@@ -21,17 +21,33 @@ export default function AdminQrScanner() {
 
     const cleaned = code.trim().toUpperCase();
 
-    const { data: booking, error: fetchError } = await supabase
-      .from("bookings")
-      .select("id, booking_code, status")
-      .eq("booking_code", cleaned)
-      .maybeSingle();
+const { data: booking, error: fetchError } = await supabase
+  .from("bookings")
+  .select("id, booking_code, status, check_in_time")
+  .eq("booking_code", cleaned)
+  .maybeSingle();
 
-    if (fetchError || !booking) {
-      setLoading(false);
-      setError("Reserva não encontrada.");
-      return;
-    }
+if (fetchError || !booking) {
+  setLoading(false);
+  setError("Reserva não encontrada.");
+  return;
+}
+
+if (!booking.check_in_time) {
+  const { error: updateError } = await supabase
+    .from("bookings")
+    .update({
+      check_in_time: new Date().toISOString(),
+      status: "inside",
+    })
+    .eq("id", booking.id);
+
+  if (updateError) {
+    setError("Could not register check-in");
+    setLoading(false);
+    return;
+  }
+}
 
     if (booking.status === "pending") {
       const { error: updateError } = await supabase
