@@ -249,8 +249,8 @@ function renderSectionTable({
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
             <tr className="border-b text-left">
               <th className="p-3">Código</th>
-<th className="p-3">Cliente</th>
 <th className="p-3">Source</th>
+<th className="p-3">Cliente</th>
 <th className="p-3">City</th>
 <th className="p-3">Bags</th>
 <th className="p-3">Showers</th>
@@ -297,6 +297,13 @@ function renderSectionTable({
                     </Link>
                   </td>
 
+<td className="p-3">
+  <AdminSourceSelect
+    bookingId={booking.id}
+    value={booking.source}
+  />
+</td>
+
                   <td className="p-3">
                     <div className="font-medium">{booking.customer_name}</div>
                     <div className="text-xs text-gray-500">
@@ -304,12 +311,6 @@ function renderSectionTable({
                     </div>
                   </td>
 
-<td className="p-3">
-  <AdminSourceSelect
-    bookingId={booking.id}
-    value={booking.source}
-  />
-</td>
 
                   <td className="p-3">{meta.city ?? "-"}</td>
                   <td className="p-3">{meta.bags || "-"}</td>
