@@ -133,19 +133,7 @@ export default function FindBookingPage() {
     <div className="pt-3 flex justify-center">
       <BookingQr code={booking.booking_code} />
     </div>
-
-  </div>
-))}
-
-<img
-  src={`/api/qr/${booking.booking_code}`}
-  alt="QR Code"
-  className="w-32 h-32"
-/>
             </div>
           ))}
         </div>
       )}
-    </div>
-  );
-}
