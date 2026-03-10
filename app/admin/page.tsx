@@ -9,6 +9,9 @@ import AdminFinishQrScanner from "@/components/admin-finish-qr-scanner";
 import LogoutButton from "@/components/logout-button";
 import FinishAllInsideButton from "@/components/finish-all-inside-button";
 import { redirect } from "next/navigation";
+import AdminAutoRefresh from "./AdminAutoRefresh";
+
+export const revalidate = 0;
 
 type BookingRow = {
   id: string;
@@ -595,6 +598,8 @@ export default async function AdminPage({
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
+      <AdminAutoRefresh intervalMs={60000} />
+
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold">Admin · Reservas</h1>
