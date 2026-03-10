@@ -24,8 +24,31 @@ type Booking = {
   created_at?: string;
   total_amount?: number;
   currency?: string;
+  service_date?: string;
+  check_in_time?: string;
+  check_out_time?: string;
   booking_items?: BookingItem[];
 };
+
+function formatDateTime(value?: string) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function formatDate(value?: string) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
 
 export default function FindBookingPage() {
   const [code, setCode] = useState("");
