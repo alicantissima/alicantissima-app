@@ -7,10 +7,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const manifest = {
-    name: "Alicantíssima Booking",
+    name: "Alicantíssima",
     short_name: "Alicantíssima",
     description: "Book luggage storage and showers in Alicante",
-    start_url: "/booking",
+    start_url: "/",
     scope: "/",
     display: "standalone",
     background_color: "#ffffff",
