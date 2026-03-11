@@ -7,7 +7,9 @@ import { useEffect } from "react";
 
 export default function IframeHeightReporter() {
   useEffect(() => {
-    let lastHeight = 0;
+    let lastSentHeight = 0;
+    let frameRequested = false;
+    let rafId = 0;
 
     function getHeight() {
       const body = document.body;
@@ -22,14 +24,14 @@ export default function IframeHeightReporter() {
       );
     }
 
-    function postHeight() {
+    function sendHeight(force = false) {
       if (window.parent === window) return;
 
       const height = getHeight();
 
-      if (Math.abs(height - lastHeight) < 20) return;
+      if (!force && Math.abs(height - lastSentHeight) < 24) return;
 
-      lastHeight = height;
+      lastSentHeight = height;
 
       window.parent.postMessage(
         {
@@ -40,24 +42,64 @@ export default function IframeHeightReporter() {
       );
     }
 
-    const observer = new ResizeObserver(() => {
-      postHeight();
+    function scheduleHeight(force = false) {
+      cancelAnimationFrame(rafId);
+
+      rafId = requestAnimationFrame(() => {
+        sendHeight(force);
+      });
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      scheduleHeight(false);
     });
 
-    observer.observe(document.body);
+    resizeObserver.observe(document.body);
+    resizeObserver.observe(document.documentElement);
 
-    const t1 = setTimeout(postHeight, 200);
-    const t2 = setTimeout(postHeight, 800);
+    const mutationObserver = new MutationObserver(() => {
+      scheduleHeight(false);
+    });
 
-    window.addEventListener("load", postHeight);
-    window.addEventListener("resize", postHeight);
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: false,
+    });
+
+    const onLoad = () => scheduleHeight(true);
+    const onResize = () => scheduleHeight(false);
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === "ALICANTISSIMA_REQUEST_HEIGHT") {
+        frameRequested = true;
+        scheduleHeight(true);
+      }
+    };
+
+    window.addEventListener("load", onLoad);
+    window.addEventListener("resize", onResize);
+    window.addEventListener("message", onMessage);
+
+    const t1 = window.setTimeout(() => scheduleHeight(true), 150);
+    const t2 = window.setTimeout(() => scheduleHeight(true), 600);
+    const t3 = window.setTimeout(() => scheduleHeight(true), 1200);
+
+    if (!frameRequested) {
+      scheduleHeight(true);
+    }
 
     return () => {
-      observer.disconnect();
-      clearTimeout(t1);
-      clearTimeout(t2);
-      window.removeEventListener("load", postHeight);
-      window.removeEventListener("resize", postHeight);
+      cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.clearTimeout(t3);
+      window.removeEventListener("load", onLoad);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("message", onMessage);
     };
   }, []);
 
