@@ -186,127 +186,140 @@ function buildConfirmationEmailHtml(params: {
   totalAmount: number;
   notes?: string | null;
 }) {
-  const itemBlocks = params.items
-    .map((item) => {
-      const date = formatHumanDate(item.meta?.date);
-      const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
-      const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
-      const showerTime = formatTimeRange(item.meta?.showerTime);
-      const comments =
-        typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
 
-      return `
-        <div style="margin:0 0 16px 0; padding:0 0 16px 0; border-bottom:1px solid #e5e7eb;">
-          <p style="margin:0 0 8px 0; font-size:18px; line-height:28px; color:#0f172a; font-weight:700;">
-            ${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}
-          </p>
-          ${date ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Date: ${date}</p>` : ""}
-          ${dropOffTime ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Drop-off: ${dropOffTime}</p>` : ""}
-          ${pickUpTime ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Estimated pick-up: ${pickUpTime}</p>` : ""}
-          ${showerTime ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Shower time: ${showerTime}</p>` : ""}
-          ${comments ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Comments: ${comments}</p>` : ""}
-        </div>
-      `;
-    })
-    .join("");
+  const item = params.items[0];
+
+  const date = formatHumanDate(item.meta?.date);
+  const dropOff = formatTimeRange(item.meta?.dropOffTime);
+  const pickUp = formatTimeRange(item.meta?.pickUpTime);
+  const shower = formatTimeRange(item.meta?.showerTime);
 
   return `
-    <div style="margin:0; padding:0; background:#f5f5ef;">
-      <div style="max-width:640px; margin:0 auto; padding:20px 12px;">
-        <div style="background:#ffffff; border-radius:20px; padding:24px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
-          
-          <h1 style="margin:0 0 16px 0; font-size:28px; line-height:34px; color:#0f172a; font-weight:800;">
-            Booking confirmed
-          </h1>
+<div style="margin:0;padding:0;background:#f5f5ef;">
+  <div style="max-width:620px;margin:0 auto;padding:24px 14px;font-family:Arial,Helvetica,sans-serif;">
 
-          <p style="margin:0 0 10px 0; font-size:17px; line-height:26px; color:#111827;">
-            Hello ${params.customerName},
-          </p>
+    <div style="background:#ffffff;border-radius:20px;padding:28px;border:1px solid #e5e7eb;">
 
-          <p style="margin:0 0 18px 0; font-size:17px; line-height:26px; color:#111827;">
-            Your booking is confirmed.
-          </p>
+      <h1 style="margin:0 0 16px 0;font-size:30px;color:#111827;font-weight:800;">
+        Booking confirmed
+      </h1>
 
-          <div style="margin:0 0 20px 0; padding:16px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:16px;">
-            <p style="margin:0 0 14px 0; font-size:17px; line-height:26px; color:#111827;">
-              <strong>Booking code:</strong> ${params.bookingCode}
-            </p>
+      <p style="margin:0 0 10px 0;font-size:17px;color:#374151;">
+        Thank you. Your booking code is 
+        <strong>${params.bookingCode}</strong>.
+      </p>
 
-            <a
-              href="${params.bookingUrl}"
-              style="
-                display:inline-block;
-                background:#0f8a83;
-                color:#ffffff;
-                text-decoration:none;
-                font-weight:700;
-                font-size:16px;
-                line-height:24px;
-                padding:12px 18px;
-                border-radius:12px;
-              "
-            >
-              Open booking
-            </a>
+      <p style="margin:0 0 10px 0;font-size:16px;color:#6b7280;">
+        Please keep this code for check-in.
+      </p>
 
-            <p style="margin:12px 0 0 0; font-size:15px; line-height:22px;">
-              <a href="${params.bookingUrl}" style="color:#0f8a83; text-decoration:none; font-weight:600;">
-                View your booking
-              </a>
-            </p>
-          </div>
+      <p style="margin:0 0 26px 0;font-size:16px;color:#6b7280;">
+        A confirmation email has been sent to you.
+      </p>
 
-          <div style="text-align:center; margin:0 0 24px 0;">
-            <img
-              src="${params.qrCodeUrl}"
-              alt="Booking QR Code"
-              width="180"
-              height="180"
-              style="display:block; margin:0 auto 10px auto; border-radius:10px;"
-            />
-            <p style="margin:0; font-size:14px; line-height:20px; color:#6b7280;">
-              Show this QR code at check-in
-            </p>
-          </div>
+      <!-- BOOKING SUMMARY -->
 
-          <h2 style="margin:0 0 14px 0; font-size:22px; line-height:28px; color:#0f172a; font-weight:800;">
-            Booking details
-          </h2>
+      <div style="
+        border:2px solid #111827;
+        border-radius:18px;
+        padding:22px;
+        margin-bottom:30px;
+      ">
 
-          ${itemBlocks}
+        <h2 style="margin:0 0 18px 0;font-size:22px;color:#111827;font-weight:700;">
+          Booking summary
+        </h2>
 
-          <div style="margin:20px 0 0 0; padding:16px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:16px;">
-            <p style="margin:0; font-size:19px; line-height:28px; color:#111827; font-weight:800;">
-              Total: € ${formatPrice(params.totalAmount)}
-            </p>
-          </div>
+        <p style="margin:6px 0;font-size:16px;">
+          <strong>Name:</strong> ${params.customerName}
+        </p>
 
-          ${
-            params.notes
-              ? `
-            <p style="margin:18px 0 0 0; font-size:15px; line-height:24px; color:#475569;">
-              <strong>Notes:</strong> ${params.notes}
-            </p>
-          `
-              : ""
-          }
+        ${date ? `
+        <p style="margin:6px 0;font-size:16px;">
+          <strong>Date:</strong> ${date}
+        </p>` : ""}
 
-          <p style="margin:22px 0 0 0; font-size:16px; line-height:26px; color:#111827;">
-            Payment is made on site, by card or cash.
-          </p>
+        ${dropOff ? `
+        <p style="margin:6px 0;font-size:16px;">
+          <strong>Drop-off:</strong> ${dropOff}
+        </p>` : ""}
 
-          <p style="margin:22px 0 0 0; font-size:16px; line-height:26px; color:#111827;">
-            Alicantissima | Luggage Storage & Shower Lounge<br />
-            Alicante
-          </p>
+        ${pickUp ? `
+        <p style="margin:6px 0;font-size:16px;">
+          <strong>Estimated pick-up:</strong> ${pickUp}
+        </p>` : ""}
 
-          <p style="margin:22px 0 0 0; font-size:16px; line-height:26px; color:#111827;">
-            Thank you!
-          </p>
-        </div>
+        ${shower ? `
+        <p style="margin:6px 0;font-size:16px;">
+          <strong>Shower time:</strong> ${shower}
+        </p>` : ""}
+
+        <hr style="margin:18px 0;border:none;border-top:1px solid #e5e7eb;">
+
+        <table width="100%" style="font-size:16px;">
+          <tr>
+            <td style="padding:6px 0;font-weight:600;">
+              ${item.title}
+            </td>
+            <td align="right" style="padding:6px 0;">
+              € ${formatPrice(item.totalPrice)}
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin:4px 0;color:#6b7280;">
+          Qty: ${item.quantity}
+        </p>
+
+        <hr style="margin:18px 0;border:none;border-top:1px solid #e5e7eb;">
+
+        <p style="margin:0;font-size:18px;font-weight:800;">
+          Total: € ${formatPrice(params.totalAmount)}
+        </p>
+
       </div>
+
+      <!-- QR -->
+
+      <h2 style="margin:0 0 6px 0;font-size:22px;font-weight:800;color:#111827;">
+        Check-in QR
+      </h2>
+
+      <p style="margin:0 0 16px 0;font-size:15px;color:#6b7280;">
+        Show this QR code at reception for faster check-in.
+      </p>
+
+      <div style="text-align:center;margin-bottom:28px;">
+        <img
+          src="${params.qrCodeUrl}"
+          alt="Booking QR"
+          width="220"
+          height="220"
+          style="border-radius:14px;"
+        />
+      </div>
+
+      <div style="text-align:center;">
+        <a href="${params.bookingUrl}"
+          style="
+            display:inline-block;
+            border:2px solid #111827;
+            border-radius:12px;
+            padding:12px 22px;
+            text-decoration:none;
+            font-weight:600;
+            color:#111827;
+            font-size:15px;
+          ">
+          Open booking
+        </a>
+      </div>
+
     </div>
-  `;
+
+  </div>
+</div>
+`;
 }
 
 function buildInternalEmailText(params: {
