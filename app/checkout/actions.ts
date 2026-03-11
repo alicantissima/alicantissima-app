@@ -352,49 +352,6 @@ function buildInternalEmailText(params: {
   return lines.join("\n");
 }
 
-function buildInternalEmailText(params: {
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string | null;
-  bookingCode: string;
-  bookingUrl: string;
-  items: Array<{
-    title: string;
-    quantity: number;
-    unitPrice: number;
-    totalPrice: number;
-    meta?: Record<string, unknown>;
-  }>;
-  totalAmount: number;
-  notes?: string | null;
-}) {
-  const lines: string[] = [];
-
-  lines.push("New booking received.");
-  lines.push("");
-  lines.push(`Booking code: ${params.bookingCode}`);
-  lines.push(`Customer: ${params.customerName}`);
-  lines.push(`Email: ${params.customerEmail}`);
-
-  if (params.customerPhone) {
-    lines.push(`Phone: ${params.customerPhone}`);
-  }
-
-  lines.push(`View booking: ${params.bookingUrl}`);
-  lines.push("");
-  lines.push("Booking details:");
-  lines.push(...buildBookingLines({ items: params.items }));
-  lines.push("");
-  lines.push(`Total: € ${formatPrice(params.totalAmount)}`);
-
-  if (params.notes) {
-    lines.push("");
-    lines.push(`Notes: ${params.notes}`);
-  }
-
-  return lines.join("\n");
-}
-
 function buildInternalEmailHtml(params: {
   customerName: string;
   customerEmail: string;
