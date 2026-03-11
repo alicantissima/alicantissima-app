@@ -1,125 +1,125 @@
-
-
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 
-type Product = {
-  id: number;
-  code: string;
-  name: string;
-  description: string;
-  price: number;
-  is_popular: boolean;
-  sort_order: number;
-};
+const products = [
+  {
+    title: "Store luggage",
+    price: "€8",
+    description: "Safe luggage storage in Alicante city center",
+    href: "/book-luggage",
+    accent: "bg-slate-900",
+  },
+  {
+    title: "Take a shower",
+    price: "€12",
+    description: "Freshen up before your flight or after the beach",
+    href: "/book-shower",
+    accent: "bg-sky-500",
+  },
+  {
+    title: "Luggage + shower",
+    price: "€18",
+    description: "Leave your bags and enjoy a refreshing shower",
+    href: "/book-combo",
+    accent: "bg-emerald-500",
+  },
+];
 
-export default function HomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+const extrasRows = [
+  "Wi-Fi • Phone charging • WC • Sofa area",
+  "Coffee • Cold water • Printer & scanner",
+  "Luggage scale • Beach towels • Sun shade",
+  "Hair dryer • Body gel • Shampoo • Shower towels",
+  "Air conditioning everywhere",
+];
 
-  useEffect(() => {
-    const supabase = createClient();
-
-    async function loadProducts() {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, code, name, description, price, is_popular, sort_order")
-        .eq("city_id", 1)
-        .eq("active", true)
-        .order("sort_order", { ascending: true });
-
-      if (error) {
-        console.error("Error loading products:", error.message);
-      } else {
-        setProducts(data || []);
-      }
-
-      setLoading(false);
-    }
-
-    loadProducts();
-  }, []);
-
-  function getHref(code: string) {
-    if (code === "luggage") return "/book-luggage";
-    if (code === "shower") return "/book-shower";
-    if (code === "combo") return "/book-combo";
-    return "/";
-  }
-
+export default function HomeClient() {
   return (
-    <main className="mx-auto max-w-md p-6 space-y-6">
-      <section className="text-center space-y-2">
-        <h1 className="text-3xl font-bold uppercase">Alicantissima</h1>
-        <p className="text-base">Luggage Storage & Shower Lounge</p>
-        <p className="text-sm">⭐ 4.9 rating</p>
-        <p className="text-sm">📍 Premium location – Alicante city center</p>
-        <p className="text-sm">🟢 Open every day · 10:00–22:00</p>
-      </section>
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="mx-auto w-full max-w-md px-5 pb-10 pt-8">
+        {/* HERO / TRUST BLOCK */}
+        <section className="rounded-[28px] bg-white px-6 pb-7 pt-8 shadow-[0_4px_18px_rgba(15,23,42,0.05)] ring-1 ring-slate-200/70">
+          <div className="text-center">
+            <h1 className="text-[2.15rem] font-extrabold uppercase tracking-tight">
+              Alicantissima
+            </h1>
 
-      <section className="space-y-8">
-  <div className="space-y-3">
-    {loading ? (
-      <div className="rounded-3xl border border-black bg-white p-4 text-sm text-gray-600 shadow-sm">
-        Loading services...
-      </div>
-    ) : (
-      products.map((product) => (
-        <Link
-          key={product.id}
-          href={getHref(product.code)}
-          className="block rounded-3xl border border-black bg-white p-5 shadow-sm transition hover:-translate-y-0.5"
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div className="font-semibold uppercase tracking-wide">
-              {product.name}
-                      </div>
+            <p className="mt-3 text-[1.1rem] font-medium text-slate-700">
+              Luggage Storage &amp; Shower Lounge
+            </p>
+          </div>
 
-            <div className="rounded-full border border-black px-3 py-1 text-sm font-bold">
-              € {product.price}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">
+              ⭐ 4.9 rating
+            </div>
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">
+              📍 Alicante city center
+            </div>
+            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700">
+              🟢 Open daily · 10:00–22:00
             </div>
           </div>
+        </section>
 
-          <div className="mt-2 text-sm leading-relaxed text-gray-600">
-            {product.description}
+        {/* PRODUCTS */}
+        <section className="mt-7 space-y-4">
+          {products.map((product) => (
+            <Link
+              key={product.title}
+              href={product.href}
+              className="group block rounded-[28px] bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.05)] ring-1 ring-slate-200/80 transition-transform duration-200 hover:-translate-y-0.5"
+            >
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`h-3 w-3 rounded-full ${product.accent} shadow-sm`}
+                  />
+                  <h2 className="text-[1.1rem] font-extrabold uppercase tracking-[0.02em] text-slate-900">
+                    {product.title}
+                  </h2>
+                </div>
+
+                <div className="shrink-0 rounded-full border border-slate-300 bg-white px-4 py-2 text-[1.05rem] font-bold text-slate-900 shadow-sm">
+                  {product.price}
+                </div>
+              </div>
+
+              <p className="max-w-[24rem] text-[1.05rem] leading-8 text-slate-600">
+                {product.description}
+              </p>
+
+              <div className="mt-5 text-sm font-medium text-slate-500 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700">
+                Book now →
+              </div>
+            </Link>
+          ))}
+        </section>
+
+        {/* FREE EXTRAS */}
+        <section className="mt-7 rounded-[28px] border border-emerald-200 bg-emerald-50/80 px-6 py-7">
+          <h3 className="text-center text-[1.05rem] font-extrabold uppercase tracking-[0.22em] text-emerald-900">
+            Free extras included
+          </h3>
+
+          <div className="mt-5 space-y-2 text-center text-[1.05rem] leading-8 text-emerald-950/85">
+            {extrasRows.map((row) => (
+              <p key={row}>{row}</p>
+            ))}
           </div>
-        </Link>
-      ))
-    )}
-  </div>
+        </section>
 
-  <section className="space-y-2 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
-    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-900">
-      Free extras included
-    </p>
-    <p className="text-sm leading-relaxed text-emerald-950">
-      Wi-Fi · Phone charging · WC · Sofas areas · Coffee · Cold water · Printer & scanner · Luggage scale · Beach towels · Sun shade · Hair dryer · Body gel · Shampoo · Shower towels · Air conditioned everywhere
-    </p>
-    <Link href="/extras" className="inline-block text-sm font-semibold text-emerald-900">
-      WHAT&apos;S INCLUDED 🧞‍♂️
-    </Link>
-  </section>
-
-  <section className="rounded-3xl border border-sky-200 bg-sky-50 p-5">
-    <Link href="/extras" className="block space-y-1">
-      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-800">
-        Explore Alicante
+        {/* FIND MY BOOKING */}
+        <section className="mt-7">
+          <Link
+            href="/find-my-booking"
+            className="block rounded-[28px] border border-slate-300 bg-white px-6 py-5 text-center text-[1.05rem] font-extrabold uppercase tracking-[0.02em] text-slate-900 shadow-[0_4px_16px_rgba(15,23,42,0.04)] transition hover:bg-slate-50"
+          >
+            Find my booking
+          </Link>
+        </section>
       </div>
-      <div className="text-sm leading-relaxed text-sky-950">
-        Restaurants · Activities · Beaches · Events
-      </div>
-    </Link>
-  </section>
-  </section>
-      <Link
-        href="/find-booking"
-        className="block rounded-2xl border p-4 text-center font-semibold uppercase"
-      >
-        FIND MY BOOKING
-      </Link>
     </main>
   );
 }
