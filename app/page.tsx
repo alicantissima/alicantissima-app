@@ -1,3 +1,6 @@
+
+
+
 "use client";
 
 import Link from "next/link";
@@ -8,7 +11,7 @@ const products = [
     price: "€8",
     description: "Safe luggage storage in Alicante city center",
     href: "/book-luggage",
-    accent: "bg-slate-900",
+    accent: "bg-slate-950",
   },
   {
     title: "Take a shower",
@@ -36,85 +39,79 @@ const extrasRows = [
 
 export default function HomeClient() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="mx-auto w-full max-w-md px-5 pb-10 pt-8">
-        {/* HERO / TRUST BLOCK */}
-        <section className="rounded-[28px] bg-white px-6 pb-7 pt-8 shadow-[0_4px_18px_rgba(15,23,42,0.05)] ring-1 ring-slate-200/70">
+    <main className="min-h-screen bg-[#f6f7fb] text-slate-900">
+      <div className="mx-auto w-full max-w-[390px] px-4 pb-9 pt-6">
+        <section className="rounded-[28px] bg-white px-6 pb-6 pt-7 shadow-[0_4px_18px_rgba(15,23,42,0.05)] ring-1 ring-slate-200/70">
           <div className="text-center">
-            <h1 className="text-[2.15rem] font-extrabold uppercase tracking-tight">
+            <h1 className="text-[2.05rem] font-extrabold uppercase tracking-[-0.03em] text-slate-950">
               Alicantissima
             </h1>
 
-            <p className="mt-3 text-[1.1rem] font-medium text-slate-700">
+            <p className="mt-2.5 text-[1.02rem] font-medium leading-8 text-slate-700">
               Luggage Storage &amp; Shower Lounge
             </p>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
-            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[0.95rem] font-medium text-slate-700">
               ⭐ 4.9 rating
             </div>
-            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[0.95rem] font-medium text-slate-700">
               📍 Alicante city center
             </div>
-            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700">
+            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[0.95rem] font-medium text-emerald-700">
               🟢 Open daily · 10:00–22:00
             </div>
           </div>
         </section>
 
-        {/* PRODUCTS */}
-        <section className="mt-7 space-y-4">
+        <section className="mt-5 space-y-3.5">
           {products.map((product) => (
             <Link
               key={product.title}
               href={product.href}
-              className="group block rounded-[28px] bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.05)] ring-1 ring-slate-200/80 transition-transform duration-200 hover:-translate-y-0.5"
+              className="group block rounded-[28px] bg-white px-6 py-5 shadow-[0_3px_14px_rgba(15,23,42,0.045)] ring-1 ring-slate-200/80 transition-all duration-200 active:scale-[0.995]"
             >
-              <div className="mb-5 flex items-start justify-between gap-4">
+              <div className="mb-4 flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <span
-                    className={`h-3 w-3 rounded-full ${product.accent} shadow-sm`}
-                  />
-                  <h2 className="text-[1.1rem] font-extrabold uppercase tracking-[0.02em] text-slate-900">
+                  <span className={`h-2.5 w-2.5 rounded-full ${product.accent}`} />
+                  <h2 className="text-[1.02rem] font-extrabold uppercase tracking-[0.01em] text-slate-950">
                     {product.title}
                   </h2>
                 </div>
 
-                <div className="shrink-0 rounded-full border border-slate-300 bg-white px-4 py-2 text-[1.05rem] font-bold text-slate-900 shadow-sm">
+                <div className="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-base font-semibold text-slate-950 shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
                   {product.price}
                 </div>
               </div>
 
-              <p className="max-w-[24rem] text-[1.05rem] leading-8 text-slate-600">
+              <p className="max-w-[22rem] text-[0.98rem] leading-7 text-slate-600">
                 {product.description}
               </p>
 
-              <div className="mt-5 text-sm font-medium text-slate-500 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700">
+              <div className="mt-4 text-[0.95rem] font-medium text-slate-500 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-slate-700">
                 Book now →
               </div>
             </Link>
           ))}
         </section>
 
-        {/* FREE EXTRAS */}
-        <section className="mt-7 rounded-[28px] border border-emerald-200 bg-emerald-50/80 px-6 py-7">
-          <h3 className="text-center text-[1.05rem] font-extrabold uppercase tracking-[0.22em] text-emerald-900">
+        <section className="mt-6 rounded-[28px] border border-emerald-200 bg-emerald-50/80 px-6 py-6">
+          <h3 className="text-center text-[1rem] font-extrabold uppercase tracking-[0.18em] text-emerald-900">
             Free extras included
           </h3>
 
-          <div className="mt-5 space-y-2 text-center text-[1.05rem] leading-8 text-emerald-950/85">
+          <div className="mt-4 space-y-1.5 text-center text-[0.98rem] leading-7 text-emerald-950/85">
             {extrasRows.map((row) => (
               <p key={row}>{row}</p>
             ))}
           </div>
         </section>
 
-        {/* FIND MY BOOKING */}
-        <section className="mt-7">
+        <section className="mt-6">
           <Link
             href="/find-my-booking"
-            className="block rounded-[28px] border border-slate-300 bg-white px-6 py-5 text-center text-[1.05rem] font-extrabold uppercase tracking-[0.02em] text-slate-900 shadow-[0_4px_16px_rgba(15,23,42,0.04)] transition hover:bg-slate-50"
+            className="block rounded-[28px] border border-slate-200 bg-white px-6 py-4 text-center text-[1rem] font-extrabold uppercase tracking-[0.01em] text-slate-950 shadow-[0_3px_14px_rgba(15,23,42,0.04)] transition hover:bg-slate-50"
           >
             Find my booking
           </Link>
