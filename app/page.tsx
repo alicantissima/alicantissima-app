@@ -76,8 +76,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between gap-4">
             <div className="font-semibold uppercase tracking-wide">
               {product.name}
-              {product.is_popular ? " ★ Popular" : ""}
-            </div>
+                      </div>
 
             <div className="rounded-full border border-black px-3 py-1 text-sm font-bold">
               € {product.price}
