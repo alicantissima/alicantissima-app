@@ -198,54 +198,50 @@ function buildConfirmationEmailHtml(params: {
   <div style="max-width:560px;margin:0 auto;padding:14px 8px;font-family:Arial,Helvetica,sans-serif;">
     <div style="background:#ffffff;border-radius:18px;padding:18px;border:1px solid #e5e7eb;">
 
-      <h1 style="margin:0 0 12px 0;font-size:22px;line-height:28px;color:#0f172a;font-weight:800;">
+      <h1 style="margin:0 0 12px 0;font-size:22px;line-height:28px;color:#0f172a;font-weight:800;text-align:center;">
         Booking confirmed
       </h1>
 
-      <p style="margin:0 0 8px 0;font-size:15px;line-height:22px;color:#4b5563;">
+      <p style="margin:0 0 6px 0;font-size:15px;line-height:22px;color:#4b5563;text-align:center;">
         Thank you. Your booking code is <strong style="color:#111827;">${params.bookingCode}</strong>.
       </p>
 
-      <p style="margin:0 0 6px 0;font-size:15px;line-height:22px;color:#6b7280;">
+      <p style="margin:0 0 18px 0;font-size:15px;line-height:22px;color:#6b7280;text-align:center;">
         Please keep this code for check-in.
       </p>
 
-      <p style="margin:0 0 18px 0;font-size:15px;line-height:22px;color:#6b7280;">
-        A confirmation email has been sent to you.
-      </p>
-
       <div style="border:2px solid #111827;border-radius:18px;padding:16px;margin-bottom:22px;">
-        <h2 style="margin:0 0 14px 0;font-size:18px;line-height:24px;color:#0f172a;font-weight:800;">
+        <h2 style="margin:0 0 14px 0;font-size:18px;line-height:24px;color:#0f172a;font-weight:800;text-align:center;">
           Booking summary
         </h2>
 
-        <p style="margin:6px 0;font-size:15px;line-height:22px;color:#111827;">
+        <p style="margin:6px 0;font-size:14px;line-height:21px;color:#111827;">
           <strong>Name:</strong> ${params.customerName}
         </p>
 
         ${date ? `
-        <p style="margin:6px 0;font-size:15px;line-height:22px;color:#111827;">
+        <p style="margin:6px 0;font-size:14px;line-height:21px;color:#111827;">
           <strong>Date:</strong> ${date}
         </p>` : ""}
 
         ${dropOff ? `
-        <p style="margin:6px 0;font-size:15px;line-height:22px;color:#111827;">
+        <p style="margin:6px 0;font-size:14px;line-height:21px;color:#111827;">
           <strong>Drop-off:</strong> ${dropOff}
         </p>` : ""}
 
         ${pickUp ? `
-        <p style="margin:6px 0;font-size:15px;line-height:22px;color:#111827;">
+        <p style="margin:6px 0;font-size:14px;line-height:21px;color:#111827;">
           <strong>Estimated pick-up:</strong> ${pickUp}
         </p>` : ""}
 
         ${shower ? `
-        <p style="margin:6px 0;font-size:15px;line-height:22px;color:#111827;">
+        <p style="margin:6px 0;font-size:14px;line-height:21px;color:#111827;">
           <strong>Shower time:</strong> ${shower}
         </p>` : ""}
 
         <hr style="margin:14px 0;border:none;border-top:1px solid #d1d5db;">
 
-        <table width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;line-height:22px;color:#111827;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:21px;color:#111827;">
           <tr>
             <td style="padding:0 0 4px 0;font-weight:700;vertical-align:top;">
               ${item.title}
@@ -256,22 +252,22 @@ function buildConfirmationEmailHtml(params: {
           </tr>
         </table>
 
-        <p style="margin:0 0 0 0;font-size:14px;line-height:20px;color:#6b7280;">
+        <p style="margin:0;color:#6b7280;font-size:14px;line-height:20px;">
           Qty: ${item.quantity}
         </p>
 
         <hr style="margin:14px 0;border:none;border-top:1px solid #d1d5db;">
 
-        <p style="margin:0;font-size:17px;line-height:24px;color:#111827;font-weight:800;">
+        <p style="margin:0;font-size:16px;line-height:22px;color:#111827;font-weight:800;">
           Total: € ${formatPrice(params.totalAmount)}
         </p>
       </div>
 
-      <h2 style="margin:0 0 6px 0;font-size:18px;line-height:24px;color:#0f172a;font-weight:800;">
+      <h2 style="margin:0 0 6px 0;font-size:18px;line-height:24px;color:#0f172a;font-weight:800;text-align:center;">
         Check-in QR
       </h2>
 
-      <p style="margin:0 0 14px 0;font-size:15px;line-height:22px;color:#6b7280;">
+      <p style="margin:0 0 14px 0;font-size:14px;line-height:21px;color:#6b7280;text-align:center;">
         Show this QR code at reception for faster check-in.
       </p>
 
@@ -305,23 +301,23 @@ function buildConfirmationEmailHtml(params: {
       ${
         params.notes
           ? `
-        <p style="margin:0 0 16px 0;font-size:14px;line-height:21px;color:#6b7280;">
+        <p style="margin:0 0 16px 0;font-size:13px;line-height:20px;color:#6b7280;text-align:center;">
           <strong>Notes:</strong> ${params.notes}
         </p>
       `
           : ""
       }
 
-      <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;color:#111827;">
+      <p style="margin:0 0 10px 0;font-size:14px;line-height:22px;color:#111827;text-align:center;">
         Payment is made on site, by card or cash.
       </p>
 
-      <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;color:#111827;">
+      <p style="margin:0 0 10px 0;font-size:14px;line-height:22px;color:#111827;text-align:center;">
         Alicantissima | Luggage Storage & Shower Lounge<br />
         Alicante
       </p>
 
-      <p style="margin:0;font-size:15px;line-height:24px;color:#111827;">
+      <p style="margin:0;font-size:14px;line-height:22px;color:#111827;text-align:center;">
         Thank you!
       </p>
     </div>
