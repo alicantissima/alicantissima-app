@@ -127,6 +127,50 @@ function buildBookingLines(params: {
   return lines;
 }
 
+function buildConfirmationEmailText(params: {
+  customerName: string;
+  bookingCode: string;
+  bookingUrl: string;
+  items: Array<{
+    title: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    meta?: Record<string, unknown>;
+  }>;
+  totalAmount: number;
+  notes?: string | null;
+}) {
+  const lines: string[] = [];
+
+  lines.push(`Hello ${params.customerName},`);
+  lines.push("");
+  lines.push("Your booking is confirmed.");
+  lines.push("");
+  lines.push(`Booking code: ${params.bookingCode}`);
+  lines.push(`View your booking: ${params.bookingUrl}`);
+  lines.push("");
+  lines.push("Booking details:");
+  lines.push(...buildBookingLines({ items: params.items }));
+  lines.push("");
+  lines.push(`Total: € ${formatPrice(params.totalAmount)}`);
+
+  if (params.notes) {
+    lines.push("");
+    lines.push(`Notes: ${params.notes}`);
+  }
+
+  lines.push("");
+  lines.push("Payment is made on site, by card or cash.");
+  lines.push("");
+  lines.push("Alicantissima | Luggage Storage & Shower Lounge");
+  lines.push("Alicante");
+  lines.push("");
+  lines.push("Thank you!");
+
+  return lines.join("\n");
+}
+
 function buildConfirmationEmailHtml(params: {
   customerName: string;
   bookingCode: string;
@@ -263,6 +307,49 @@ function buildConfirmationEmailHtml(params: {
       </div>
     </div>
   `;
+}
+
+function buildInternalEmailText(params: {
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string | null;
+  bookingCode: string;
+  bookingUrl: string;
+  items: Array<{
+    title: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    meta?: Record<string, unknown>;
+  }>;
+  totalAmount: number;
+  notes?: string | null;
+}) {
+  const lines: string[] = [];
+
+  lines.push("New booking received.");
+  lines.push("");
+  lines.push(`Booking code: ${params.bookingCode}`);
+  lines.push(`Customer: ${params.customerName}`);
+  lines.push(`Email: ${params.customerEmail}`);
+
+  if (params.customerPhone) {
+    lines.push(`Phone: ${params.customerPhone}`);
+  }
+
+  lines.push(`View booking: ${params.bookingUrl}`);
+  lines.push("");
+  lines.push("Booking details:");
+  lines.push(...buildBookingLines({ items: params.items }));
+  lines.push("");
+  lines.push(`Total: € ${formatPrice(params.totalAmount)}`);
+
+  if (params.notes) {
+    lines.push("");
+    lines.push(`Notes: ${params.notes}`);
+  }
+
+  return lines.join("\n");
 }
 
 function buildInternalEmailText(params: {
