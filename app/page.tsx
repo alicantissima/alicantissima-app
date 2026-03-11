@@ -58,7 +58,7 @@ export default function HomeClient() {
               📍 Alicante city center
             </span>
             <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-[0.84rem] font-medium text-emerald-700 ring-1 ring-emerald-200">
-              🟢 Open daily · 10:00–22:00
+              🟢 Open every day · 10:00–22:00
             </span>
           </div>
         </section>
