@@ -119,7 +119,7 @@ export default function InstallAppButton() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col text-left">
             <span className="text-sm font-semibold">
-              Install Alicantíssima
+              App Alicantíssima
             </span>
             <span className="text-xs text-gray-500">
               Faster booking on your phone
