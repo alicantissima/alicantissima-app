@@ -96,7 +96,7 @@ export default function HomePage() {
       Free extras included
     </p>
     <p className="text-sm leading-relaxed text-emerald-950">
-      Wi-Fi · Coffee · Cold water · Phone charging · Beach towels
+      Wi-Fi · Phone charging · WC · Sofas areas · Coffee · Cold water · Printer & scanner · Luggage scale · Beach towels · Sun shade · Hair dryer · Body gel · Shampoo · Shower towels · Air conditioned everywhere
     </p>
     <Link href="/extras" className="inline-block text-sm font-semibold text-emerald-900">
       WHAT&apos;S INCLUDED 🧞‍♂️
