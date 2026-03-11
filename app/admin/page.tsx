@@ -387,11 +387,24 @@ export default async function AdminPage({
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, email, role")
-    .eq("id", user.id)
-    .single();
+  const { data: profile, error: profileError } = await supabase
+  .from("profiles")
+  .select("id, email, role")
+  .eq("id", user.id)
+  .single();
+
+if (!profile || profile.role !== "admin") {
+  return (
+    <div className="p-6 space-y-2">
+      <div className="font-bold">Acesso negado.</div>
+      <div className="text-sm">User id: {user.id}</div>
+      <div className="text-sm">User email: {user.email}</div>
+      <div className="text-sm">Profile exists: {profile ? "yes" : "no"}</div>
+      <div className="text-sm">Profile role: {profile?.role ?? "null"}</div>
+      <div className="text-sm">Profile error: {profileError?.message ?? "none"}</div>
+    </div>
+  );
+}
 
   if (!profile || profile.role !== "admin") {
   return (
