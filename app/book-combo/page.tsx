@@ -137,7 +137,7 @@ export default function BookComboPage() {
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
       <h1 className="text-2xl font-bold uppercase">
-        Luggage + Shower ★ Popular
+        Luggage + Shower
       </h1>
 
       <p className="text-sm text-gray-600">
