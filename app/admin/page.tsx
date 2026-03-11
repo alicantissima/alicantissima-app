@@ -394,7 +394,16 @@ export default async function AdminPage({
     .single();
 
   if (!profile || profile.role !== "admin") {
-    return <div className="p-6">Acesso negado.</div>;
+  return (
+    <div className="p-6 space-y-2">
+      <div className="font-bold">Acesso negado.</div>
+      <div className="text-sm">User id: {user.id}</div>
+      <div className="text-sm">User email: {user.email}</div>
+      <div className="text-sm">Profile exists: {profile ? "yes" : "no"}</div>
+      <div className="text-sm">Profile role: {profile?.role ?? "null"}</div>
+    </div>
+  );
+}
   }
 
   let bookingsQuery = supabase
