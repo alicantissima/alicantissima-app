@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useBookingStore } from "../../store/bookingStore";
+import { useBookingStore } from "@/store/bookingStore";
 
 function pad(value: number) {
   return value.toString().padStart(2, "0");
@@ -86,7 +86,7 @@ export default function BookLuggagePage() {
       date,
       dropOffTime: dropOff,
       pickUpTime: pickUp,
-      comments,
+      comments: comments.trim() || undefined,
       unitPrice,
       totalPrice,
     });
@@ -115,9 +115,7 @@ export default function BookLuggagePage() {
         </div>
 
         <div>
-          <label className="text-sm font-semibold">
-            Choose drop-off time
-          </label>
+          <label className="text-sm font-semibold">Choose drop-off time</label>
           <select
             className="mt-1 w-full rounded border p-2"
             value={dropOff}
@@ -132,9 +130,7 @@ export default function BookLuggagePage() {
         </div>
 
         <div>
-          <label className="text-sm font-semibold">
-            Estimated pick-up time
-          </label>
+          <label className="text-sm font-semibold">Estimated pick-up time</label>
           <select
             className="mt-1 w-full rounded border p-2"
             value={pickUp}
@@ -156,9 +152,9 @@ export default function BookLuggagePage() {
 
           <div className="mt-1 flex items-center gap-4">
             <button
+              type="button"
               onClick={() => setLuggage(Math.max(1, luggage - 1))}
               className="rounded border px-3 py-1"
-              type="button"
             >
               -
             </button>
@@ -166,9 +162,9 @@ export default function BookLuggagePage() {
             <span>{luggage}</span>
 
             <button
+              type="button"
               onClick={() => setLuggage(luggage + 1)}
               className="rounded border px-3 py-1"
-              type="button"
             >
               +
             </button>
@@ -191,10 +187,11 @@ export default function BookLuggagePage() {
       </div>
 
       <button
+        type="button"
         onClick={handleAddToBooking}
         className="w-full rounded-2xl border p-4 font-semibold uppercase"
       >
-        BOOK NOW
+        Book now
       </button>
     </main>
   );
