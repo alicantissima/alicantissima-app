@@ -127,50 +127,6 @@ function buildBookingLines(params: {
   return lines;
 }
 
-function buildConfirmationEmailText(params: {
-  customerName: string;
-  bookingCode: string;
-  bookingUrl: string;
-  items: Array<{
-    title: string;
-    quantity: number;
-    unitPrice: number;
-    totalPrice: number;
-    meta?: Record<string, unknown>;
-  }>;
-  totalAmount: number;
-  notes?: string | null;
-}) {
-  const lines: string[] = [];
-
-  lines.push(`Hello ${params.customerName},`);
-  lines.push("");
-  lines.push("Your booking is confirmed.");
-  lines.push("");
-  lines.push(`Booking code: ${params.bookingCode}`);
-  lines.push(`View your booking: ${params.bookingUrl}`);
-  lines.push("");
-  lines.push("Booking details:");
-  lines.push(...buildBookingLines({ items: params.items }));
-  lines.push("");
-  lines.push(`Total: € ${formatPrice(params.totalAmount)}`);
-
-  if (params.notes) {
-    lines.push("");
-    lines.push(`Notes: ${params.notes}`);
-  }
-
-  lines.push("");
-  lines.push("Payment is made on site, by card or cash.");
-  lines.push("");
-  lines.push("Alicantissima | Luggage Storage & Shower Lounge");
-  lines.push("Alicante");
-  lines.push("");
-  lines.push("Thank you!");
-
-  return lines.join("\n");
-}
-
 function buildConfirmationEmailHtml(params: {
   customerName: string;
   bookingCode: string;
@@ -196,82 +152,87 @@ function buildConfirmationEmailHtml(params: {
         typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
 
       return `
-        <div style="margin:0 0 18px 0; padding:0 0 18px 0; border-bottom:1px solid #e5e7eb;">
-          <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+        <div style="margin:0 0 16px 0; padding:0 0 16px 0; border-bottom:1px solid #e5e7eb;">
+          <p style="margin:0 0 8px 0; font-size:18px; line-height:28px; color:#0f172a; font-weight:700;">
             ${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}
           </p>
-          ${date ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Date: ${date}</p>` : ""}
-          ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Drop-off: ${dropOffTime}</p>` : ""}
-          ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Estimated pick-up: ${pickUpTime}</p>` : ""}
-          ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Shower time: ${showerTime}</p>` : ""}
-          ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Comments: ${comments}</p>` : ""}
+          ${date ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Date: ${date}</p>` : ""}
+          ${dropOffTime ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Drop-off: ${dropOffTime}</p>` : ""}
+          ${pickUpTime ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Estimated pick-up: ${pickUpTime}</p>` : ""}
+          ${showerTime ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Shower time: ${showerTime}</p>` : ""}
+          ${comments ? `<p style="margin:4px 0; font-size:16px; line-height:24px; color:#475569;">Comments: ${comments}</p>` : ""}
         </div>
       `;
     })
     .join("");
 
   return `
-    <div style="margin:0; padding:0; background:#f7f7f2;">
-      <div style="max-width:640px; margin:0 auto; padding:32px 20px;">
-        <div style="background:#ffffff; border-radius:20px; padding:32px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
-          <h1 style="margin:0 0 18px 0; font-size:30px; line-height:36px; color:#111827;">
+    <div style="margin:0; padding:0; background:#f5f5ef;">
+      <div style="max-width:640px; margin:0 auto; padding:20px 12px;">
+        <div style="background:#ffffff; border-radius:20px; padding:24px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
+          
+          <h1 style="margin:0 0 16px 0; font-size:28px; line-height:34px; color:#0f172a; font-weight:800;">
             Booking confirmed
           </h1>
 
-          <p style="margin:0 0 16px 0; font-size:17px; line-height:26px; color:#111827;">
+          <p style="margin:0 0 10px 0; font-size:17px; line-height:26px; color:#111827;">
             Hello ${params.customerName},
           </p>
 
-          <p style="margin:0 0 20px 0; font-size:17px; line-height:26px; color:#111827;">
+          <p style="margin:0 0 18px 0; font-size:17px; line-height:26px; color:#111827;">
             Your booking is confirmed.
           </p>
 
-          <div style="margin:0 0 24px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
-            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
+          <div style="margin:0 0 20px 0; padding:16px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:16px;">
+            <p style="margin:0 0 14px 0; font-size:17px; line-height:26px; color:#111827;">
               <strong>Booking code:</strong> ${params.bookingCode}
             </p>
-            <p style="margin:0; font-size:16px; line-height:24px;">
-              <a
-  href="${params.bookingUrl}"
-  style="
-    display:inline-block;
-    background:#0f766e;
-    color:#ffffff;
-    text-decoration:none;
-    font-weight:700;
-    padding:12px 18px;
-    border-radius:12px;
-    margin-top:8px;
-  "
->
-  Open booking
-</a>
+
+            <a
+              href="${params.bookingUrl}"
+              style="
+                display:inline-block;
+                background:#0f8a83;
+                color:#ffffff;
+                text-decoration:none;
+                font-weight:700;
+                font-size:16px;
+                line-height:24px;
+                padding:12px 18px;
+                border-radius:12px;
+              "
+            >
+              Open booking
+            </a>
+
+            <p style="margin:12px 0 0 0; font-size:15px; line-height:22px;">
+              <a href="${params.bookingUrl}" style="color:#0f8a83; text-decoration:none; font-weight:600;">
                 View your booking
               </a>
             </p>
           </div>
 
-          <div style="text-align:center; margin:0 0 28px 0;">
+          <div style="text-align:center; margin:0 0 24px 0;">
             <img
               src="${params.qrCodeUrl}"
               alt="Booking QR Code"
-              width="220"
-              height="220"
-              style="display:block; margin:0 auto 12px auto; border-radius:12px;"
+              width="180"
+              height="180"
+              style="display:block; margin:0 auto 10px auto; border-radius:10px;"
             />
             <p style="margin:0; font-size:14px; line-height:20px; color:#6b7280;">
               Show this QR code at check-in
             </p>
           </div>
 
-          <h2 style="margin:0 0 16px 0; font-size:22px; line-height:28px; color:#111827;">
+          <h2 style="margin:0 0 14px 0; font-size:22px; line-height:28px; color:#0f172a; font-weight:800;">
             Booking details
           </h2>
 
           ${itemBlocks}
 
-          <div style="margin:24px 0 0 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
-            <p style="margin:0; font-size:18px; line-height:28px; color:#111827; font-weight:700;">
+          <div style="margin:20px 0 0 0; padding:16px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:16px;">
+            <p style="margin:0; font-size:19px; line-height:28px; color:#111827; font-weight:800;">
               Total: € ${formatPrice(params.totalAmount)}
             </p>
           </div>
@@ -279,23 +240,23 @@ function buildConfirmationEmailHtml(params: {
           ${
             params.notes
               ? `
-            <p style="margin:20px 0 0 0; font-size:15px; line-height:24px; color:#374151;">
+            <p style="margin:18px 0 0 0; font-size:15px; line-height:24px; color:#475569;">
               <strong>Notes:</strong> ${params.notes}
             </p>
           `
               : ""
           }
 
-          <p style="margin:24px 0 0 0; font-size:16px; line-height:24px; color:#111827;">
+          <p style="margin:22px 0 0 0; font-size:16px; line-height:26px; color:#111827;">
             Payment is made on site, by card or cash.
           </p>
 
-          <p style="margin:24px 0 0 0; font-size:16px; line-height:24px; color:#111827;">
+          <p style="margin:22px 0 0 0; font-size:16px; line-height:26px; color:#111827;">
             Alicantissima | Luggage Storage & Shower Lounge<br />
             Alicante
           </p>
 
-          <p style="margin:24px 0 0 0; font-size:16px; line-height:24px; color:#111827;">
+          <p style="margin:22px 0 0 0; font-size:16px; line-height:26px; color:#111827;">
             Thank you!
           </p>
         </div>
@@ -374,62 +335,81 @@ function buildInternalEmailHtml(params: {
         typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
 
       return `
-        <div style="margin:0 0 18px 0; padding:0 0 18px 0; border-bottom:1px solid #e5e7eb;">
-          <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+        <div style="margin:0 0 14px 0; padding:0 0 14px 0; border-bottom:1px solid #e5e7eb;">
+          <p style="margin:0 0 8px 0; font-size:17px; line-height:26px; color:#0f172a; font-weight:700;">
             ${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}
           </p>
-          ${date ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Date: ${date}</p>` : ""}
-          ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Drop-off: ${dropOffTime}</p>` : ""}
-          ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Estimated pick-up: ${pickUpTime}</p>` : ""}
-          ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Shower time: ${showerTime}</p>` : ""}
-          ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Comments: ${comments}</p>` : ""}
+          ${date ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#475569;">Date: ${date}</p>` : ""}
+          ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#475569;">Drop-off: ${dropOffTime}</p>` : ""}
+          ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#475569;">Estimated pick-up: ${pickUpTime}</p>` : ""}
+          ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#475569;">Shower time: ${showerTime}</p>` : ""}
+          ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#475569;">Comments: ${comments}</p>` : ""}
         </div>
       `;
     })
     .join("");
 
   return `
-    <div style="margin:0; padding:0; background:#f7f7f2;">
-      <div style="max-width:640px; margin:0 auto; padding:24px 20px;">
-        <div style="background:#ffffff; border-radius:20px; padding:32px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
-          <h1 style="margin:0 0 18px 0; font-size:30px; line-height:36px; color:#111827;">
+    <div style="margin:0; padding:0; background:#f5f5ef;">
+      <div style="max-width:640px; margin:0 auto; padding:20px 12px;">
+        <div style="background:#ffffff; border-radius:20px; padding:24px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
+          
+          <h1 style="margin:0 0 16px 0; font-size:28px; line-height:34px; color:#0f172a; font-weight:800;">
             New booking received
           </h1>
 
-          <div style="margin:0 0 24px 0; padding:18px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
-            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Booking code:</strong> ${params.bookingCode}</p>
-            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Customer:</strong> ${params.customerName}</p>
-            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Email:</strong> ${params.customerEmail}</p>
+          <div style="margin:0 0 18px 0; padding:16px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:16px;">
+            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
+              <strong>Booking code:</strong> ${params.bookingCode}
+            </p>
+            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
+              <strong>Customer:</strong> ${params.customerName}
+            </p>
+            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
+              <strong>Email:</strong> <a href="mailto:${params.customerEmail}" style="color:#2563eb; text-decoration:none;">${params.customerEmail}</a>
+            </p>
             ${
               params.customerPhone
-                ? `<p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Phone:</strong> ${params.customerPhone}</p>`
+                ? `<p style="margin:0 0 12px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Phone:</strong> ${params.customerPhone}</p>`
                 : ""
             }
-            <p style="margin:0; font-size:16px; line-height:24px;">
-              <a href="${params.bookingUrl}" style="color:#0f766e; text-decoration:none; font-weight:700;">
-                Open booking
-              </a>
-            </p>
+
+            <a
+              href="${params.bookingUrl}"
+              style="
+                display:inline-block;
+                background:#0f8a83;
+                color:#ffffff;
+                text-decoration:none;
+                font-weight:700;
+                font-size:15px;
+                line-height:22px;
+                padding:10px 16px;
+                border-radius:12px;
+              "
+            >
+              Open booking
+            </a>
           </div>
 
-          <div style="text-align:center; margin:0 0 28px 0;">
+          <div style="text-align:center; margin:0 0 22px 0;">
             <img
               src="${params.qrCodeUrl}"
               alt="Booking QR Code"
-              width="180"
-              height="180"
-              style="display:block; margin:0 auto 12px auto; border-radius:12px;"
+              width="160"
+              height="160"
+              style="display:block; margin:0 auto;"
             />
           </div>
 
-          <h2 style="margin:0 0 16px 0; font-size:22px; line-height:28px; color:#111827;">
+          <h2 style="margin:0 0 14px 0; font-size:22px; line-height:28px; color:#0f172a; font-weight:800;">
             Booking details
           </h2>
 
           ${itemBlocks}
 
-          <div style="margin:24px 0 0 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
-            <p style="margin:0; font-size:18px; line-height:28px; color:#111827; font-weight:700;">
+          <div style="margin:18px 0 0 0; padding:16px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:16px;">
+            <p style="margin:0; font-size:19px; line-height:28px; color:#111827; font-weight:800;">
               Total: € ${formatPrice(params.totalAmount)}
             </p>
           </div>
@@ -437,7 +417,7 @@ function buildInternalEmailHtml(params: {
           ${
             params.notes
               ? `
-            <p style="margin:20px 0 0 0; font-size:15px; line-height:24px; color:#374151;">
+            <p style="margin:18px 0 0 0; font-size:15px; line-height:24px; color:#475569;">
               <strong>Notes:</strong> ${params.notes}
             </p>
           `
