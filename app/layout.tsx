@@ -4,6 +4,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import InstallAppButton from "@/components/install-app-button";
+import IframeHeightReporter from "@/components/iframe-height-reporter";
 
 export const metadata: Metadata = {
   title: "Alicantíssima",
@@ -27,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 text-gray-900">
+        <IframeHeightReporter />
         <main className="min-h-screen">{children}</main>
         <InstallAppButton />
       </body>
