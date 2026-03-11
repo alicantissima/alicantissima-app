@@ -120,7 +120,7 @@ export default function CheckoutPage() {
           <section className="space-y-4">
             <button
               type="submit"
-              className="w-full rounded-[28px] bg-white px-6 py-5 text-center text-2xl font-semibold text-black shadow-[0_6px_22px_rgba(255,255,255,0.10)] transition active:scale-[0.99]"
+              className="w-full rounded-[28px] bg-white px-6 py-4.5 text-center text-xl font-semibold text-black shadow-[0_6px_22px_rgba(255,255,255,0.10)] transition active:scale-[0.99]"
             >
               Confirm booking
             </button>
