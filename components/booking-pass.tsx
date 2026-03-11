@@ -44,28 +44,7 @@ export default function BookingPass({ code }: Props) {
             <BookingQr code={code} />
           </div>
 
-          <p className="text-xs break-all text-gray-600 text-center">
-            {bookingUrl}
-          </p>
-
-          <div className="flex gap-2 justify-center">
-            <a
-              href={bookingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-xl border px-4 py-2"
-            >
-              Open
-            </a>
-
-            <button
-              onClick={copyLink}
-              className="rounded-xl border px-4 py-2"
-            >
-              Copy link
-            </button>
-          </div>
-        </div>
+                  </div>
       )}
     </div>
   );
