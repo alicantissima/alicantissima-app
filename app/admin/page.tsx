@@ -404,7 +404,6 @@ export default async function AdminPage({
     </div>
   );
 }
-  }
 
   let bookingsQuery = supabase
     .from("bookings")
