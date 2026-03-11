@@ -3,198 +3,149 @@
 
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { useBookingStore } from "@/store/bookingStore";
-import { submitCheckout } from "@/app/checkout/actions";
+import { useState } from "react";
 
-export default function CheckoutClient() {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+export default function CheckoutPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
 
-  const items = useBookingStore((state) => state.items);
-  const clearItems = useBookingStore((state) => state.clearItems);
+  const totalPrice = 18;
 
-  const total = useMemo(() => {
-    return items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
-  }, [items]);
+  function handleConfirmBooking(e: React.FormEvent) {
+    e.preventDefault();
 
-  async function handleSubmit(formData: FormData) {
-    if (pending) return;
-
-    setError(null);
-
-    const payload = {
-      customerName: String(formData.get("customerName") || ""),
-      customerEmail: String(formData.get("customerEmail") || ""),
-      customerPhone: String(formData.get("customerPhone") || ""),
-      notes: String(formData.get("notes") || ""),
-      items: items.map((item) => ({
-        id: item.productCode,
-        title: item.productName,
-        quantity: Number(item.quantity || 1),
-        unitPrice:
-          item.quantity && Number(item.quantity) > 0
-            ? Number(item.totalPrice) / Number(item.quantity)
-            : Number(item.totalPrice),
-        totalPrice: Number(item.totalPrice),
-        productType: "booking",
-        meta: {
-          date: item.date,
-          dropOffTime: item.dropOffTime ?? null,
-          pickUpTime: item.pickUpTime ?? null,
-          showerTime: item.showerTime ?? null,
-          comments: item.comments ?? null,
-          breakdown: item.breakdown ?? [],
-        },
-      })),
-    };
-
-    startTransition(async () => {
-      const result = await submitCheckout(payload);
-
-      if (!result.ok) {
-        setError(result.error ?? "Ocorreu um erro no checkout.");
-        return;
-      }
-
-      clearItems();
-      router.push(`/checkout/success?code=${result.bookingCode}`);
+    // aqui metes a tua lógica real de submit
+    console.log({
+      name,
+      email,
+      phone,
+      notes,
+      totalPrice,
     });
   }
 
-  if (!items.length) {
-    return (
-      <div className="rounded-2xl border p-6">
-        <p className="font-semibold">Your booking is empty.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-      <form action={handleSubmit} className="space-y-4 rounded-2xl border p-6">
-        <div>
-          <label htmlFor="customerName" className="mb-1 block text-sm font-medium">
-            Name
-          </label>
-          <input
-            id="customerName"
-            name="customerName"
-            required
-            disabled={pending}
-            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
-          />
-        </div>
+    <main className="min-h-screen bg-black px-5 pb-28 pt-6 text-white">
+      <div className="mx-auto max-w-md space-y-6">
+        <h1 className="text-4xl font-semibold tracking-tight text-white">
+          Checkout
+        </h1>
 
-        <div>
-          <label htmlFor="customerEmail" className="mb-1 block text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="customerEmail"
-            name="customerEmail"
-            type="email"
-            required
-            disabled={pending}
-            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
-          />
-        </div>
+        <form onSubmit={handleConfirmBooking} className="space-y-6">
+          {/* CUSTOMER DETAILS */}
+          <section className="rounded-[28px] border border-white/70 p-5">
+            <div className="space-y-5">
+              <div>
+                <label
+                  htmlFor="name"
+                  className="mb-2 block text-lg font-medium text-white"
+                >
+                  Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-2xl border border-white/70 bg-black px-4 py-4 text-base text-white outline-none placeholder:text-white/35"
+                />
+              </div>
 
-        <div>
-          <label htmlFor="customerPhone" className="mb-1 block text-sm font-medium">
-            Phone
-          </label>
-          <input
-            id="customerPhone"
-            name="customerPhone"
-            disabled={pending}
-            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
-          />
-        </div>
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-lg font-medium text-white"
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-2xl border border-white/70 bg-black px-4 py-4 text-base text-white outline-none placeholder:text-white/35"
+                />
+              </div>
 
-        <div>
-          <label htmlFor="notes" className="mb-1 block text-sm font-medium">
-            Notes
-          </label>
-          <textarea
-            id="notes"
-            name="notes"
-            rows={4}
-            disabled={pending}
-            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
-          />
-        </div>
-
-        {error && (
-          <div className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        <button
-  type="submit"
-  disabled={pending}
-  aria-disabled={pending}
-  className="mt-2 w-full rounded-[28px] border border-black bg-black px-6 py-5 text-center text-2xl font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
->
-  {pending ? "Creating booking..." : "Confirm booking"}
-</button>
-      </form>
-
-      <aside className="rounded-2xl border p-6">
-        <h2 className="mb-4 text-xl font-bold">Booking summary</h2>
-
-        <div className="space-y-4">
-          {items.map((item, index) => (
-            <div key={index} className="border-b pb-3 last:border-b-0">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-semibold">
-                    {item.quantity} × {item.productName}
-                  </p>
-
-                  <p className="text-sm text-gray-600">Date: {item.date}</p>
-
-                  {item.dropOffTime && (
-                    <p className="text-sm text-gray-600">
-                      Drop-off: {item.dropOffTime}
-                    </p>
-                  )}
-
-                  {item.pickUpTime && (
-                    <p className="text-sm text-gray-600">
-                      Estimated pick-up: {item.pickUpTime}
-                    </p>
-                  )}
-
-                  {item.showerTime && (
-                    <p className="text-sm text-gray-600">
-                      Shower time: {item.showerTime}
-                    </p>
-                  )}
-
-                  {item.comments && (
-                    <p className="text-sm text-gray-600">
-                      Comments: {item.comments}
-                    </p>
-                  )}
-                </div>
-
-                <div className="font-semibold">
-                  € {Number(item.totalPrice).toFixed(2)}
-                </div>
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="mb-2 block text-lg font-medium text-white"
+                >
+                  Phone
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full rounded-2xl border border-white/70 bg-black px-4 py-4 text-base text-white outline-none placeholder:text-white/35"
+                />
               </div>
             </div>
-          ))}
-        </div>
+          </section>
 
-        <div className="mt-5 border-t pt-4">
-          <p className="text-sm font-semibold">Total</p>
-          <p className="text-2xl font-bold">€ {total.toFixed(2)}</p>
-        </div>
-      </aside>
-    </div>
+          {/* BOOKING SUMMARY */}
+          <section className="rounded-[28px] border border-white/70 p-5">
+            <h2 className="text-2xl font-semibold text-white">Booking summary</h2>
+
+            <div className="mt-5 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xl font-medium text-white">
+                    1 × Luggage + Shower
+                  </p>
+                  <p className="mt-2 text-base text-white/55">Date: 2026-03-28</p>
+                  <p className="mt-1 text-base text-white/55">
+                    Drop-off: 10h00-10h30
+                  </p>
+                  <p className="mt-1 text-base text-white/55">
+                    Shower time: 10h00-10h30
+                  </p>
+                </div>
+
+                <p className="text-2xl font-semibold text-white">€ {totalPrice}.00</p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[24px] border border-white/70 p-4">
+              <p className="text-lg font-medium text-white/80">Total price</p>
+              <p className="mt-2 text-4xl font-semibold text-white">€ {totalPrice}</p>
+            </div>
+          </section>
+
+          {/* PRIMARY ACTION */}
+          <section className="space-y-4">
+            <button
+              type="submit"
+              className="w-full rounded-[28px] bg-white px-6 py-5 text-center text-2xl font-semibold text-black shadow-[0_6px_22px_rgba(255,255,255,0.10)] transition active:scale-[0.99]"
+            >
+              Confirm booking
+            </button>
+          </section>
+
+          {/* OPTIONAL NOTES AFTER BUTTON */}
+          <section className="rounded-[28px] border border-white/50 p-5">
+            <label
+              htmlFor="notes"
+              className="mb-2 block text-lg font-medium text-white/90"
+            >
+              Comments <span className="text-white/45">(optional)</span>
+            </label>
+
+            <textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={5}
+              className="w-full rounded-2xl border border-white/60 bg-black px-4 py-4 text-base text-white outline-none placeholder:text-white/30"
+              placeholder="Any extra information?"
+            />
+          </section>
+        </form>
+      </div>
+    </main>
   );
 }
