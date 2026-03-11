@@ -231,7 +231,21 @@ function buildConfirmationEmailHtml(params: {
               <strong>Booking code:</strong> ${params.bookingCode}
             </p>
             <p style="margin:0; font-size:16px; line-height:24px;">
-              <a href="${params.bookingUrl}" style="color:#0f766e; text-decoration:none; font-weight:700;">
+              <a
+  href="${params.bookingUrl}"
+  style="
+    display:inline-block;
+    background:#0f766e;
+    color:#ffffff;
+    text-decoration:none;
+    font-weight:700;
+    padding:12px 18px;
+    border-radius:12px;
+    margin-top:8px;
+  "
+>
+  Open booking
+</a>
                 View your booking
               </a>
             </p>
@@ -376,13 +390,13 @@ function buildInternalEmailHtml(params: {
 
   return `
     <div style="margin:0; padding:0; background:#f7f7f2;">
-      <div style="max-width:640px; margin:0 auto; padding:32px 20px;">
+      <div style="max-width:640px; margin:0 auto; padding:24px 20px;">
         <div style="background:#ffffff; border-radius:20px; padding:32px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
           <h1 style="margin:0 0 18px 0; font-size:30px; line-height:36px; color:#111827;">
             New booking received
           </h1>
 
-          <div style="margin:0 0 24px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
+          <div style="margin:0 0 24px 0; padding:18px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
             <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Booking code:</strong> ${params.bookingCode}</p>
             <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Customer:</strong> ${params.customerName}</p>
             <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Email:</strong> ${params.customerEmail}</p>
@@ -402,8 +416,8 @@ function buildInternalEmailHtml(params: {
             <img
               src="${params.qrCodeUrl}"
               alt="Booking QR Code"
-              width="220"
-              height="220"
+              width="180"
+              height="180"
               style="display:block; margin:0 auto 12px auto; border-radius:12px;"
             />
           </div>
