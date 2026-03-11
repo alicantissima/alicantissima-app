@@ -7,6 +7,8 @@ import { useEffect } from "react";
 
 export default function IframeHeightReporter() {
   useEffect(() => {
+    let lastHeight = 0;
+
     function getHeight() {
       const body = document.body;
       const html = document.documentElement;
@@ -23,45 +25,39 @@ export default function IframeHeightReporter() {
     function postHeight() {
       if (window.parent === window) return;
 
+      const height = getHeight();
+
+      if (Math.abs(height - lastHeight) < 20) return;
+
+      lastHeight = height;
+
       window.parent.postMessage(
         {
           type: "ALICANTISSIMA_IFRAME_HEIGHT",
-          height: getHeight(),
+          height,
         },
         "*"
       );
     }
 
-    const resizeObserver = new ResizeObserver(() => {
+    const observer = new ResizeObserver(() => {
       postHeight();
     });
 
-    resizeObserver.observe(document.body);
-    resizeObserver.observe(document.documentElement);
+    observer.observe(document.body);
 
-    const timeout1 = window.setTimeout(postHeight, 200);
-    const timeout2 = window.setTimeout(postHeight, 800);
-    const timeout3 = window.setTimeout(postHeight, 1500);
+    const t1 = setTimeout(postHeight, 200);
+    const t2 = setTimeout(postHeight, 800);
 
     window.addEventListener("load", postHeight);
     window.addEventListener("resize", postHeight);
 
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "ALICANTISSIMA_REQUEST_HEIGHT") {
-        postHeight();
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-
     return () => {
-      resizeObserver.disconnect();
-      window.clearTimeout(timeout1);
-      window.clearTimeout(timeout2);
-      window.clearTimeout(timeout3);
+      observer.disconnect();
+      clearTimeout(t1);
+      clearTimeout(t2);
       window.removeEventListener("load", postHeight);
       window.removeEventListener("resize", postHeight);
-      window.removeEventListener("message", handleMessage);
     };
   }, []);
 
