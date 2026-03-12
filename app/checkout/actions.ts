@@ -667,7 +667,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
 
 const customerBookingUrl = `${appBaseUrl}/b/${booking.booking_code}`;
 const adminBookingUrl = `${appBaseUrl}/admin/booking/${booking.id}`;
-const qrCodeUrl = `${appBaseUrl}/api/qr?code=${encodeURIComponent(booking.booking_code)}`;
+const qrCodeUrl = getQrCodeUrl(customerBookingUrl);
 
     try {
   await sendBookingConfirmationEmail({
