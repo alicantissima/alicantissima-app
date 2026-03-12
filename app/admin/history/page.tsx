@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import LogoutButton from "@/components/logout-button";
+import AdminSourceSelect from "@/components/admin-source-select";
 
 type BookingRow = {
   id: string;
@@ -50,6 +51,24 @@ type BookingMetaSummary = {
   city: string | null;
   checkout_time: string | null;
 };
+
+function formatServiceDate(value?: string | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: "Europe/Madrid",
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "2-digit",
+  })
+    .format(date)
+    .replace(",", "")
+    .replace(/\s+/g, ".");
+}
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("pt-PT", {
@@ -174,8 +193,10 @@ function getLocalDateFromCreatedAt(createdAt: string) {
 
 function getBookingDate(booking: BookingRow, meta: BookingMetaSummary) {
   if (meta.date) return meta.date;
+  if (booking.service_date) return booking.service_date;
   return getLocalDateFromCreatedAt(booking.created_at);
 }
+
 function emptyMeta(): BookingMetaSummary {
   return {
     bags: 0,
@@ -242,12 +263,17 @@ export default async function AdminHistoryPage() {
     const timeIn =
       typeof item.meta?.time_in === "string" && item.meta.time_in.trim() !== ""
         ? item.meta.time_in
+        : typeof item.meta?.dropOffTime === "string" &&
+          item.meta.dropOffTime.trim() !== ""
+        ? item.meta.dropOffTime
         : current.time_in;
 
     const timeOut =
-      typeof item.meta?.time_out === "string" &&
-      item.meta.time_out.trim() !== ""
+      typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
         ? item.meta.time_out
+        : typeof item.meta?.pickUpTime === "string" &&
+          item.meta.pickUpTime.trim() !== ""
+        ? item.meta.pickUpTime
         : current.time_out;
 
     const city =
@@ -279,31 +305,31 @@ export default async function AdminHistoryPage() {
   }
 
   const historyBookings = [...((bookings as BookingRow[]) ?? [])].filter(
-  (booking) => {
-    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-    const bookingDate = getBookingDate(booking, meta);
-    return isPast(bookingDate);
+    (booking) => {
+      const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+      const bookingDate = getBookingDate(booking, meta);
+      return isPast(bookingDate);
+    }
+  );
+
+  const sourceHistoryCounts = {
+    site: 0,
+    viator: 0,
+    booking: 0,
+    bokun: 0,
+    porta: 0,
+    na: 0,
+  };
+
+  for (const booking of historyBookings) {
+    const currentSource = (booking.source ?? "na") as keyof typeof sourceHistoryCounts;
+
+    if (currentSource in sourceHistoryCounts) {
+      sourceHistoryCounts[currentSource]++;
+    } else {
+      sourceHistoryCounts.na++;
+    }
   }
-);
-
-const sourceHistoryCounts = {
-  site: 0,
-  viator: 0,
-  booking: 0,
-  bokun: 0,
-  porta: 0,
-  na: 0,
-};
-
-for (const booking of historyBookings) {
-  const currentSource = (booking.source ?? "na") as keyof typeof sourceHistoryCounts;
-
-  if (currentSource in sourceHistoryCounts) {
-    sourceHistoryCounts[currentSource]++;
-  } else {
-    sourceHistoryCounts.na++;
-  }
-}
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
@@ -331,32 +357,32 @@ for (const booking of historyBookings) {
         </div>
       </div>
 
-<section className="rounded-xl border p-4">
-  <div className="mb-3 text-sm font-semibold text-gray-700">
-    Sources in history
-  </div>
+      <section className="rounded-xl border p-4">
+        <div className="mb-3 text-sm font-semibold text-gray-700">
+          Sources in history
+        </div>
 
-  <div className="flex flex-wrap gap-2 text-sm">
-    <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
-      site: {sourceHistoryCounts.site}
-    </span>
-    <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-      viator: {sourceHistoryCounts.viator}
-    </span>
-    <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
-      booking: {sourceHistoryCounts.booking}
-    </span>
-    <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
-      bokun: {sourceHistoryCounts.bokun}
-    </span>
-    <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
-      porta: {sourceHistoryCounts.porta}
-    </span>
-    <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
-      na: {sourceHistoryCounts.na}
-    </span>
-  </div>
-</section>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
+            site: {sourceHistoryCounts.site}
+          </span>
+          <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+            viator: {sourceHistoryCounts.viator}
+          </span>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
+            booking: {sourceHistoryCounts.booking}
+          </span>
+          <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
+            bokun: {sourceHistoryCounts.bokun}
+          </span>
+          <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
+            porta: {sourceHistoryCounts.porta}
+          </span>
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
+            na: {sourceHistoryCounts.na}
+          </span>
+        </div>
+      </section>
 
       {!historyBookings.length ? (
         <div className="rounded-2xl border p-6 text-sm text-gray-600">
@@ -366,18 +392,19 @@ for (const booking of historyBookings) {
         <section className="overflow-x-auto rounded-2xl border">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
-              <tr className="border-b text-left">
-                <th className="p-3">Código</th>
-                <th className="p-3">Cliente</th>
-                <th className="p-3">Data</th>
-                <th className="p-3">City</th>
-                <th className="p-3">Bags</th>
-                <th className="p-3">Showers</th>
-                <th className="p-3">Lugg + Shw</th>
-                <th className="p-3">In</th>
-                <th className="p-3">Out</th>
-                <th className="p-3">Total</th>
-                <th className="p-3">Estado</th>
+              <tr className="border-b text-left text-[13px]">
+                <th className="px-3 py-2">Código</th>
+                <th className="px-2 py-2">Source</th>
+                <th className="px-2 py-2">Date</th>
+                <th className="px-2 py-2">Cliente</th>
+                <th className="px-2 py-2">City</th>
+                <th className="px-2 py-2">Bags</th>
+                <th className="px-2 py-2">Shws</th>
+                <th className="px-2 py-2">Lug+Shw</th>
+                <th className="px-2 py-2">In</th>
+                <th className="px-2 py-2">Out</th>
+                <th className="px-2 py-2">Total</th>
+                <th className="px-2 py-2">Estado</th>
               </tr>
             </thead>
 
@@ -386,8 +413,11 @@ for (const booking of historyBookings) {
                 const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
 
                 return (
-                  <tr key={booking.id} className={`border-b ${getSourceRowClass(booking.source ?? null)}`}>
-                    <td className="p-3 font-semibold">
+                  <tr
+                    key={booking.id}
+                    className={`border-b ${getSourceRowClass(booking.source ?? null)}`}
+                  >
+                    <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
                       <Link
                         href={`/admin/booking/${booking.id}`}
                         className="underline hover:text-blue-600"
@@ -396,26 +426,55 @@ for (const booking of historyBookings) {
                       </Link>
                     </td>
 
-                    <td className="p-3">
-                      <div className="font-medium">{booking.customer_name}</div>
-                      <div className="text-xs text-gray-500">
+                    <td className="px-2 py-2 align-top">
+                      <div className="w-[92px]">
+                        <AdminSourceSelect
+                          bookingId={booking.id}
+                          value={booking.source ?? "na"}
+                        />
+                      </div>
+                    </td>
+
+                    <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
+                      {formatServiceDate(getBookingDate(booking, meta))}
+                    </td>
+
+                    <td className="px-2 py-2 align-top">
+                      <div className="max-w-[170px] text-[13px] leading-tight font-medium">
+                        {booking.customer_name}
+                      </div>
+                      <div className="text-[11px] leading-tight text-gray-500">
                         {booking.customer_email}
                       </div>
                     </td>
 
-                    <td className="p-3">{getBookingDate(booking, meta)}</td>
-                    <td className="p-3">{booking.city ?? "-"}</td>
-                    <td className="p-3">{meta.bags || "-"}</td>
-                    <td className="p-3">{meta.showers || "-"}</td>
-                    <td className="p-3">{meta.combo || "-"}</td>
-                    <td className="p-3">{meta.time_in ?? "-"}</td>
-                    <td className="p-3">{meta.time_out ?? meta.checkout_time ?? "-"}</td>
-                    <td className="p-3 font-medium">
+                    <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
+                      {booking.city ?? meta.city ?? "-"}
+                    </td>
+
+                    <td className="px-2 py-2 align-top text-[12px]">
+                      {meta.bags || "-"}
+                    </td>
+                    <td className="px-2 py-2 align-top text-[12px]">
+                      {meta.showers || "-"}
+                    </td>
+                    <td className="px-2 py-2 align-top text-[12px]">
+                      {meta.combo || "-"}
+                    </td>
+                    <td className="px-2 py-2 align-top text-[12px] whitespace-nowrap">
+                      {meta.time_in ?? "-"}
+                    </td>
+                    <td className="px-2 py-2 align-top text-[12px] whitespace-nowrap">
+                      {meta.time_out ?? meta.checkout_time ?? "-"}
+                    </td>
+
+                    <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
                       {formatCurrency(Number(booking.total_amount), booking.currency)}
                     </td>
-                    <td className="p-3">
+
+                    <td className="px-2 py-2 align-top">
                       <span
-                        className={`inline-flex rounded-full border px-2 py-1 text-xs ${getStatusClass(
+                        className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${getStatusClass(
                           booking.status
                         )}`}
                       >
