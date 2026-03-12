@@ -20,7 +20,8 @@ export type BookingItem = {
   comments?: string;
   unitPrice: number;
   totalPrice: number;
-  breakdown?: BookingBreakdownItem[];
+  breakdown?: unknown[];
+  source?: string;
 };
 
 type BookingStore = {
