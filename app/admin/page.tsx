@@ -378,7 +378,7 @@ const rowClass = cancelled
       !cancelled && isLate ? "font-semibold text-orange-600" : ""
     }`}
   >
-    {meta.time_out ?? meta.checkout_time ?? "-"}
+{meta.time_out ?? meta.pick_up ?? meta.checkout_time ?? "-"}
     {!cancelled && isLate && " ⚠"}
   </td>
 
@@ -485,15 +485,18 @@ if (!profile || profile.role !== "admin") {
     if (code === "combo") combo += item.quantity;
 
     const timeIn =
-      typeof item.meta?.time_in === "string" && item.meta.time_in.trim() !== ""
-        ? item.meta.time_in
-        : current.time_in;
+  typeof item.meta?.time_in === "string" && item.meta.time_in.trim() !== ""
+    ? item.meta.time_in
+    : typeof item.meta?.dropOffTime === "string" && item.meta.dropOffTime.trim() !== ""
+    ? item.meta.dropOffTime
+    : current.time_in;
 
-    const timeOut =
-      typeof item.meta?.time_out === "string" &&
-      item.meta.time_out.trim() !== ""
-        ? item.meta.time_out
-        : current.time_out;
+const timeOut =
+  typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
+    ? item.meta.time_out
+    : typeof item.meta?.pickUpTime === "string" && item.meta.pickUpTime.trim() !== ""
+    ? item.meta.pickUpTime
+    : current.time_out;
 
     const city =
       typeof item.meta?.city === "string" && item.meta.city.trim() !== ""
