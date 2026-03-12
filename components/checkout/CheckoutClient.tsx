@@ -67,6 +67,10 @@ export default function CheckoutClient() {
     });
   }
 
+  function handleBack() {
+    router.back();
+  }
+
   if (!items.length) {
     return (
       <div className="rounded-2xl border p-6">
@@ -78,6 +82,14 @@ export default function CheckoutClient() {
   return (
     <div className="grid gap-8 xl:grid-cols-[1fr_420px]">
       <form action={handleSubmit} className="space-y-4 rounded-2xl border p-6">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="text-sm font-medium text-gray-600 hover:text-black"
+        >
+          ← Back to product menu
+        </button>
+
         <div>
           <label htmlFor="customerName" className="mb-1 block text-sm font-medium">
             Name

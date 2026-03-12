@@ -94,7 +94,7 @@ export default function BookComboPage() {
       date,
       dropOffTime,
       showerTime,
-      comments,
+      comments: comments.trim() || undefined,
       unitPrice: comboPrice,
       totalPrice,
       breakdown: [
@@ -136,9 +136,7 @@ export default function BookComboPage() {
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-      <h1 className="text-2xl font-bold uppercase">
-        Luggage + Shower
-      </h1>
+      <h1 className="text-2xl font-bold uppercase">Luggage + Shower</h1>
 
       <p className="text-sm text-gray-600">
         Leave your bags, enjoy the day and take a refreshing shower
@@ -272,15 +270,6 @@ export default function BookComboPage() {
             </div>
           </div>
         </div>
-
-        <div>
-          <label className="text-sm font-semibold">Comments (optional)</label>
-          <textarea
-            className="mt-1 w-full rounded border p-2"
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-          />
-        </div>
       </div>
 
       <div className="space-y-2 rounded-2xl border p-4">
@@ -289,11 +278,21 @@ export default function BookComboPage() {
       </div>
 
       <button
+        type="button"
         onClick={handleAddToBooking}
-        className="w-full rounded-2xl border p-4 font-semibold uppercase"
+        className="w-full rounded-[28px] border border-black bg-black p-4 font-semibold uppercase text-white transition active:scale-[0.99]"
       >
-        BOOK NOW
+        Book now
       </button>
+
+      <div>
+        <label className="text-sm font-semibold">Comments (optional)</label>
+        <textarea
+          className="mt-1 w-full rounded border p-2"
+          value={comments}
+          onChange={(e) => setComments(e.target.value)}
+        />
+      </div>
     </main>
   );
 }

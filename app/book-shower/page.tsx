@@ -76,7 +76,7 @@ export default function BookShowerPage() {
       quantity: showers,
       date,
       showerTime,
-      comments,
+      comments: comments.trim() || undefined,
       unitPrice,
       totalPrice,
     });
@@ -93,7 +93,6 @@ export default function BookShowerPage() {
       </p>
 
       <div className="space-y-4">
-
         <div>
           <label className="text-sm font-semibold">Choose date</label>
           <input
@@ -127,7 +126,7 @@ export default function BookShowerPage() {
             <button
               type="button"
               onClick={() => setShowers(Math.max(1, showers - 1))}
-              className="border px-3 py-1 rounded"
+              className="rounded border px-3 py-1"
             >
               -
             </button>
@@ -137,22 +136,12 @@ export default function BookShowerPage() {
             <button
               type="button"
               onClick={() => setShowers(showers + 1)}
-              className="border px-3 py-1 rounded"
+              className="rounded border px-3 py-1"
             >
               +
             </button>
           </div>
         </div>
-
-        <div>
-          <label className="text-sm font-semibold">Comments (optional)</label>
-          <textarea
-            className="mt-1 w-full rounded border p-2"
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-          />
-        </div>
-
       </div>
 
       <div className="rounded-2xl border p-4">
@@ -161,11 +150,21 @@ export default function BookShowerPage() {
       </div>
 
       <button
+        type="button"
         onClick={handleAddToBooking}
-        className="w-full rounded-2xl border p-4 font-semibold uppercase"
+        className="w-full rounded-[28px] border border-black bg-black p-4 font-semibold uppercase text-white transition active:scale-[0.99]"
       >
-        BOOK NOW
+        Book now
       </button>
+
+      <div>
+        <label className="text-sm font-semibold">Comments (optional)</label>
+        <textarea
+          className="mt-1 w-full rounded border p-2"
+          value={comments}
+          onChange={(e) => setComments(e.target.value)}
+        />
+      </div>
     </main>
   );
 }

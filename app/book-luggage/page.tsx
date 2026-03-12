@@ -170,15 +170,6 @@ export default function BookLuggagePage() {
             </button>
           </div>
         </div>
-
-        <div>
-          <label className="text-sm font-semibold">Comments (optional)</label>
-          <textarea
-            className="mt-1 w-full rounded border p-2"
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-          />
-        </div>
       </div>
 
       <div className="rounded-2xl border p-4">
@@ -189,10 +180,19 @@ export default function BookLuggagePage() {
       <button
         type="button"
         onClick={handleAddToBooking}
-        className="w-full rounded-2xl border p-4 font-semibold uppercase"
+        className="w-full rounded-[28px] border border-black bg-black p-4 font-semibold uppercase text-white transition active:scale-[0.99]"
       >
         Book now
       </button>
+
+      <div>
+        <label className="text-sm font-semibold">Comments (optional)</label>
+        <textarea
+          className="mt-1 w-full rounded border p-2"
+          value={comments}
+          onChange={(e) => setComments(e.target.value)}
+        />
+      </div>
     </main>
   );
 }
