@@ -21,7 +21,6 @@ type CheckoutPayload = {
   customerEmail: string;
   customerPhone?: string;
   notes?: string;
-  source?: string;
   items: CheckoutItem[];
 };
 
@@ -537,7 +536,6 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const customerEmail = payload.customerEmail?.trim();
     const customerPhone = payload.customerPhone?.trim();
     const notes = payload.notes?.trim() || null;
-    const source = payload.source?.trim() || "na";
 
     if (!customerName) {
       return { ok: false, error: "Missing name." };
@@ -598,18 +596,18 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
       .insert({
-        booking_code: bookingCode,
-        customer_name: customerName,
-        city: customerCity,
-        customer_email: customerEmail,
-        customer_phone: customerPhone,
-        notes,
-        total_amount: totalAmount,
-        currency: "EUR",
-        source,
-        status: "pending",
-        service_date: serviceDate,
-      })
+  booking_code: bookingCode,
+  customer_name: customerName,
+  city: customerCity,
+  customer_email: customerEmail,
+  customer_phone: customerPhone,
+  notes,
+  total_amount: totalAmount,
+  currency: "EUR",
+  source: "na",
+  status: "pending",
+  service_date: serviceDate,
+})
       .select("id, booking_code")
       .single();
 

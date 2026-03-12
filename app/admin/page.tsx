@@ -301,22 +301,22 @@ function renderSectionTable({
       >
         <table className="w-full text-sm">
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
-            <tr className="border-b text-left">
-  <th className="p-3">Código</th>
-  <th className="p-3">Source</th>
-  <th className="p-3">Date</th>
-  <th className="p-3">Cliente</th>
-  <th className="p-3">City</th>
-  <th className="p-3">Bags</th>
-  <th className="p-3">Showers</th>
-  <th className="p-3">Lugg+ Shw</th>
-  <th className="p-3">In</th>
-  <th className="p-3">Out</th>
-  <th className="p-3">Total</th>
-  <th className="p-3">Estado</th>
-  <th className="p-3">Ação</th>
-</tr>
-          </thead>
+  <tr className="border-b text-left">
+    <th className="p-3">Código</th>
+    <th className="p-3">Source</th>
+    <th className="p-3">Date</th>
+    <th className="p-3">Cliente</th>
+    <th className="p-3">City</th>
+    <th className="p-3">Bags</th>
+    <th className="p-3">Showers</th>
+    <th className="p-3">Lugg+ Shw</th>
+    <th className="p-3">In</th>
+    <th className="p-3">Out</th>
+    <th className="p-3">Total</th>
+    <th className="p-3">Estado</th>
+    <th className="p-3">Ação</th>
+  </tr>
+</thead>
 
           <tbody>
             {bookings.map((booking) => {
@@ -345,66 +345,65 @@ const rowClass = cancelled
 
               return (
                 <tr key={booking.id} className={`border-b ${rowClass}`}>
-                  <td className="p-3 font-semibold">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="underline hover:text-blue-600"
-                    >
-                      {booking.booking_code}
-                    </Link>
-                  </td>
+  <td className="p-3 font-semibold">
+    <Link
+      href={`/admin/booking/${booking.id}`}
+      className="underline hover:text-blue-600"
+    >
+      {booking.booking_code}
+    </Link>
+  </td>
 
-<td className="p-3">{booking.source || "—"}</td>
-<td className="p-3 whitespace-nowrap">{meta.date ?? "-"}</td>
-<td className="p-3">
-  <div className="font-medium">{booking.customer_name}</div>
-  <div className="text-xs text-gray-500">{booking.customer_email}</div>
-</td>
+  <td className="p-3">
+    <AdminSourceSelect
+      bookingId={booking.id}
+      value={booking.source ?? "na"}
+    />
+  </td>
 
-                  <td className="p-3">
-                    <div className="font-medium">{booking.customer_name}</div>
-                    <div className="text-xs text-gray-500">
-                      {booking.customer_email}
-                    </div>
-                  </td>
+  <td className="p-3 whitespace-nowrap">{meta.date ?? "-"}</td>
 
+  <td className="p-3">
+    <div className="font-medium">{booking.customer_name}</div>
+    <div className="text-xs text-gray-500">{booking.customer_email}</div>
+  </td>
 
-                  <td className="p-3">{booking.city ?? "-"}</td>
-                  <td className="p-3">{meta.bags || "-"}</td>
-                  <td className="p-3">{meta.showers || "-"}</td>
-                  <td className="p-3">{meta.combo || "-"}</td>
-                  <td className="p-3">{meta.time_in ?? "-"}</td>
-                  <td
-                    className={`p-3 ${
-                      !cancelled && isLate ? "font-semibold text-orange-600" : ""
-                    }`}
-                  >
-                    {meta.time_out ?? meta.checkout_time ?? "-"}
-                    {!cancelled && isLate && " ⚠"}
-                  </td>
+  <td className="p-3">{booking.city ?? meta.city ?? "-"}</td>
+                    <td className="p-3">{meta.bags || "-"}</td>
+  <td className="p-3">{meta.showers || "-"}</td>
+  <td className="p-3">{meta.combo || "-"}</td>
+  <td className="p-3">{meta.time_in ?? "-"}</td>
+  <td
+    className={`p-3 ${
+      !cancelled && isLate ? "font-semibold text-orange-600" : ""
+    }`}
+  >
+    {meta.time_out ?? meta.checkout_time ?? "-"}
+    {!cancelled && isLate && " ⚠"}
+  </td>
 
-                  <td className="p-3 font-medium">
-                    {formatCurrency(Number(booking.total_amount), booking.currency)}
-                  </td>
+  <td className="p-3 font-medium">
+    {formatCurrency(Number(booking.total_amount), booking.currency)}
+  </td>
 
-                  <td className="p-3">
-                    <span
-                      className={`inline-flex rounded-full border px-2 py-1 text-xs ${getStatusClass(
-                        booking.status
-                      )}`}
-                    >
-                      {getStatusLabel(booking.status)}
-                    </span>
-                  </td>
+  <td className="p-3">
+    <span
+      className={`inline-flex rounded-full border px-2 py-1 text-xs ${getStatusClass(
+        booking.status
+      )}`}
+    >
+      {getStatusLabel(booking.status)}
+    </span>
+  </td>
 
-                  <td className="p-3">
-                    {!cancelled && normalizeStatus(booking.status) === "inside" ? (
-                      <QuickFinishButton bookingId={booking.id} />
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                </tr>
+  <td className="p-3">
+    {!cancelled && normalizeStatus(booking.status) === "inside" ? (
+      <QuickFinishButton bookingId={booking.id} />
+    ) : (
+      "-"
+    )}
+  </td>
+</tr>
               );
             })}
           </tbody>
