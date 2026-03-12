@@ -370,7 +370,7 @@ for (const booking of historyBookings) {
                 <th className="p-3">City</th>
                 <th className="p-3">Bags</th>
                 <th className="p-3">Showers</th>
-                <th className="p-3">Luggage + Shower</th>
+                <th className="p-3">Lugg + Shw</th>
                 <th className="p-3">In</th>
                 <th className="p-3">Out</th>
                 <th className="p-3">Total</th>
@@ -401,7 +401,7 @@ for (const booking of historyBookings) {
                     </td>
 
                     <td className="p-3">{getBookingDate(booking, meta)}</td>
-                    <td className="p-3">{meta.city ?? "-"}</td>
+                    <td className="p-3">{booking.city ?? "-"}</td>
                     <td className="p-3">{meta.bags || "-"}</td>
                     <td className="p-3">{meta.showers || "-"}</td>
                     <td className="p-3">{meta.combo || "-"}</td>
