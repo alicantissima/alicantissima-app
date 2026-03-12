@@ -137,6 +137,12 @@ router.push("/checkout");
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
+<button
+  onClick={() => router.push("/")}
+  className="text-sm text-gray-600 hover:text-black"
+>
+  ← Back
+</button>
       <h1 className="text-2xl font-bold uppercase">Luggage + Shower</h1>
 
       <p className="text-sm text-gray-600">
