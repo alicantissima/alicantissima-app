@@ -28,31 +28,31 @@ export default function CheckoutClient() {
     const city = String(formData.get("city") || "");
 
     const payload = {
-  customerName: String(formData.get("customerName") || ""),
-  customerCity: city,
-  customerEmail: String(formData.get("customerEmail") || ""),
-  customerPhone: String(formData.get("customerPhone") || ""),
-  notes: String(formData.get("notes") || ""),
-  items: items.map((item) => ({
-    id: item.productCode,
-    title: item.productName,
-    quantity: Number(item.quantity || 1),
-    unitPrice:
-      item.quantity && Number(item.quantity) > 0
-        ? Number(item.totalPrice) / Number(item.quantity)
-        : Number(item.totalPrice),
-    totalPrice: Number(item.totalPrice),
-    productType: "booking",
-    meta: {
-      date: item.date,
-      dropOffTime: item.dropOffTime ?? null,
-      pickUpTime: item.pickUpTime ?? null,
-      showerTime: item.showerTime ?? null,
-      comments: item.comments ?? null,
-      breakdown: item.breakdown ?? [],
-    },
-  })),
-};
+      customerName: String(formData.get("customerName") || ""),
+      customerCity: city,
+      customerEmail: String(formData.get("customerEmail") || ""),
+      customerPhone: String(formData.get("customerPhone") || ""),
+      notes: "",
+      items: items.map((item) => ({
+        id: item.productCode,
+        title: item.productName,
+        quantity: Number(item.quantity || 1),
+        unitPrice:
+          item.quantity && Number(item.quantity) > 0
+            ? Number(item.totalPrice) / Number(item.quantity)
+            : Number(item.totalPrice),
+        totalPrice: Number(item.totalPrice),
+        productType: "booking",
+        meta: {
+          date: item.date,
+          dropOffTime: item.dropOffTime ?? null,
+          pickUpTime: item.pickUpTime ?? null,
+          showerTime: item.showerTime ?? null,
+          comments: item.comments ?? null,
+          breakdown: item.breakdown ?? [],
+        },
+      })),
+    };
 
     startTransition(async () => {
       const result = await submitCheckout(payload);
@@ -127,19 +127,6 @@ export default function CheckoutClient() {
           <input
             id="customerPhone"
             name="customerPhone"
-            disabled={pending}
-            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="notes" className="mb-1 block text-sm font-medium">
-            Notes
-          </label>
-          <textarea
-            id="notes"
-            name="notes"
-            rows={4}
             disabled={pending}
             className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
           />
