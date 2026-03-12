@@ -28,7 +28,7 @@ export default async function BookingPage({ params }: PageProps) {
   }
 
   return (
-    <main className="space-y-4 p-4 max-w-5xl">
+    <main className="space-y-4 p-4 max-w-5xl mx-auto">
 
       {/* voltar */}
       <Link
