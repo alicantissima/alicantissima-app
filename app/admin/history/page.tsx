@@ -386,7 +386,7 @@ for (const booking of historyBookings) {
                 const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
 
                 return (
-                  <tr key={booking.id} className={`border-b ${getSourceRowClass(booking.source)}`}>
+                  <tr key={booking.id} className={`border-b ${getSourceRowClass(booking.source ?? null)}`}>
                     <td className="p-3 font-semibold">
                       <Link
                         href={`/admin/booking/${booking.id}`}
