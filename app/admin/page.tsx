@@ -449,18 +449,6 @@ if (!profile || profile.role !== "admin") {
   );
 }
 
-  if (!profile || profile.role !== "admin") {
-  return (
-    <div className="p-6 space-y-2">
-      <div className="font-bold">Acesso negado.</div>
-      <div className="text-sm">User id: {user.id}</div>
-      <div className="text-sm">User email: {user.email}</div>
-      <div className="text-sm">Profile exists: {profile ? "yes" : "no"}</div>
-      <div className="text-sm">Profile role: {profile?.role ?? "null"}</div>
-    </div>
-  );
-}
-
   let bookingsQuery = supabase
     .from("bookings")
     .select("*")
@@ -674,12 +662,13 @@ if (cityName) {
 
   const aDate = aMeta.date || a.created_at;
   const bDate = bMeta.date || b.created_at;
-  const citiesTodayList = Object.entries(citiesTodayCounts)
-  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-  .slice(0, 12);
 
   return new Date(aDate).getTime() - new Date(bDate).getTime();
 });
+
+const citiesTodayList = Object.entries(citiesTodayCounts)
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  .slice(0, 12);
 
   const todayBookings: BookingRow[] = [];
   const insideBookings: BookingRow[] = [];
