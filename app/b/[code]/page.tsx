@@ -2,7 +2,7 @@
 
 
 import BookingPass from "@/components/booking-pass";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 
 type PageProps = {
@@ -40,7 +40,7 @@ function formatCurrency(amount?: number | string | null) {
 }
 
 export default async function BookingByCodePage({ params }: PageProps) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { code } = await params;
   const bookingCode = code.trim().toUpperCase();
 
