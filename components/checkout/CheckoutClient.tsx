@@ -20,52 +20,53 @@ export default function CheckoutClient() {
     return items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
   }, [items]);
 
-async function handleSubmit(formData: FormData) {
-  if (pending) return;
+  async function handleSubmit(formData: FormData) {
+    if (pending) return;
 
-  setError(null);
+    setError(null);
 
-  const city = String(formData.get("city") || "");
+    const city = String(formData.get("city") || "");
 
-  const payload = {
-    customerName: String(formData.get("customerName") || ""),
-    customerCity: city,
-    customerEmail: String(formData.get("customerEmail") || ""),
-    customerPhone: String(formData.get("customerPhone") || ""),
-    notes: String(formData.get("notes") || ""),
-    items: items.map((item) => ({
-      id: item.productCode,
-      title: item.productName,
-      quantity: Number(item.quantity || 1),
-      unitPrice:
-        item.quantity && Number(item.quantity) > 0
-          ? Number(item.totalPrice) / Number(item.quantity)
-          : Number(item.totalPrice),
-      totalPrice: Number(item.totalPrice),
-      productType: "booking",
-      meta: {
-        date: item.date,
-        dropOffTime: item.dropOffTime ?? null,
-        pickUpTime: item.pickUpTime ?? null,
-        showerTime: item.showerTime ?? null,
-        comments: item.comments ?? null,
-        breakdown: item.breakdown ?? [],
-      },
-    })),
-  };
+    const payload = {
+      customerName: String(formData.get("customerName") || ""),
+      customerCity: city,
+      customerEmail: String(formData.get("customerEmail") || ""),
+      customerPhone: String(formData.get("customerPhone") || ""),
+      notes: String(formData.get("notes") || ""),
+      source: String(items[0]?.source || "na"),
+      items: items.map((item) => ({
+        id: item.productCode,
+        title: item.productName,
+        quantity: Number(item.quantity || 1),
+        unitPrice:
+          item.quantity && Number(item.quantity) > 0
+            ? Number(item.totalPrice) / Number(item.quantity)
+            : Number(item.totalPrice),
+        totalPrice: Number(item.totalPrice),
+        productType: "booking",
+        meta: {
+          date: item.date,
+          dropOffTime: item.dropOffTime ?? null,
+          pickUpTime: item.pickUpTime ?? null,
+          showerTime: item.showerTime ?? null,
+          comments: item.comments ?? null,
+          breakdown: item.breakdown ?? [],
+        },
+      })),
+    };
 
-  startTransition(async () => {
-    const result = await submitCheckout(payload);
+    startTransition(async () => {
+      const result = await submitCheckout(payload);
 
-    if (!result.ok) {
-      setError(result.error ?? "Ocorreu um erro no checkout.");
-      return;
-    }
+      if (!result.ok) {
+        setError(result.error ?? "Ocorreu um erro no checkout.");
+        return;
+      }
 
-    clearItems();
-    router.push(`/checkout/success?code=${result.bookingCode}`);
-  });
-}
+      clearItems();
+      router.push(`/checkout/success?code=${result.bookingCode}`);
+    });
+  }
 
   if (!items.length) {
     return (
@@ -76,7 +77,7 @@ async function handleSubmit(formData: FormData) {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+    <div className="grid gap-8 xl:grid-cols-[1fr_420px]">
       <form action={handleSubmit} className="space-y-4 rounded-2xl border p-6">
         <div>
           <label htmlFor="customerName" className="mb-1 block text-sm font-medium">
@@ -91,19 +92,20 @@ async function handleSubmit(formData: FormData) {
           />
         </div>
 
-<div className="space-y-1">
-  <label htmlFor="city" className="text-sm font-medium">
-    City (where you are from)
-  </label>
+        <div className="space-y-1">
+          <label htmlFor="city" className="text-sm font-medium">
+            City (where you are from)
+          </label>
 
-  <input
-    id="city"
-    type="text"
-    name="city"
-    placeholder="London, Berlin, Madrid..."
-    className="w-full rounded-xl border px-3 py-2 text-sm"
-  />
-</div>
+          <input
+            id="city"
+            type="text"
+            name="city"
+            placeholder="London, Berlin, Madrid..."
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 text-sm disabled:opacity-60"
+          />
+        </div>
 
         <div>
           <label htmlFor="customerEmail" className="mb-1 block text-sm font-medium">
