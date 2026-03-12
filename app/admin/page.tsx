@@ -725,11 +725,6 @@ const upcomingTotal = upcomingBookings.reduce(
     upcomingBookings.length +
     cancelledBookings.length;
 
-const upcomingTotal = upcomingBookings.reduce(
-  (sum, booking) => sum + Number(booking.total_amount || 0),
-  0
-);
-
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
       <AdminAutoRefresh intervalMs={60000} />
