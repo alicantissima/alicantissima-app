@@ -1,119 +1,203 @@
 
 
 
+
+
+
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
+import { submitCheckout } from "@/app/checkout/actions";
 
 export default function CheckoutClient() {
   const router = useRouter();
-  const items = useBookingStore((state) => state.items);
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [notes, setNotes] = useState("");
+  const items = useBookingStore((state) => state.items);
+  const clearItems = useBookingStore((state) => state.clearItems);
 
   const total = useMemo(() => {
-    return items.reduce((sum, item) => sum + item.totalPrice, 0);
+    return items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
   }, [items]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(formData: FormData) {
+    if (pending) return;
 
-    if (!name.trim()) {
-      alert("Please enter your name.");
-      return;
-    }
+    setError(null);
 
-    if (!email.trim()) {
-      alert("Please enter your email.");
-      return;
-    }
+    const payload = {
+      customerName: String(formData.get("customerName") || ""),
+      customerEmail: String(formData.get("customerEmail") || ""),
+      customerPhone: String(formData.get("customerPhone") || ""),
+      notes: String(formData.get("notes") || ""),
+      items: items.map((item) => ({
+        id: item.productCode,
+        title: item.productName,
+        quantity: Number(item.quantity || 1),
+        unitPrice:
+          item.quantity && Number(item.quantity) > 0
+            ? Number(item.totalPrice) / Number(item.quantity)
+            : Number(item.totalPrice),
+        totalPrice: Number(item.totalPrice),
+        productType: "booking",
+        meta: {
+          date: item.date,
+          dropOffTime: item.dropOffTime ?? null,
+          pickUpTime: item.pickUpTime ?? null,
+          showerTime: item.showerTime ?? null,
+          comments: item.comments ?? null,
+          breakdown: item.breakdown ?? [],
+        },
+      })),
+    };
 
-    router.push("/confirmation");
+    startTransition(async () => {
+      const result = await submitCheckout(payload);
+
+      if (!result.ok) {
+        setError(result.error ?? "Ocorreu um erro no checkout.");
+        return;
+      }
+
+      clearItems();
+      router.push(`/checkout/success?code=${result.bookingCode}`);
+    });
+  }
+
+  if (!items.length) {
+    return (
+      <div className="rounded-2xl border p-6">
+        <p className="font-semibold">Your booking is empty.</p>
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-black px-5 pb-28 pt-6 text-white">
-      <div className="mx-auto max-w-md space-y-6">
-        <h1 className="text-3xl font-semibold">Checkout</h1>
+    <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <form action={handleSubmit} className="space-y-4 rounded-2xl border p-6">
+        <div>
+          <label htmlFor="customerName" className="mb-1 block text-sm font-medium">
+            Name
+          </label>
+          <input
+            id="customerName"
+            name="customerName"
+            required
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="rounded-[28px] border border-white/20 p-5">
-            <div className="space-y-5">
-              <div>
-                <label className="mb-2 block text-sm font-semibold">Name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-2xl border border-white/20 bg-black px-4 py-3"
-                />
-              </div>
+        <div>
+          <label htmlFor="customerEmail" className="mb-1 block text-sm font-medium">
+            Email
+          </label>
+          <input
+            id="customerEmail"
+            name="customerEmail"
+            type="email"
+            required
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
+          />
+        </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-semibold">Email</label>
-                <input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-2xl border border-white/20 bg-black px-4 py-3"
-                />
-              </div>
+        <div>
+          <label htmlFor="customerPhone" className="mb-1 block text-sm font-medium">
+            Phone
+          </label>
+          <input
+            id="customerPhone"
+            name="customerPhone"
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
+          />
+        </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-semibold">Phone</label>
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full rounded-2xl border border-white/20 bg-black px-4 py-3"
-                />
-              </div>
-            </div>
-          </section>
+        <div>
+          <label htmlFor="notes" className="mb-1 block text-sm font-medium">
+            Notes
+          </label>
+          <textarea
+            id="notes"
+            name="notes"
+            rows={4}
+            disabled={pending}
+            className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
+          />
+        </div>
 
-          <section className="rounded-[28px] border border-white/20 p-5">
-            <h2 className="text-lg font-semibold">Booking summary</h2>
+        {error && (
+          <div className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-            <div className="mt-4 space-y-3">
-              {items.map((item, i) => (
-                <div key={i} className="flex justify-between">
-                  <span>
+        <button
+          type="submit"
+          disabled={pending}
+          aria-disabled={pending}
+          className="mt-2 w-full rounded-[28px] border border-black bg-black px-6 py-5 text-center text-2xl font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {pending ? "Creating booking..." : "Create booking"}
+        </button>
+      </form>
+
+      <aside className="rounded-2xl border p-6">
+        <h2 className="mb-4 text-xl font-bold">Booking summary</h2>
+
+        <div className="space-y-4">
+          {items.map((item, index) => (
+            <div key={index} className="border-b pb-3 last:border-b-0">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-semibold">
                     {item.quantity} × {item.productName}
-                  </span>
-                  <span>€ {item.totalPrice}</span>
+                  </p>
+
+                  <p className="text-sm text-gray-600">Date: {item.date}</p>
+
+                  {item.dropOffTime && (
+                    <p className="text-sm text-gray-600">
+                      Drop-off: {item.dropOffTime}
+                    </p>
+                  )}
+
+                  {item.pickUpTime && (
+                    <p className="text-sm text-gray-600">
+                      Estimated pick-up: {item.pickUpTime}
+                    </p>
+                  )}
+
+                  {item.showerTime && (
+                    <p className="text-sm text-gray-600">
+                      Shower time: {item.showerTime}
+                    </p>
+                  )}
+
+                  {item.comments && (
+                    <p className="text-sm text-gray-600">
+                      Comments: {item.comments}
+                    </p>
+                  )}
                 </div>
-              ))}
+
+                <div className="font-semibold">
+                  € {Number(item.totalPrice).toFixed(2)}
+                </div>
+              </div>
             </div>
+          ))}
+        </div>
 
-            <div className="mt-6 rounded-2xl border border-white/20 p-4">
-              <p className="text-sm text-white/60">Total price</p>
-              <p className="text-2xl font-semibold">€ {total}</p>
-            </div>
-          </section>
-
-          <button
-            type="submit"
-            className="w-full rounded-[28px] bg-white px-6 py-4 text-lg font-semibold text-black"
-          >
-            Confirm booking
-          </button>
-
-          <section className="rounded-[28px] border border-white/20 p-5">
-            <label className="mb-2 block text-sm font-semibold">
-              Comments (optional)
-            </label>
-
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              className="w-full rounded-2xl border border-white/20 bg-black px-4 py-3"
-            />
-          </section>
-        </form>
-      </div>
-    </main>
+        <div className="mt-5 border-t pt-4">
+          <p className="text-sm font-semibold">Total</p>
+          <p className="text-2xl font-bold">€ {total.toFixed(2)}</p>
+        </div>
+      </aside>
+    </div>
   );
 }
