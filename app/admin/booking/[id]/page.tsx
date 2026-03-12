@@ -5,6 +5,7 @@ import BookingQr from "@/components/booking-qr";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import CancelBookingButton from "@/components/cancel-booking-button";
+import Link from "next/link";
 
 type PageProps = {
   params: Promise<{
@@ -27,34 +28,45 @@ export default async function BookingPage({ params }: PageProps) {
   }
 
   return (
-    <main className="space-y-4 p-4">
-      <section className="rounded-2xl border p-4 space-y-3">
-        <h1 className="text-2xl font-bold">Reserva</h1>
+    <main className="space-y-4 p-4 max-w-5xl">
+
+      {/* voltar */}
+      <Link
+        href="/admin"
+        className="text-sm text-gray-600 hover:text-black"
+      >
+        ← Voltar ao admin
+      </Link>
+
+      {/* reserva */}
+      <section className="rounded-xl border p-4 space-y-3">
+        <h1 className="text-xl font-bold">Reserva</h1>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-xl border p-3">
+          <div className="rounded-lg border p-2">
             <div className="text-xs text-gray-500">Código</div>
-            <div className="text-lg font-semibold">{booking.booking_code}</div>
+            <div className="font-semibold">{booking.booking_code}</div>
           </div>
 
-          <div className="rounded-xl border p-3">
+          <div className="rounded-lg border p-2">
             <div className="text-xs text-gray-500">Estado</div>
-            <div className="text-lg font-semibold uppercase">{booking.status}</div>
+            <div className="font-semibold uppercase">{booking.status}</div>
           </div>
         </div>
 
         {booking.status === "pending" && (
-          <div className="pt-1">
-            <CancelBookingButton bookingId={booking.id} />
-          </div>
+          <CancelBookingButton bookingId={booking.id} />
         )}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border p-4 space-y-3 lg:col-span-2">
+      {/* cliente + qr */}
+      <section className="grid gap-4 md:grid-cols-[1fr_280px]">
+
+        {/* cliente */}
+        <div className="rounded-xl border p-4 space-y-2">
           <h2 className="text-lg font-semibold">Cliente</h2>
 
-          <div className="space-y-2 text-sm">
+          <div className="text-sm space-y-1">
             <p>
               <span className="font-medium">Nome:</span>{" "}
               {booking.customer_name}
@@ -72,21 +84,28 @@ export default async function BookingPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl border p-4 space-y-3 self-start">
+        {/* qr */}
+        <div className="rounded-xl border p-4 space-y-3 h-fit">
           <h2 className="text-lg font-semibold">QR</h2>
 
-          <div className="max-w-[220px]">
+          <div className="max-w-[180px]">
             <BookingQr code={booking.booking_code} />
           </div>
         </div>
+
       </section>
 
-      <section className="rounded-2xl border p-4 space-y-2">
+      {/* notas */}
+      <section className="rounded-xl border p-4 space-y-2">
         <h2 className="text-lg font-semibold">Notas</h2>
+
         <p className="text-sm text-gray-700">
-          {booking.notes && booking.notes.trim() ? booking.notes : "Sem notas."}
+          {booking.notes && booking.notes.trim()
+            ? booking.notes
+            : "Sem notas."}
         </p>
       </section>
+
     </main>
   );
 }
