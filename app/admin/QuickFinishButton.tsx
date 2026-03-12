@@ -63,7 +63,7 @@ export default function QuickFinishButton({ bookingId }: Props) {
     <button
       onClick={handleFinish}
       disabled={loading}
-      className="rounded-lg border px-2 py-1 text-xs hover:bg-gray-100 disabled:opacity-60"
+      className="rounded-lg border px-2 py-1 text-[11px] font-medium hover:bg-gray-50"
     >
       {loading ? "..." : "FINISH"}
     </button>

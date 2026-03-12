@@ -45,7 +45,7 @@ export default function AdminSourceSelect({
     <select
       defaultValue={current}
       onChange={(e) => updateSource(e.target.value)}
-      className={`rounded border px-2 py-1 text-sm font-medium ${sourceStyles[current]}`}
+      className={`w-full rounded border px-2 py-1 text-[11px] font-medium ${sourceStyles[current]}`}
     >
       {sources.map((s) => (
         <option key={s} value={s}>

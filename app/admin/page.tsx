@@ -264,20 +264,23 @@ function emptyMeta(): BookingMetaSummary {
   };
 }
 
-function renderSectionTable({
-  title,
-  bookings,
-  bookingMetaMap,
-  codeFilter,
-  cancelled = false,
-}: {
-  title: string;
-  bookings: BookingRow[];
-  bookingMetaMap: Map<string, BookingMetaSummary>;
-  codeFilter: string | null;
-  cancelled?: boolean;
-}) {
-  if (!bookings.length) return null;
+function formatServiceDate(value?: string | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: "Europe/Madrid",
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "2-digit",
+  })
+    .format(date)
+    .replace(",", "")
+    .replace(/\s+/g, ".");
+}
 
   return (
     <section className="space-y-3">
@@ -301,20 +304,20 @@ function renderSectionTable({
       >
         <table className="w-full text-sm">
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
-  <tr className="border-b text-left">
-    <th className="p-3">Código</th>
-    <th className="p-3">Source</th>
-    <th className="p-3">Date</th>
-    <th className="p-3">Cliente</th>
-    <th className="p-3">City</th>
-    <th className="p-3">Bags</th>
-    <th className="p-3">Showers</th>
-    <th className="p-3">Lugg+ Shw</th>
-    <th className="p-3">In</th>
-    <th className="p-3">Out</th>
-    <th className="p-3">Total</th>
-    <th className="p-3">Estado</th>
-    <th className="p-3">Ação</th>
+  <tr className="border-b text-left text-[13px]">
+    <th className="px-3 py-2">Código</th>
+    <th className="px-2 py-2">Source</th>
+    <th className="px-2 py-2">Date</th>
+    <th className="px-2 py-2">Cliente</th>
+    <th className="px-2 py-2">City</th>
+    <th className="px-2 py-2">Bags</th>
+    <th className="px-2 py-2">Shws</th>
+    <th className="px-2 py-2">Lug+Shw</th>
+    <th className="px-2 py-2">In</th>
+    <th className="px-2 py-2">Out</th>
+    <th className="px-2 py-2">Total</th>
+    <th className="px-2 py-2">Estado</th>
+    <th className="px-2 py-2">Ação</th>
   </tr>
 </thead>
 
@@ -345,7 +348,7 @@ const rowClass = cancelled
 
               return (
                 <tr key={booking.id} className={`border-b ${rowClass}`}>
-  <td className="p-3 font-semibold">
+  <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
     <Link
       href={`/admin/booking/${booking.id}`}
       className="underline hover:text-blue-600"
@@ -354,41 +357,56 @@ const rowClass = cancelled
     </Link>
   </td>
 
-  <td className="p-3">
-    <AdminSourceSelect
-      bookingId={booking.id}
-      value={booking.source ?? "na"}
-    />
+  <td className="px-2 py-2 align-top">
+    <div className="w-[92px]">
+      <AdminSourceSelect
+        bookingId={booking.id}
+        value={booking.source ?? "na"}
+      />
+    </div>
   </td>
 
-  <td className="p-3 whitespace-nowrap">{meta.date ?? "-"}</td>
-
-  <td className="p-3">
-    <div className="font-medium">{booking.customer_name}</div>
-    <div className="text-xs text-gray-500">{booking.customer_email}</div>
+  <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
+    {formatServiceDate(meta.date)}
   </td>
 
-  <td className="p-3">{booking.city ?? meta.city ?? "-"}</td>
-                    <td className="p-3">{meta.bags || "-"}</td>
-  <td className="p-3">{meta.showers || "-"}</td>
-  <td className="p-3">{meta.combo || "-"}</td>
-  <td className="p-3">{meta.time_in ?? "-"}</td>
+  <td className="px-2 py-2 align-top">
+    <div className="max-w-[170px] text-[13px] leading-tight font-medium">
+      {booking.customer_name}
+    </div>
+    <div className="text-[11px] leading-tight text-gray-500">
+      {booking.customer_email}
+    </div>
+  </td>
+
+  <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
+    {booking.city ?? meta.city ?? "-"}
+  </td>
+
+  <td className="px-2 py-2 align-top text-[12px]">{meta.bags || "-"}</td>
+  <td className="px-2 py-2 align-top text-[12px]">{meta.showers || "-"}</td>
+  <td className="px-2 py-2 align-top text-[12px]">{meta.combo || "-"}</td>
+
+  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+    {meta.time_in ?? "-"}
+  </td>
+
   <td
-    className={`p-3 ${
+    className={`px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap ${
       !cancelled && isLate ? "font-semibold text-orange-600" : ""
     }`}
   >
-{meta.time_out ?? meta.pick_up ?? meta.checkout_time ?? "-"}
+    {meta.time_out ?? meta.checkout_time ?? "-"}
     {!cancelled && isLate && " ⚠"}
   </td>
 
-  <td className="p-3 font-medium">
+  <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
     {formatCurrency(Number(booking.total_amount), booking.currency)}
   </td>
 
-  <td className="p-3">
+  <td className="px-2 py-2 align-top">
     <span
-      className={`inline-flex rounded-full border px-2 py-1 text-xs ${getStatusClass(
+      className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${getStatusClass(
         booking.status
       )}`}
     >
@@ -396,11 +414,11 @@ const rowClass = cancelled
     </span>
   </td>
 
-  <td className="p-3">
+  <td className="px-2 py-2 align-top">
     {!cancelled && normalizeStatus(booking.status) === "inside" ? (
       <QuickFinishButton bookingId={booking.id} />
     ) : (
-      "-"
+      <span className="text-[12px]">-</span>
     )}
   </td>
 </tr>
