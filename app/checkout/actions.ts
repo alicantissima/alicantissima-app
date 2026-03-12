@@ -20,6 +20,7 @@ type CheckoutItem = {
 
 type CheckoutPayload = {
   customerName: string;
+  customerCity: string;
   customerEmail: string;
   customerPhone?: string;
   notes?: string;
@@ -534,8 +535,9 @@ async function sendInternalBookingNotification(params: {
 export async function submitCheckout(payload: CheckoutPayload) {
   try {
     const customerName = payload.customerName?.trim();
+    const customerCity = payload.customerCity?.trim();
     const customerEmail = payload.customerEmail?.trim();
-    const customerPhone = payload.customerPhone?.trim() || null;
+    const customerPhone = payload.customerPhone?.trim();
     const notes = payload.notes?.trim() || null;
 
     if (!customerName) {
@@ -599,6 +601,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
       .insert({
         booking_code: bookingCode,
         customer_name: customerName,
+        city: customerCity,
         customer_email: customerEmail,
         customer_phone: customerPhone,
         notes,

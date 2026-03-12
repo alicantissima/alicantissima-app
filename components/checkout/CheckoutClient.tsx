@@ -20,50 +20,52 @@ export default function CheckoutClient() {
     return items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
   }, [items]);
 
-  async function handleSubmit(formData: FormData) {
-    if (pending) return;
+async function handleSubmit(formData: FormData) {
+  if (pending) return;
 
-    setError(null);
+  setError(null);
 
-    const payload = {
-      customerName: String(formData.get("customerName") || ""),
-      const city = formData.get("city");
-      customerEmail: String(formData.get("customerEmail") || ""),
-      customerPhone: String(formData.get("customerPhone") || ""),
-      notes: String(formData.get("notes") || ""),
-      items: items.map((item) => ({
-        id: item.productCode,
-        title: item.productName,
-        quantity: Number(item.quantity || 1),
-        unitPrice:
-          item.quantity && Number(item.quantity) > 0
-            ? Number(item.totalPrice) / Number(item.quantity)
-            : Number(item.totalPrice),
-        totalPrice: Number(item.totalPrice),
-        productType: "booking",
-        meta: {
-          date: item.date,
-          dropOffTime: item.dropOffTime ?? null,
-          pickUpTime: item.pickUpTime ?? null,
-          showerTime: item.showerTime ?? null,
-          comments: item.comments ?? null,
-          breakdown: item.breakdown ?? [],
-        },
-      })),
-    };
+  const city = String(formData.get("city") || "");
 
-    startTransition(async () => {
-      const result = await submitCheckout(payload);
+  const payload = {
+    customerName: String(formData.get("customerName") || ""),
+    city,
+    customerEmail: String(formData.get("customerEmail") || ""),
+    customerPhone: String(formData.get("customerPhone") || ""),
+    notes: String(formData.get("notes") || ""),
+    items: items.map((item) => ({
+      id: item.productCode,
+      title: item.productName,
+      quantity: Number(item.quantity || 1),
+      unitPrice:
+        item.quantity && Number(item.quantity) > 0
+          ? Number(item.totalPrice) / Number(item.quantity)
+          : Number(item.totalPrice),
+      totalPrice: Number(item.totalPrice),
+      productType: "booking",
+      meta: {
+        date: item.date,
+        dropOffTime: item.dropOffTime ?? null,
+        pickUpTime: item.pickUpTime ?? null,
+        showerTime: item.showerTime ?? null,
+        comments: item.comments ?? null,
+        breakdown: item.breakdown ?? [],
+      },
+    })),
+  };
 
-      if (!result.ok) {
-        setError(result.error ?? "Ocorreu um erro no checkout.");
-        return;
-      }
+  startTransition(async () => {
+    const result = await submitCheckout(payload);
 
-      clearItems();
-      router.push(`/checkout/success?code=${result.bookingCode}`);
-    });
-  }
+    if (!result.ok) {
+      setError(result.error ?? "Ocorreu um erro no checkout.");
+      return;
+    }
+
+    clearItems();
+    router.push(`/checkout/success?code=${result.bookingCode}`);
+  });
+}
 
   if (!items.length) {
     return (
