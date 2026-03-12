@@ -2,53 +2,15 @@
 
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import QuickFinishButton from "./QuickFinishButton";
 import AdminQrScanner from "@/components/admin-qr-scanner";
 import AdminFinishQrScanner from "@/components/admin-finish-qr-scanner";
 import LogoutButton from "@/components/logout-button";
 import FinishAllInsideButton from "@/components/finish-all-inside-button";
-import { redirect } from "next/navigation";
 import AdminAutoRefresh from "./AdminAutoRefresh";
 import AdminSourceSelect from "@/components/admin-source-select";
-
-function formatServiceDate(value?: string | null) {
-  if (!value) return "—";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/Madrid",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-}
-
-function formatTime(value?: string | null) {
-  if (!value) return "—";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/Madrid",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(date);
-}
-
-function getServiceDateValue(row: BookingRow) {
-  return (
-    row.service_date ||
-    row.booking_date ||
-    row.check_in_at ||
-    row.created_at ||
-    null
-  );
-}
 
 export const revalidate = 0;
 
@@ -108,6 +70,24 @@ type BookingMetaSummary = {
   city: string | null;
   checkout_time: string | null;
 };
+
+function formatServiceDate(value?: string | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: "Europe/Madrid",
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "2-digit",
+  })
+    .format(date)
+    .replace(",", "")
+    .replace(/\s+/g, ".");
+}
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("pt-PT", {
@@ -264,23 +244,20 @@ function emptyMeta(): BookingMetaSummary {
   };
 }
 
-function formatServiceDate(value?: string | null) {
-  if (!value) return "—";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return new Intl.DateTimeFormat("pt-PT", {
-    timeZone: "Europe/Madrid",
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "2-digit",
-  })
-    .format(date)
-    .replace(",", "")
-    .replace(/\s+/g, ".");
-}
+function renderSectionTable({
+  title,
+  bookings,
+  bookingMetaMap,
+  codeFilter,
+  cancelled = false,
+}: {
+  title: string;
+  bookings: BookingRow[];
+  bookingMetaMap: Map<string, BookingMetaSummary>;
+  codeFilter: string | null;
+  cancelled?: boolean;
+}) {
+  if (!bookings.length) return null;
 
   return (
     <section className="space-y-3">
@@ -304,22 +281,22 @@ function formatServiceDate(value?: string | null) {
       >
         <table className="w-full text-sm">
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
-  <tr className="border-b text-left text-[13px]">
-    <th className="px-3 py-2">Código</th>
-    <th className="px-2 py-2">Source</th>
-    <th className="px-2 py-2">Date</th>
-    <th className="px-2 py-2">Cliente</th>
-    <th className="px-2 py-2">City</th>
-    <th className="px-2 py-2">Bags</th>
-    <th className="px-2 py-2">Shws</th>
-    <th className="px-2 py-2">Lug+Shw</th>
-    <th className="px-2 py-2">In</th>
-    <th className="px-2 py-2">Out</th>
-    <th className="px-2 py-2">Total</th>
-    <th className="px-2 py-2">Estado</th>
-    <th className="px-2 py-2">Ação</th>
-  </tr>
-</thead>
+            <tr className="border-b text-left text-[13px]">
+              <th className="px-3 py-2">Código</th>
+              <th className="px-2 py-2">Source</th>
+              <th className="px-2 py-2">Date</th>
+              <th className="px-2 py-2">Cliente</th>
+              <th className="px-2 py-2">City</th>
+              <th className="px-2 py-2">Bags</th>
+              <th className="px-2 py-2">Shws</th>
+              <th className="px-2 py-2">Lug+Shw</th>
+              <th className="px-2 py-2">In</th>
+              <th className="px-2 py-2">Out</th>
+              <th className="px-2 py-2">Total</th>
+              <th className="px-2 py-2">Estado</th>
+              <th className="px-2 py-2">Ação</th>
+            </tr>
+          </thead>
 
           <tbody>
             {bookings.map((booking) => {
@@ -333,95 +310,100 @@ function formatServiceDate(value?: string | null) {
               );
 
               const isFilteredMatch = codeFilter === booking.booking_code;
+              const sourceRowClass = getSourceRowClass(booking.source ?? null);
 
-const sourceRowClass = getSourceRowClass(booking.source ?? null);
-
-const rowClass = cancelled
-  ? "bg-red-50/40"
-  : isFilteredMatch
-  ? "bg-blue-50 border-l-4 border-blue-400"
-  : normalizedStatus === "inside"
-  ? isLate
-    ? "bg-orange-50 border-l-4 border-orange-400"
-    : "bg-green-50 border-l-4 border-green-400"
-  : sourceRowClass;
+              const rowClass = cancelled
+                ? "bg-red-50/40"
+                : isFilteredMatch
+                ? "bg-blue-50 border-l-4 border-blue-400"
+                : normalizedStatus === "inside"
+                ? isLate
+                  ? "bg-orange-50 border-l-4 border-orange-400"
+                  : "bg-green-50 border-l-4 border-green-400"
+                : sourceRowClass;
 
               return (
                 <tr key={booking.id} className={`border-b ${rowClass}`}>
-  <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
-    <Link
-      href={`/admin/booking/${booking.id}`}
-      className="underline hover:text-blue-600"
-    >
-      {booking.booking_code}
-    </Link>
-  </td>
+                  <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
+                    <Link
+                      href={`/admin/booking/${booking.id}`}
+                      className="underline hover:text-blue-600"
+                    >
+                      {booking.booking_code}
+                    </Link>
+                  </td>
 
-  <td className="px-2 py-2 align-top">
-    <div className="w-[92px]">
-      <AdminSourceSelect
-        bookingId={booking.id}
-        value={booking.source ?? "na"}
-      />
-    </div>
-  </td>
+                  <td className="px-2 py-2 align-top">
+                    <div className="w-[92px]">
+                      <AdminSourceSelect
+                        bookingId={booking.id}
+                        value={booking.source ?? "na"}
+                      />
+                    </div>
+                  </td>
 
-  <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
-    {formatServiceDate(meta.date)}
-  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
+                    {formatServiceDate(meta.date)}
+                  </td>
 
-  <td className="px-2 py-2 align-top">
-    <div className="max-w-[170px] text-[13px] leading-tight font-medium">
-      {booking.customer_name}
-    </div>
-    <div className="text-[11px] leading-tight text-gray-500">
-      {booking.customer_email}
-    </div>
-  </td>
+                  <td className="px-2 py-2 align-top">
+                    <div className="max-w-[170px] text-[13px] leading-tight font-medium">
+                      {booking.customer_name}
+                    </div>
+                    <div className="text-[11px] leading-tight text-gray-500">
+                      {booking.customer_email}
+                    </div>
+                  </td>
 
-  <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
-    {booking.city ?? meta.city ?? "-"}
-  </td>
+                  <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
+                    {booking.city ?? meta.city ?? "-"}
+                  </td>
 
-  <td className="px-2 py-2 align-top text-[12px]">{meta.bags || "-"}</td>
-  <td className="px-2 py-2 align-top text-[12px]">{meta.showers || "-"}</td>
-  <td className="px-2 py-2 align-top text-[12px]">{meta.combo || "-"}</td>
+                  <td className="px-2 py-2 align-top text-[12px]">
+                    {meta.bags || "-"}
+                  </td>
+                  <td className="px-2 py-2 align-top text-[12px]">
+                    {meta.showers || "-"}
+                  </td>
+                  <td className="px-2 py-2 align-top text-[12px]">
+                    {meta.combo || "-"}
+                  </td>
 
-  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-    {meta.time_in ?? "-"}
-  </td>
+                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+                    {meta.time_in ?? "-"}
+                  </td>
 
-  <td
-    className={`px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap ${
-      !cancelled && isLate ? "font-semibold text-orange-600" : ""
-    }`}
-  >
-    {meta.time_out ?? meta.checkout_time ?? "-"}
-    {!cancelled && isLate && " ⚠"}
-  </td>
+                  <td
+                    className={`px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap ${
+                      !cancelled && isLate ? "font-semibold text-orange-600" : ""
+                    }`}
+                  >
+                    {meta.time_out ?? meta.checkout_time ?? "-"}
+                    {!cancelled && isLate && " ⚠"}
+                  </td>
 
-  <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
-    {formatCurrency(Number(booking.total_amount), booking.currency)}
-  </td>
+                  <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
+                    {formatCurrency(Number(booking.total_amount), booking.currency)}
+                  </td>
 
-  <td className="px-2 py-2 align-top">
-    <span
-      className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${getStatusClass(
-        booking.status
-      )}`}
-    >
-      {getStatusLabel(booking.status)}
-    </span>
-  </td>
+                  <td className="px-2 py-2 align-top">
+                    <span
+                      className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${getStatusClass(
+                        booking.status
+                      )}`}
+                    >
+                      {getStatusLabel(booking.status)}
+                    </span>
+                  </td>
 
-  <td className="px-2 py-2 align-top">
-    {!cancelled && normalizeStatus(booking.status) === "inside" ? (
-      <QuickFinishButton bookingId={booking.id} />
-    ) : (
-      <span className="text-[12px]">-</span>
-    )}
-  </td>
-</tr>
+                  <td className="px-2 py-2 align-top">
+                    {!cancelled && normalizeStatus(booking.status) === "inside" ? (
+                      <QuickFinishButton bookingId={booking.id} />
+                    ) : (
+                      <span className="text-[12px]">-</span>
+                    )}
+                  </td>
+                </tr>
               );
             })}
           </tbody>
@@ -449,23 +431,25 @@ export default async function AdminPage({
   }
 
   const { data: profile, error: profileError } = await supabase
-  .from("profiles")
-  .select("id, email, role")
-  .eq("id", user.id)
-  .single();
+    .from("profiles")
+    .select("id, email, role")
+    .eq("id", user.id)
+    .single();
 
-if (!profile || profile.role !== "admin") {
-  return (
-    <div className="p-6 space-y-2">
-      <div className="font-bold">Acesso negado.</div>
-      <div className="text-sm">User id: {user.id}</div>
-      <div className="text-sm">User email: {user.email}</div>
-      <div className="text-sm">Profile exists: {profile ? "yes" : "no"}</div>
-      <div className="text-sm">Profile role: {profile?.role ?? "null"}</div>
-      <div className="text-sm">Profile error: {profileError?.message ?? "none"}</div>
-    </div>
-  );
-}
+  if (!profile || profile.role !== "admin") {
+    return (
+      <div className="p-6 space-y-2">
+        <div className="font-bold">Acesso negado.</div>
+        <div className="text-sm">User id: {user.id}</div>
+        <div className="text-sm">User email: {user.email}</div>
+        <div className="text-sm">Profile exists: {profile ? "yes" : "no"}</div>
+        <div className="text-sm">Profile role: {profile?.role ?? "null"}</div>
+        <div className="text-sm">
+          Profile error: {profileError?.message ?? "none"}
+        </div>
+      </div>
+    );
+  }
 
   let bookingsQuery = supabase
     .from("bookings")
@@ -491,7 +475,6 @@ if (!profile || profile.role !== "admin") {
 
   for (const item of ((items as BookingItemRow[]) ?? [])) {
     const current = bookingMetaMap.get(item.booking_id) ?? emptyMeta();
-
     const code = getItemCode(item);
 
     let bags = current.bags;
@@ -503,18 +486,20 @@ if (!profile || profile.role !== "admin") {
     if (code === "combo") combo += item.quantity;
 
     const timeIn =
-  typeof item.meta?.time_in === "string" && item.meta.time_in.trim() !== ""
-    ? item.meta.time_in
-    : typeof item.meta?.dropOffTime === "string" && item.meta.dropOffTime.trim() !== ""
-    ? item.meta.dropOffTime
-    : current.time_in;
+      typeof item.meta?.time_in === "string" && item.meta.time_in.trim() !== ""
+        ? item.meta.time_in
+        : typeof item.meta?.dropOffTime === "string" &&
+          item.meta.dropOffTime.trim() !== ""
+        ? item.meta.dropOffTime
+        : current.time_in;
 
-const timeOut =
-  typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
-    ? item.meta.time_out
-    : typeof item.meta?.pickUpTime === "string" && item.meta.pickUpTime.trim() !== ""
-    ? item.meta.pickUpTime
-    : current.time_out;
+    const timeOut =
+      typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
+        ? item.meta.time_out
+        : typeof item.meta?.pickUpTime === "string" &&
+          item.meta.pickUpTime.trim() !== ""
+        ? item.meta.pickUpTime
+        : current.time_out;
 
     const city =
       typeof item.meta?.city === "string" && item.meta.city.trim() !== ""
@@ -571,25 +556,25 @@ const timeOut =
   let showersInside = 0;
   let overdueCount = 0;
 
-const sourceTodayCounts = {
-  site: 0,
-  viator: 0,
-  booking: 0,
-  bokun: 0,
-  porta: 0,
-  na: 0,
-};
+  const sourceTodayCounts = {
+    site: 0,
+    viator: 0,
+    booking: 0,
+    bokun: 0,
+    porta: 0,
+    na: 0,
+  };
 
-const citiesTodayCounts: Record<string, number> = {};
+  const sourceTodayRevenue = {
+    site: 0,
+    viator: 0,
+    booking: 0,
+    bokun: 0,
+    porta: 0,
+    na: 0,
+  };
 
-const sourceTodayRevenue = {
-  site: 0,
-  viator: 0,
-  booking: 0,
-  bokun: 0,
-  porta: 0,
-  na: 0,
-};
+  const citiesTodayCounts: Record<string, number> = {};
 
   for (const booking of ((bookings as BookingRow[]) ?? [])) {
     const normalizedStatus = normalizeStatus(booking.status);
@@ -622,40 +607,40 @@ const sourceTodayRevenue = {
     }
 
     if (isToday(bookingDate) && normalizedStatus !== "cancelled") {
-  const currentSource = (booking.source ?? "na") as keyof typeof sourceTodayCounts;
+      const currentSource = (booking.source ?? "na") as keyof typeof sourceTodayCounts;
 
-  const computedRevenue = itemsForBooking.reduce(
-    (sum, item) => sum + Number(item.line_total ?? 0),
-    0
-  );
+      const computedRevenue = itemsForBooking.reduce(
+        (sum, item) => sum + Number(item.line_total ?? 0),
+        0
+      );
 
-  const bookingRevenue =
-    computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
+      const bookingRevenue =
+        computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
 
-  revenueToday += bookingRevenue;
+      revenueToday += bookingRevenue;
 
-  if (currentSource in sourceTodayCounts) {
-    sourceTodayCounts[currentSource]++;
-    sourceTodayRevenue[currentSource] += bookingRevenue;
-  } else {
-    sourceTodayCounts.na++;
-    sourceTodayRevenue.na += bookingRevenue;
-  }
+      if (currentSource in sourceTodayCounts) {
+        sourceTodayCounts[currentSource]++;
+        sourceTodayRevenue[currentSource] += bookingRevenue;
+      } else {
+        sourceTodayCounts.na++;
+        sourceTodayRevenue.na += bookingRevenue;
+      }
 
-  for (const item of itemsForBooking) {
-    const code = getItemCode(item);
+      for (const item of itemsForBooking) {
+        const code = getItemCode(item);
 
-    if (code === "luggage") bagsToday += item.quantity;
-    if (code === "shower") showersToday += item.quantity;
-    if (code === "combo") combosToday += item.quantity;
-  }
+        if (code === "luggage") bagsToday += item.quantity;
+        if (code === "shower") showersToday += item.quantity;
+        if (code === "combo") combosToday += item.quantity;
+      }
 
-const cityName = (booking.city ?? meta.city ?? "").trim();
+      const cityName = (booking.city ?? meta.city ?? "").trim();
 
-if (cityName) {
-  citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
-}
-}
+      if (cityName) {
+        citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
+      }
+    }
 
     if (normalizedStatus === "inside") {
       if (
@@ -678,25 +663,24 @@ if (cityName) {
   }
 
   const sortedBookings = [...((bookings as BookingRow[]) ?? [])].sort((a, b) => {
-  const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
-  const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
+    const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
+    const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
 
-  const aDate = aMeta.date || a.created_at;
-  const bDate = bMeta.date || b.created_at;
+    const aDate = aMeta.date || a.created_at;
+    const bDate = bMeta.date || b.created_at;
 
-  return new Date(aDate).getTime() - new Date(bDate).getTime();
-});
+    return new Date(aDate).getTime() - new Date(bDate).getTime();
+  });
 
-const citiesTodayList = Object.entries(citiesTodayCounts)
-  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-  .slice(0, 12);
+  const citiesTodayList = Object.entries(citiesTodayCounts)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 12);
 
   const todayBookings: BookingRow[] = [];
   const insideBookings: BookingRow[] = [];
   const finishedBookings: BookingRow[] = [];
   const upcomingBookings: BookingRow[] = [];
   const cancelledBookings: BookingRow[] = [];
-  
 
   for (const booking of sortedBookings) {
     const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
@@ -715,7 +699,7 @@ const citiesTodayList = Object.entries(citiesTodayCounts)
       continue;
     }
 
-    if (status === "finished") {
+    if (status === "finished" || status === "completed") {
       if (isToday(date)) {
         finishedBookings.push(booking);
       }
@@ -729,14 +713,13 @@ const citiesTodayList = Object.entries(citiesTodayCounts)
 
     if (isFuture(date)) {
       upcomingBookings.push(booking);
-      continue;
     }
   }
 
-const upcomingTotal = upcomingBookings.reduce(
-  (sum, booking) => sum + Number(booking.total_amount || 0),
-  0
-);
+  const upcomingTotal = upcomingBookings.reduce(
+    (sum, booking) => sum + Number(booking.total_amount || 0),
+    0
+  );
 
   const visibleBookingsCount =
     todayBookings.length +
@@ -765,7 +748,6 @@ const upcomingTotal = upcomingBookings.reduce(
         <AdminFinishQrScanner />
         <FinishAllInsideButton count={bagsInside + showersInside} />
 
-      
         <Link
           href="/admin/history"
           className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
@@ -787,121 +769,119 @@ const upcomingTotal = upcomingBookings.reduce(
         </div>
       )}
 
-<section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-  <div className="rounded-xl border p-4">
-    <div className="text-sm text-gray-500">Bags today</div>
-    <div className="text-2xl font-bold">{bagsToday}</div>
-  </div>
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-xl border p-4">
+          <div className="text-sm text-gray-500">Bags today</div>
+          <div className="text-2xl font-bold">{bagsToday}</div>
+        </div>
 
-  <div className="rounded-xl border bg-orange-50 p-4">
-    <div className="text-sm text-orange-600">Overdue</div>
-    <div className="text-2xl font-bold text-orange-700">
-      {overdueCount}
-    </div>
-  </div>
+        <div className="rounded-xl border bg-orange-50 p-4">
+          <div className="text-sm text-orange-600">Overdue</div>
+          <div className="text-2xl font-bold text-orange-700">{overdueCount}</div>
+        </div>
 
-  <div className="rounded-xl border p-4">
-    <div className="text-sm text-gray-500">Showers today</div>
-    <div className="text-2xl font-bold">{showersToday}</div>
-  </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-sm text-gray-500">Showers today</div>
+          <div className="text-2xl font-bold">{showersToday}</div>
+        </div>
 
-  <div className="rounded-xl border p-4">
-    <div className="text-sm text-gray-500">Combos today</div>
-    <div className="text-2xl font-bold">{combosToday}</div>
-  </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-sm text-gray-500">Combos today</div>
+          <div className="text-2xl font-bold">{combosToday}</div>
+        </div>
 
-  <div className="rounded-xl border p-4">
-    <div className="text-sm text-gray-500">Bags inside</div>
-    <div className="text-2xl font-bold">{bagsInside}</div>
-  </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-sm text-gray-500">Bags inside</div>
+          <div className="text-2xl font-bold">{bagsInside}</div>
+        </div>
 
-  <div className="rounded-xl border p-4">
-    <div className="text-sm text-gray-500">Showers inside</div>
-    <div className="text-2xl font-bold">{showersInside}</div>
-  </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-sm text-gray-500">Showers inside</div>
+          <div className="text-2xl font-bold">{showersInside}</div>
+        </div>
 
-  <div className="rounded-xl border p-4">
-    <div className="text-sm text-gray-500">Revenue today</div>
-    <div className="text-2xl font-bold">
-      {formatCurrency(revenueToday, "EUR")}
-    </div>
-  </div>
-</section>
+        <div className="rounded-xl border p-4">
+          <div className="text-sm text-gray-500">Revenue today</div>
+          <div className="text-2xl font-bold">
+            {formatCurrency(revenueToday, "EUR")}
+          </div>
+        </div>
+      </section>
 
-<section className="rounded-xl border p-4">
-  <div className="mb-3 text-sm font-semibold text-gray-700">
-    Sources today
-  </div>
+      <section className="rounded-xl border p-4">
+        <div className="mb-3 text-sm font-semibold text-gray-700">
+          Sources today
+        </div>
 
-  <div className="flex flex-wrap gap-2 text-sm">
-    <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
-      site: {sourceTodayCounts.site}
-    </span>
-    <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-      viator: {sourceTodayCounts.viator}
-    </span>
-    <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
-      booking: {sourceTodayCounts.booking}
-    </span>
-    <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
-      bokun: {sourceTodayCounts.bokun}
-    </span>
-    <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
-      porta: {sourceTodayCounts.porta}
-    </span>
-    <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
-      na: {sourceTodayCounts.na}
-    </span>
-  </div>
-</section>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
+            site: {sourceTodayCounts.site}
+          </span>
+          <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+            viator: {sourceTodayCounts.viator}
+          </span>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
+            booking: {sourceTodayCounts.booking}
+          </span>
+          <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
+            bokun: {sourceTodayCounts.bokun}
+          </span>
+          <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
+            porta: {sourceTodayCounts.porta}
+          </span>
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
+            na: {sourceTodayCounts.na}
+          </span>
+        </div>
+      </section>
 
-<section className="rounded-xl border p-4">
-  <div className="mb-3 text-sm font-semibold text-gray-700">
-    Revenue by source today
-  </div>
+      <section className="rounded-xl border p-4">
+        <div className="mb-3 text-sm font-semibold text-gray-700">
+          Revenue by source today
+        </div>
 
-  <div className="flex flex-wrap gap-2 text-sm">
-    <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
-      site: {formatCurrency(sourceTodayRevenue.site, "EUR")}
-    </span>
-    <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-      viator: {formatCurrency(sourceTodayRevenue.viator, "EUR")}
-    </span>
-    <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
-      booking: {formatCurrency(sourceTodayRevenue.booking, "EUR")}
-    </span>
-    <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
-      bokun: {formatCurrency(sourceTodayRevenue.bokun, "EUR")}
-    </span>
-    <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
-      porta: {formatCurrency(sourceTodayRevenue.porta, "EUR")}
-    </span>
-    <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
-      na: {formatCurrency(sourceTodayRevenue.na, "EUR")}
-    </span>
-  </div>
-</section>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
+            site: {formatCurrency(sourceTodayRevenue.site, "EUR")}
+          </span>
+          <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+            viator: {formatCurrency(sourceTodayRevenue.viator, "EUR")}
+          </span>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
+            booking: {formatCurrency(sourceTodayRevenue.booking, "EUR")}
+          </span>
+          <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
+            bokun: {formatCurrency(sourceTodayRevenue.bokun, "EUR")}
+          </span>
+          <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
+            porta: {formatCurrency(sourceTodayRevenue.porta, "EUR")}
+          </span>
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
+            na: {formatCurrency(sourceTodayRevenue.na, "EUR")}
+          </span>
+        </div>
+      </section>
 
-<section className="rounded-xl border p-4">
-  <div className="mb-3 text-sm font-semibold text-gray-700">
-    Cities today
-  </div>
+      <section className="rounded-xl border p-4">
+        <div className="mb-3 text-sm font-semibold text-gray-700">
+          Cities today
+        </div>
 
-  {citiesTodayList.length ? (
-    <div className="flex flex-wrap gap-2 text-sm">
-      {citiesTodayList.map(([city, count]) => (
-        <span
-          key={city}
-          className="rounded-full bg-gray-100 px-3 py-1 text-gray-700"
-        >
-          {city}: {count}
-        </span>
-      ))}
-    </div>
-  ) : (
-    <div className="text-sm text-gray-500">No cities yet today.</div>
-  )}
-</section>
+        {citiesTodayList.length ? (
+          <div className="flex flex-wrap gap-2 text-sm">
+            {citiesTodayList.map(([city, count]) => (
+              <span
+                key={city}
+                className="rounded-full bg-gray-100 px-3 py-1 text-gray-700"
+              >
+                {city}: {count}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">No cities yet today.</div>
+        )}
+      </section>
 
       {renderSectionTable({
         title: "Today",
@@ -926,21 +906,21 @@ const upcomingTotal = upcomingBookings.reduce(
 
       {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
 
-<div className="space-y-3">
-  <div className="flex justify-end">
-    <div className="rounded-xl border px-3 py-2 text-sm">
-      <span className="font-medium">Upcoming total:</span>{" "}
-      <span className="font-bold">€ {upcomingTotal.toFixed(2)}</span>
-    </div>
-  </div>
+      <div className="space-y-3">
+        <div className="flex justify-end">
+          <div className="rounded-xl border px-3 py-2 text-sm">
+            <span className="font-medium">Upcoming total:</span>{" "}
+            <span className="font-bold">€ {upcomingTotal.toFixed(2)}</span>
+          </div>
+        </div>
 
-  {renderSectionTable({
-    title: "Upcoming",
-    bookings: upcomingBookings,
-    bookingMetaMap,
-    codeFilter,
-  })}
-</div>
+        {renderSectionTable({
+          title: "Upcoming",
+          bookings: upcomingBookings,
+          bookingMetaMap,
+          codeFilter,
+        })}
+      </div>
 
       {renderSectionTable({
         title: "Cancelled",
