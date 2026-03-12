@@ -1,9 +1,6 @@
 
 
 
-
-
-
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
@@ -30,6 +27,7 @@ export default function CheckoutClient() {
 
     const payload = {
       customerName: String(formData.get("customerName") || ""),
+      const city = formData.get("city");
       customerEmail: String(formData.get("customerEmail") || ""),
       customerPhone: String(formData.get("customerPhone") || ""),
       notes: String(formData.get("notes") || ""),
@@ -90,6 +88,20 @@ export default function CheckoutClient() {
             className="w-full rounded-xl border px-3 py-2 disabled:opacity-60"
           />
         </div>
+
+<div className="space-y-1">
+  <label htmlFor="city" className="text-sm font-medium">
+    City (where you are from)
+  </label>
+
+  <input
+    id="city"
+    type="text"
+    name="city"
+    placeholder="London, Berlin, Madrid..."
+    className="w-full rounded-xl border px-3 py-2 text-sm"
+  />
+</div>
 
         <div>
           <label htmlFor="customerEmail" className="mb-1 block text-sm font-medium">
