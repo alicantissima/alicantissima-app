@@ -677,7 +677,6 @@ const sourceTodayRevenue = {
   const finishedBookings: BookingRow[] = [];
   const upcomingBookings: BookingRow[] = [];
   const cancelledBookings: BookingRow[] = [];
-  const upcomingTotal = upcomingBookings.reduce(
   (sum, booking) => sum + Number(booking.total_amount || 0),
   0
 );
