@@ -658,52 +658,60 @@ export async function submitCheckout(payload: CheckoutPayload) {
       };
     }
 
-    const bookingUrl = getBookingUrl(booking.booking_code);
-    const qrCodeUrl = getQrCodeUrl(bookingUrl);
+    const appBaseUrl =
+  (
+    process.env.APP_BASE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://app.alicantissima.es"
+  ).replace(/\/$/, "");
+
+const customerBookingUrl = `${appBaseUrl}/b/${booking.booking_code}`;
+const adminBookingUrl = `${appBaseUrl}/admin/booking/${booking.id}`;
+const qrCodeUrl = `${appBaseUrl}/api/qr?code=${encodeURIComponent(booking.booking_code)}`;
 
     try {
-      await sendBookingConfirmationEmail({
-        customerName,
-        customerEmail,
-        bookingCode: booking.booking_code,
-        bookingUrl,
-        qrCodeUrl,
-        items: items.map((item) => ({
-          title: item.title,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice,
-          meta: item.meta,
-        })),
-        totalAmount,
-        notes,
-      });
-    } catch (emailError) {
-      console.error("booking confirmation email error:", emailError);
-    }
+  await sendBookingConfirmationEmail({
+    customerName,
+    customerEmail,
+    bookingCode: booking.booking_code,
+    bookingUrl: customerBookingUrl,
+    qrCodeUrl,
+    items: items.map((item) => ({
+      title: item.title,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice,
+      meta: item.meta,
+    })),
+    totalAmount,
+    notes,
+  });
+} catch (emailError) {
+  console.error("booking confirmation email error:", emailError);
+}
 
-    try {
-      await sendInternalBookingNotification({
-        customerName,
-        customerCity,
-        customerEmail,
-        customerPhone,
-        bookingCode: booking.booking_code,
-        bookingUrl,
-        qrCodeUrl,
-        items: items.map((item) => ({
-          title: item.title,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice,
-          meta: item.meta,
-        })),
-        totalAmount,
-        notes,
-      });
-    } catch (internalEmailError) {
-      console.error("internal booking notification email error:", internalEmailError);
-    }
+try {
+  await sendInternalBookingNotification({
+    customerName,
+    customerCity,
+    customerEmail,
+    customerPhone,
+    bookingCode: booking.booking_code,
+    bookingUrl: adminBookingUrl,
+    qrCodeUrl,
+    items: items.map((item) => ({
+      title: item.title,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice,
+      meta: item.meta,
+    })),
+    totalAmount,
+    notes,
+  });
+} catch (internalEmailError) {
+  console.error("internal booking notification email error:", internalEmailError);
+}
 
     return {
       ok: true,
