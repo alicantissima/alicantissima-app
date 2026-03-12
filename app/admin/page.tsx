@@ -356,7 +356,6 @@ const rowClass = cancelled
 
 <td className="p-3">{booking.source || "—"}</td>
 <td className="p-3 whitespace-nowrap">{meta.date ?? "-"}</td>
-
 <td className="p-3">
   <div className="font-medium">{booking.customer_name}</div>
   <div className="text-xs text-gray-500">{booking.customer_email}</div>
@@ -677,9 +676,7 @@ const sourceTodayRevenue = {
   const finishedBookings: BookingRow[] = [];
   const upcomingBookings: BookingRow[] = [];
   const cancelledBookings: BookingRow[] = [];
-  (sum, booking) => sum + Number(booking.total_amount || 0),
-  0
-);
+  
 
   for (const booking of sortedBookings) {
     const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
@@ -698,7 +695,7 @@ const sourceTodayRevenue = {
       continue;
     }
 
-    if (status === "completed") {
+    if (status === "finished") {
       if (isToday(date)) {
         finishedBookings.push(booking);
       }
@@ -714,9 +711,12 @@ const sourceTodayRevenue = {
       upcomingBookings.push(booking);
       continue;
     }
-
-    // passado -> não mostrar no desk
   }
+
+const upcomingTotal = upcomingBookings.reduce(
+  (sum, booking) => sum + Number(booking.total_amount || 0),
+  0
+);
 
   const visibleBookingsCount =
     todayBookings.length +
