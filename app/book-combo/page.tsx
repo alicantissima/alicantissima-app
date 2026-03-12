@@ -6,6 +6,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
+import { useEffect } from "react";
 
 function pad(value: number) {
   return value.toString().padStart(2, "0");
