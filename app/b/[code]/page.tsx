@@ -39,6 +39,21 @@ function formatCurrency(amount?: number | string | null) {
   }).format(Number(amount));
 }
 
+function getPublicStatus(status?: string | null) {
+  switch (status) {
+    case "pending":
+      return "Confirmed";
+    case "checked_in":
+      return "Checked-in";
+    case "finished":
+      return "Completed";
+    case "cancelled":
+      return "Cancelled";
+    default:
+      return status || "-";
+  }
+}
+
 export default async function BookingByCodePage({ params }: PageProps) {
   const supabase = createAdminClient();
   const { code } = await params;
@@ -99,7 +114,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
 
           <div className="rounded-xl border p-3">
             <div className="text-gray-500">Status</div>
-            <div className="font-semibold capitalize">{booking.status}</div>
+            <div className="font-semibold">{getPublicStatus(booking.status)}</div>
           </div>
 
           <div className="rounded-xl border p-3 sm:col-span-2">
