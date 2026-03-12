@@ -181,7 +181,7 @@ router.push("/checkout");
       <button
         type="button"
         onClick={handleAddToBooking}
-        className="w-full rounded-[28px] border border-black bg-black p-4 font-semibold uppercase text-white transition active:scale-[0.99]"
+        className="w-full rounded-[28px] border border-black bg-black px-6 py-4 text-center text-xl font-bold uppercase text-white transition active:scale-[0.99]"
       >
         Book now
       </button>
