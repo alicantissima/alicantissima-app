@@ -12,6 +12,44 @@ import { redirect } from "next/navigation";
 import AdminAutoRefresh from "./AdminAutoRefresh";
 import AdminSourceSelect from "@/components/admin-source-select";
 
+function formatServiceDate(value?: string | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatTime(value?: string | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function getServiceDateValue(row: BookingRow) {
+  return (
+    row.service_date ||
+    row.booking_date ||
+    row.check_in_at ||
+    row.created_at ||
+    null
+  );
+}
+
 export const revalidate = 0;
 
 type BookingRow = {
@@ -23,7 +61,12 @@ type BookingRow = {
   total_amount: number;
   currency: string;
   status: string;
-  source: string | null;
+  source?: string | null;
+  city?: string | null;
+  service_date?: string | null;
+  booking_date?: string | null;
+  check_in_at?: string | null;
+  check_out_at?: string | null;
 };
 
 type BookingItemRow = {
@@ -259,19 +302,20 @@ function renderSectionTable({
         <table className="w-full text-sm">
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
             <tr className="border-b text-left">
-              <th className="p-3">Código</th>
-<th className="p-3">Source</th>
-<th className="p-3">Cliente</th>
-<th className="p-3">City</th>
-<th className="p-3">Bags</th>
-<th className="p-3">Showers</th>
-<th className="p-3">Luggage + Shower</th>
-<th className="p-3">In</th>
-<th className="p-3">Out</th>
-<th className="p-3">Total</th>
-<th className="p-3">Estado</th>
-<th className="p-3">Ação</th>
-            </tr>
+  <th className="p-3">Código</th>
+  <th className="p-3">Source</th>
+  <th className="p-3">Date</th>
+  <th className="p-3">Cliente</th>
+  <th className="p-3">City</th>
+  <th className="p-3">Bags</th>
+  <th className="p-3">Showers</th>
+  <th className="p-3">Luggage + Shower</th>
+  <th className="p-3">In</th>
+  <th className="p-3">Out</th>
+  <th className="p-3">Total</th>
+  <th className="p-3">Estado</th>
+  <th className="p-3">Ação</th>
+</tr>
           </thead>
 
           <tbody>
@@ -310,11 +354,12 @@ const rowClass = cancelled
                     </Link>
                   </td>
 
+<td className="p-3">{booking.source || "—"}</td>
+<td className="p-3 whitespace-nowrap">{meta.date ?? "-"}</td>
+
 <td className="p-3">
-  <AdminSourceSelect
-    bookingId={booking.id}
-    value={booking.source}
-  />
+  <div className="font-medium">{booking.customer_name}</div>
+  <div className="text-xs text-gray-500">{booking.customer_email}</div>
 </td>
 
                   <td className="p-3">
@@ -618,14 +663,24 @@ const sourceTodayRevenue = {
   }
 
   const sortedBookings = [...((bookings as BookingRow[]) ?? [])].sort((a, b) => {
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
+  const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
+
+  const aDate = aMeta.date || a.created_at;
+  const bDate = bMeta.date || b.created_at;
+
+  return new Date(aDate).getTime() - new Date(bDate).getTime();
+});
 
   const todayBookings: BookingRow[] = [];
   const insideBookings: BookingRow[] = [];
   const finishedBookings: BookingRow[] = [];
   const upcomingBookings: BookingRow[] = [];
   const cancelledBookings: BookingRow[] = [];
+  const upcomingTotal = upcomingBookings.reduce(
+  (sum, booking) => sum + Number(booking.total_amount || 0),
+  0
+);
 
   for (const booking of sortedBookings) {
     const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
@@ -670,6 +725,11 @@ const sourceTodayRevenue = {
     finishedBookings.length +
     upcomingBookings.length +
     cancelledBookings.length;
+
+const upcomingTotal = upcomingBookings.reduce(
+  (sum, booking) => sum + Number(booking.total_amount || 0),
+  0
+);
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
@@ -831,12 +891,21 @@ const sourceTodayRevenue = {
 
       {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
 
-      {renderSectionTable({
-        title: "Upcoming",
-        bookings: upcomingBookings,
-        bookingMetaMap,
-        codeFilter,
-      })}
+<div className="space-y-3">
+  <div className="flex justify-end">
+    <div className="rounded-xl border px-3 py-2 text-sm">
+      <span className="font-medium">Upcoming total:</span>{" "}
+      <span className="font-bold">€ {upcomingTotal.toFixed(2)}</span>
+    </div>
+  </div>
+
+  {renderSectionTable({
+    title: "Upcoming",
+    bookings: upcomingBookings,
+    bookingMetaMap,
+    codeFilter,
+  })}
+</div>
 
       {renderSectionTable({
         title: "Cancelled",
