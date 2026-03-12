@@ -75,8 +75,8 @@ export default async function BookingByCodePage({ params }: PageProps) {
   }
 
   return (
-    <main className="max-w-xl mx-auto p-6">
-      <div className="border rounded-2xl p-6 space-y-5 shadow-sm bg-white">
+    <main className="mx-auto max-w-lg p-4 sm:p-6">
+      <div className="space-y-4 rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">Alicantíssima Booking</h1>
           <p className="text-sm text-gray-600">
@@ -84,50 +84,50 @@ export default async function BookingByCodePage({ params }: PageProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          <div className="border rounded-xl p-3 space-y-2">
-            <div className="text-gray-500">Booking code</div>
-            <div className="font-semibold">{booking.booking_code}</div>
+        <div className="rounded-xl border p-4 text-center">
+          <div className="mb-3 text-sm text-gray-500">QR Code</div>
+          <div className="flex justify-center">
             <BookingPass code={booking.booking_code} />
           </div>
+        </div>
 
-          <div className="border rounded-xl p-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 text-sm">
+          <div className="rounded-xl border p-3">
+            <div className="text-gray-500">Booking code</div>
+            <div className="font-semibold">{booking.booking_code}</div>
+          </div>
+
+          <div className="rounded-xl border p-3">
             <div className="text-gray-500">Status</div>
             <div className="font-semibold capitalize">{booking.status}</div>
           </div>
 
-          <div className="border rounded-xl p-3 sm:col-span-2">
+          <div className="rounded-xl border p-3 sm:col-span-2">
             <div className="text-gray-500">Customer</div>
             <div className="font-semibold">{booking.customer_name}</div>
           </div>
 
-          <div className="border rounded-xl p-3 sm:col-span-2">
+          <div className="rounded-xl border p-3 sm:col-span-2">
             <div className="text-gray-500">Email</div>
+            <div className="font-semibold break-all">{booking.customer_email}</div>
+          </div>
+
+          <div className="rounded-xl border p-3 sm:col-span-2">
+            <div className="text-gray-500">Phone</div>
             <div className="font-semibold break-all">
-              {booking.customer_email}
+              {booking.customer_phone || "-"}
             </div>
           </div>
 
-          {booking.customer_phone && (
-            <div className="border rounded-xl p-3 sm:col-span-2">
-              <div className="text-gray-500">Phone</div>
-              <div className="font-semibold break-all">
-                {booking.customer_phone}
-              </div>
-            </div>
-          )}
-
           {booking.service_date && (
-            <div className="border rounded-xl p-3">
+            <div className="rounded-xl border p-3">
               <div className="text-gray-500">Service date</div>
-              <div className="font-semibold">
-                {formatDate(booking.service_date)}
-              </div>
+              <div className="font-semibold">{formatDate(booking.service_date)}</div>
             </div>
           )}
 
           {booking.total_amount !== null && booking.total_amount !== undefined && (
-            <div className="border rounded-xl p-3">
+            <div className="rounded-xl border p-3">
               <div className="text-gray-500">Total</div>
               <div className="font-semibold">
                 {formatCurrency(booking.total_amount)}
@@ -136,7 +136,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
           )}
 
           {booking.check_in_time && (
-            <div className="border rounded-xl p-3">
+            <div className="rounded-xl border p-3">
               <div className="text-gray-500">Check-in</div>
               <div className="font-semibold">
                 {formatDateTime(booking.check_in_time)}
@@ -145,7 +145,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
           )}
 
           {booking.check_out_time && (
-            <div className="border rounded-xl p-3">
+            <div className="rounded-xl border p-3">
               <div className="text-gray-500">Check-out</div>
               <div className="font-semibold">
                 {formatDateTime(booking.check_out_time)}
@@ -154,8 +154,8 @@ export default async function BookingByCodePage({ params }: PageProps) {
           )}
 
           {booking.booking_items && booking.booking_items.length > 0 && (
-            <div className="border rounded-xl p-3 sm:col-span-2">
-              <div className="text-gray-500 mb-2">Products</div>
+            <div className="rounded-xl border p-3 sm:col-span-2">
+              <div className="mb-2 text-gray-500">Products</div>
               <ul className="space-y-1">
                 {booking.booking_items.map((item, index) => (
                   <li key={index} className="flex justify-between gap-4">
@@ -172,7 +172,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
           )}
 
           {booking.notes && (
-            <div className="border rounded-xl p-3 sm:col-span-2">
+            <div className="rounded-xl border p-3 sm:col-span-2">
               <div className="text-gray-500">Notes</div>
               <div className="font-semibold whitespace-pre-wrap">
                 {booking.notes}
@@ -180,11 +180,9 @@ export default async function BookingByCodePage({ params }: PageProps) {
             </div>
           )}
 
-          <div className="border rounded-xl p-3 sm:col-span-2">
+          <div className="rounded-xl border p-3 sm:col-span-2">
             <div className="text-gray-500">Reservation created</div>
-            <div className="font-semibold">
-              {formatDateTime(booking.created_at)}
-            </div>
+            <div className="font-semibold">{formatDateTime(booking.created_at)}</div>
           </div>
         </div>
       </div>
