@@ -106,10 +106,6 @@ export default async function BookingByCodePage({ params }: PageProps) {
     <BookingPass code={booking.booking_code} />
   </div>
 
-  <p className="mt-3 text-sm text-gray-600">
-    Show this QR code at check-in
-  </p>
-
   <p className="mt-2 text-xs text-gray-500">
     Payment is made on site, by card or cash.
   </p>
