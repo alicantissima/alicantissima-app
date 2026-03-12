@@ -331,7 +331,7 @@ function renderSectionTable({
 
               const isFilteredMatch = codeFilter === booking.booking_code;
 
-const sourceRowClass = getSourceRowClass(booking.source);
+const sourceRowClass = getSourceRowClass(booking.source ?? null);
 
 const rowClass = cancelled
   ? "bg-red-50/40"
