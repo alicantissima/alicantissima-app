@@ -10,12 +10,15 @@ type BookingRow = {
   id: string;
   created_at: string;
   booking_code: string;
-  source: string | null;
   customer_name: string;
   customer_email: string;
+  customer_phone?: string | null;
   total_amount: number;
   currency: string;
   status: string;
+  source?: string | null;
+  city?: string | null;
+  service_date?: string | null;
 };
 
 type BookingItemRow = {
