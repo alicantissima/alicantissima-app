@@ -3,8 +3,7 @@
 
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useTransition } from "react";import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
 import { submitCheckout } from "@/app/checkout/actions";
 
@@ -12,6 +11,10 @@ export default function CheckoutClient() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+useEffect(() => {
+  window.scrollTo({ top: 0, behavior: "auto" });
+}, []);
 
   const items = useBookingStore((state) => state.items);
   const clearItems = useBookingStore((state) => state.clearItems);

@@ -81,7 +81,8 @@ export default function BookShowerPage() {
       totalPrice,
     });
 
-    router.push("/checkout");
+    window.scrollTo({ top: 0, behavior: "auto" });
+router.push("/checkout");
   }
 
   return (

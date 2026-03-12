@@ -119,7 +119,8 @@ export default function BookComboPage() {
       ].filter((item) => item.quantity > 0),
     });
 
-    router.push("/checkout");
+    window.scrollTo({ top: 0, behavior: "auto" });
+router.push("/checkout");
   }
 
   function decrease(
