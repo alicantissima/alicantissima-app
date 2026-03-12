@@ -157,7 +157,7 @@ useEffect(() => {
           type="submit"
           disabled={pending}
           aria-disabled={pending}
-          className="w-full rounded-[28px] border border-black bg-black px-6 py-4 text-center text-xl font-bold uppercase text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-xl border border-black bg-black px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Creating booking..." : "Create booking"}
         </button>
