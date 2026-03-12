@@ -293,6 +293,7 @@ function buildConfirmationEmailHtml(params: {
 
 function buildInternalEmailText(params: {
   customerName: string;
+  customerCity?: string | null;
   customerEmail: string;
   customerPhone?: string | null;
   bookingCode: string;
@@ -313,6 +314,9 @@ function buildInternalEmailText(params: {
   lines.push("");
   lines.push(`Booking code: ${params.bookingCode}`);
   lines.push(`Customer: ${params.customerName}`);
+if (params.customerCity) {
+  lines.push(`City: ${params.customerCity}`);
+}
   lines.push(`Email: ${params.customerEmail}`);
 
   if (params.customerPhone) {
@@ -336,6 +340,7 @@ function buildInternalEmailText(params: {
 
 function buildInternalEmailHtml(params: {
   customerName: string;
+  customerCity?: string | null;
   customerEmail: string;
   customerPhone?: string | null;
   bookingCode: string;
@@ -385,7 +390,14 @@ function buildInternalEmailHtml(params: {
 
           <div style="margin:0 0 24px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
             <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Booking code:</strong> ${params.bookingCode}</p>
-            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Customer:</strong> ${params.customerName}</p>
+            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Customer:</strong> ${params.customerName}
+</p>
+
+${
+  params.customerCity
+    ? `<p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>City:</strong> ${params.customerCity}</p>`
+    : ""
+}
             <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>Email:</strong> ${params.customerEmail}</p>
             ${
               params.customerPhone
@@ -501,6 +513,7 @@ async function sendBookingConfirmationEmail(params: {
 
 async function sendInternalBookingNotification(params: {
   customerName: string;
+  customerCity?: string | null;
   customerEmail: string;
   customerPhone?: string | null;
   bookingCode: string;
@@ -672,6 +685,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
     try {
       await sendInternalBookingNotification({
         customerName,
+        customerCity,
         customerEmail,
         customerPhone,
         bookingCode: booking.booking_code,

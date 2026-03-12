@@ -571,6 +571,8 @@ const sourceTodayCounts = {
   na: 0,
 };
 
+const citiesTodayCounts: Record<string, number> = {};
+
 const sourceTodayRevenue = {
   site: 0,
   viator: 0,
@@ -638,6 +640,12 @@ const sourceTodayRevenue = {
     if (code === "shower") showersToday += item.quantity;
     if (code === "combo") combosToday += item.quantity;
   }
+
+const cityName = (booking.city ?? meta.city ?? "").trim();
+
+if (cityName) {
+  citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
+}
 }
 
     if (normalizedStatus === "inside") {
@@ -666,6 +674,9 @@ const sourceTodayRevenue = {
 
   const aDate = aMeta.date || a.created_at;
   const bDate = bMeta.date || b.created_at;
+  const citiesTodayList = Object.entries(citiesTodayCounts)
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  .slice(0, 12);
 
   return new Date(aDate).getTime() - new Date(bDate).getTime();
 });
@@ -859,6 +870,27 @@ const upcomingTotal = upcomingBookings.reduce(
       na: {formatCurrency(sourceTodayRevenue.na, "EUR")}
     </span>
   </div>
+</section>
+
+<section className="rounded-xl border p-4">
+  <div className="mb-3 text-sm font-semibold text-gray-700">
+    Cities today
+  </div>
+
+  {citiesTodayList.length ? (
+    <div className="flex flex-wrap gap-2 text-sm">
+      {citiesTodayList.map(([city, count]) => (
+        <span
+          key={city}
+          className="rounded-full bg-gray-100 px-3 py-1 text-gray-700"
+        >
+          {city}: {count}
+        </span>
+      ))}
+    </div>
+  ) : (
+    <div className="text-sm text-gray-500">No cities yet today.</div>
+  )}
 </section>
 
       {renderSectionTable({
