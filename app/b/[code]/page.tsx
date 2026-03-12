@@ -103,7 +103,6 @@ export default async function BookingByCodePage({ params }: PageProps) {
           <div className="mb-3 text-sm text-gray-500">QR Code</div>
           <div className="flex justify-center">
             <div className="rounded-xl border p-4 text-center">
-  <div className="mb-3 text-sm text-gray-500">QR Code</div>
 
   <div className="flex justify-center">
     <BookingPass code={booking.booking_code} />
