@@ -106,9 +106,9 @@ export default async function BookingByCodePage({ params }: PageProps) {
     <BookingPass code={booking.booking_code} />
   </div>
 
-  <p className="mt-2 text-xs text-gray-500">
-    Payment is made on site, by card or cash.
-  </p>
+  <p className="mt-2 text-xs font-medium text-gray-600">
+  Payment is made on site, by card or cash.
+</p>
 </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 text-sm">
