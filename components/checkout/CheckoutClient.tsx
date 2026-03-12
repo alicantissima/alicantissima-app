@@ -29,7 +29,7 @@ async function handleSubmit(formData: FormData) {
 
   const payload = {
     customerName: String(formData.get("customerName") || ""),
-    city,
+    customerCity: city,
     customerEmail: String(formData.get("customerEmail") || ""),
     customerPhone: String(formData.get("customerPhone") || ""),
     notes: String(formData.get("notes") || ""),
