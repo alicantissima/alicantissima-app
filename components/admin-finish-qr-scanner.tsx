@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -82,6 +82,8 @@ export default function AdminFinishQrScanner() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const lastScanRef = useRef("");
+  const lastScanAtRef = useRef(0);
   const router = useRouter();
   const supabase = createClient();
 
@@ -144,6 +146,9 @@ export default function AdminFinishQrScanner() {
         navigator.vibrate([120, 80, 120]);
       }
 
+      lastScanRef.current = "";
+      lastScanAtRef.current = 0;
+
       setLoading(false);
       setOpen(false);
       router.push(`/admin/booking/${booking.id}`);
@@ -152,6 +157,8 @@ export default function AdminFinishQrScanner() {
 
     if (booking.status === "finished") {
       playErrorBeep();
+      lastScanRef.current = "";
+      lastScanAtRef.current = 0;
       setLoading(false);
       setOpen(false);
       router.push(`/admin/booking/${booking.id}`);
@@ -186,6 +193,8 @@ export default function AdminFinishQrScanner() {
       <button
         onClick={() => {
           setError("");
+          lastScanRef.current = "";
+          lastScanAtRef.current = 0;
           setOpen((prev) => !prev);
         }}
         className="rounded-xl border px-4 py-2 font-medium"
@@ -198,10 +207,21 @@ export default function AdminFinishQrScanner() {
           <div className="overflow-hidden rounded-xl">
             <Scanner
               onScan={(detectedCodes) => {
-                const rawValue = detectedCodes?.[0]?.rawValue;
-                if (rawValue && !loading) {
-                  void handleScan(rawValue);
+                const rawValue = detectedCodes?.[0]?.rawValue?.trim();
+                if (!rawValue || loading) return;
+
+                const now = Date.now();
+                const isSameAsLast = rawValue === lastScanRef.current;
+                const isTooSoon = now - lastScanAtRef.current < 2000;
+
+                if (isSameAsLast && isTooSoon) {
+                  return;
                 }
+
+                lastScanRef.current = rawValue;
+                lastScanAtRef.current = now;
+
+                void handleScan(rawValue);
               }}
               onError={(err: unknown) => {
                 const isCameraPermissionError =
