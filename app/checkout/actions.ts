@@ -67,13 +67,6 @@ function formatTimeRange(value: unknown) {
     .replace(/(\d{2}):(\d{2})-(\d{2}):(\d{2})/, "$1:$2 – $3:$4");
 }
 
-function getBookingUrl(bookingCode: string) {
-  const baseUrl =
-    process.env.APP_BASE_URL?.replace(/\/$/, "") || "https://app.alicantissima.es";
-
-  return `${baseUrl}/b/${bookingCode}`;
-}
-
 function getQrCodeUrl(text: string) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(text)}`;
 }
