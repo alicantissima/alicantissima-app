@@ -283,46 +283,71 @@ const messages: Record<AppLanguage, Messages> = {
   it: {
   ...baseMessages,
 
+  bookingPassTitle: "Pass prenotazione Alicantissima",
+  showAtReception: "Mostra questa schermata alla reception per un check-in più rapido.",
+  checkInQr: "QR per il check-in",
+  paymentOnSite: "Il pagamento avviene in loco, con carta o contanti.",
+  customer: "Cliente",
+  serviceDate: "Data del servizio",
+  total: "Totale",
+  products: "Prodotti",
+  checkIn: "Check-in",
+  checkOut: "Check-out",
+  notes: "Note",
+  moreBookingDetails: "Più dettagli sulla prenotazione",
+  bookingCode: "Codice prenotazione",
+  email: "Email",
+  phone: "Telefono",
+  reservationCreated: "Prenotazione creata",
+  confirmed: "Confermata",
+  checkedIn: "Check-in effettuato",
+  completed: "Completata",
+  cancelled: "Annullata",
+  fullBrightnessQr: "QR con luminosità massima",
+  tapAnywhereToClose: "Tocca ovunque per chiudere",
+
   back: "Indietro",
   backToProductMenu: "Torna alla scelta del servizio",
 
   bookLuggageTitle: "Deposito bagagli",
   bookLuggageSubtitle: "Deposito bagagli sicuro e veloce nel centro di Alicante",
-
   chooseDate: "Scegli la data",
   chooseDropOffTime: "Scegli l'orario di consegna",
   estimatedPickUpTime: "Orario stimato di ritiro",
-
+  pickUpHelpText: "Ci aiuta a organizzare i bagagli durante la giornata.",
   numberOfLuggage: "Numero di bagagli",
-
   totalPrice: "Prezzo totale",
-
   bookNow: "Prenota ora",
-
   commentsOptional: "Commenti (opzionale)",
 
-  nameLabel: "Nome e cognome:",
-  cityLabel: "Città (da dove vieni)",
-  cityPlaceholder: "Roma, Berlino, Madrid...",
+  bookLuggageChooseDateAlert: "Per favore, scegli una data.",
+  bookLuggageChooseDropOffAlert: "Per favore, scegli un orario di consegna.",
+  bookLuggageChoosePickUpAlert: "Per favore, scegli un orario stimato di ritiro.",
+  bookLuggageProductName: "Deposito bagagli",
 
-  email: "Email",
-  phone: "Telefono",
-
-  createBooking: "Crea prenotazione",
-  creatingBooking: "Creazione prenotazione...",
-
-  checkoutEmpty: "La tua prenotazione è vuota.",
-
+  bookingConfirmedTitle: "Prenotazione confermata",
+  bookingCodeNotFound: "Codice prenotazione non trovato.",
+  backToBooking: "Torna alla prenotazione",
+  thankYouBookingCodePrefix: "Grazie. Il tuo codice prenotazione è",
+  keepCodeForCheckIn: "Conserva questo codice per il check-in.",
+  confirmationEmailSent: "Ti abbiamo inviato un'email di conferma.",
   bookingSummary: "Riepilogo prenotazione",
-
+  nameLabel: "Nome e cognome:",
   dateLabel: "Data:",
   dropOffLabel: "Consegna:",
   estimatedPickUpLabel: "Ritiro stimato:",
   showerTimeLabel: "Orario doccia:",
-
   qtyLabel: "Quantità:",
   totalLabel: "Totale:",
+  showQrAtReception: "Mostra questo codice QR alla reception per un check-in più rapido.",
+  qrAltPrefix: "Codice QR per la prenotazione",
+  itemFallback: "Voce",
 
+  checkoutEmpty: "La tua prenotazione è vuota.",
+  cityLabel: "Città (da dove vieni)",
+  cityPlaceholder: "Roma, Berlino, Madrid...",
+  createBooking: "Crea prenotazione",
+  creatingBooking: "Creazione prenotazione...",
   checkoutError: "Si è verificato un errore durante la prenotazione.",
 },
   no: { ...baseMessages },
