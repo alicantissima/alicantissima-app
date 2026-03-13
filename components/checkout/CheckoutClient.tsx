@@ -3,21 +3,28 @@
 
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";import { useRouter } from "next/navigation";
-import { useBookingStore } from "@/store/bookingStore";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { submitCheckout } from "@/app/checkout/actions";
+import { normalizeLanguage } from "@/lib/i18n";
+import { useBookingStore } from "@/store/bookingStore";
 
 export default function CheckoutClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-useEffect(() => {
-  window.scrollTo({ top: 0, behavior: "auto" });
-}, []);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
 
   const items = useBookingStore((state) => state.items);
   const clearItems = useBookingStore((state) => state.clearItems);
+
+  const language = useMemo(() => {
+    return normalizeLanguage(searchParams.get("lang"));
+  }, [searchParams]);
 
   const total = useMemo(() => {
     return items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
@@ -36,6 +43,7 @@ useEffect(() => {
       customerEmail: String(formData.get("customerEmail") || ""),
       customerPhone: String(formData.get("customerPhone") || ""),
       notes: "",
+      language,
       items: items.map((item) => ({
         id: item.productCode,
         title: item.productName,

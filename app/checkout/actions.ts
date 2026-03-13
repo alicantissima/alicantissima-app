@@ -4,6 +4,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { normalizeLanguage } from "@/lib/i18n";
 
 type CheckoutItem = {
   id: string;
@@ -21,6 +22,7 @@ type CheckoutPayload = {
   customerEmail: string;
   customerPhone?: string;
   notes?: string;
+  language?: string;
   items: CheckoutItem[];
 };
 
@@ -542,6 +544,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const customerEmail = payload.customerEmail?.trim();
     const customerPhone = payload.customerPhone?.trim();
     const notes = payload.notes?.trim() || null;
+    const language = normalizeLanguage(payload.language);
 
     if (!customerName) {
       return { ok: false, error: "Missing name." };
@@ -613,6 +616,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
   source: "na",
   status: "pending",
   service_date: serviceDate,
+  language,
 })
       .select("id, booking_code")
       .single();
