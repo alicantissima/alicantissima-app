@@ -81,6 +81,28 @@ type Messages = {
   bookShowerChooseTimeAlert: string;
   bookShowerProductName: string;
 
+  bookComboTitle: string;
+  bookComboSubtitle: string;
+  chooseComboDate: string;
+  chooseLuggageDropOffTime: string;
+  chooseApproxShowerTime: string;
+  comboShowerHelpText: string;
+
+  comboMainLabel: string;
+  comboMainPriceLabel: string;
+  comboExtraLuggageLabel: string;
+  comboExtraLuggagePriceLabel: string;
+  comboExtraShowerLabel: string;
+  comboExtraShowerPriceLabel: string;
+
+  bookComboChooseDateAlert: string;
+  bookComboChooseDropOffAlert: string;
+  bookComboChooseShowerAlert: string;
+  bookComboProductName: string;
+  comboBreakdownMainLabel: string;
+  comboBreakdownExtraLuggageLabel: string;
+  comboBreakdownExtraShowerLabel: string;
+
   bookingConfirmedTitle: string;
   bookingCodeNotFound: string;
   backToBooking: string;
