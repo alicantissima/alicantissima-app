@@ -4,9 +4,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
-import { useEffect } from "react";
+import { getMessages, normalizeLanguage } from "@/lib/i18n";
 
 function pad(value: number) {
   return value.toString().padStart(2, "0");
@@ -48,7 +48,11 @@ function getTodayString() {
 
 export default function BookComboPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const addItem = useBookingStore((state) => state.addItem);
+
+  const language = normalizeLanguage(searchParams.get("lang"));
+  const t = getMessages(language);
 
   const luggageTimeSlots = useMemo(() => generateTimeSlots(10, 20), []);
   const showerTimeSlots = useMemo(() => generateTimeSlots(10, 20), []);
@@ -74,23 +78,23 @@ export default function BookComboPage() {
 
   function handleAddToBooking() {
     if (!date) {
-      alert("Please choose a date.");
+      alert(t.bookComboChooseDateAlert);
       return;
     }
 
     if (!dropOffTime) {
-      alert("Please choose a luggage drop-off time.");
+      alert(t.bookComboChooseDropOffAlert);
       return;
     }
 
     if (!showerTime) {
-      alert("Please choose a shower time.");
+      alert(t.bookComboChooseShowerAlert);
       return;
     }
 
     addItem({
       productCode: "combo",
-      productName: "Luggage + Shower",
+      productName: t.bookComboProductName,
       quantity: comboQty,
       date,
       dropOffTime,
@@ -100,19 +104,19 @@ export default function BookComboPage() {
       totalPrice,
       breakdown: [
         {
-          label: "Luggage + Shower",
+          label: t.comboBreakdownMainLabel,
           quantity: comboQty,
           unitPrice: comboPrice,
           totalPrice: comboQty * comboPrice,
         },
         {
-          label: "Additional luggage",
+          label: t.comboBreakdownExtraLuggageLabel,
           quantity: extraLuggageQty,
           unitPrice: extraLuggagePrice,
           totalPrice: extraLuggageQty * extraLuggagePrice,
         },
         {
-          label: "Additional shower",
+          label: t.comboBreakdownExtraShowerLabel,
           quantity: extraShowerQty,
           unitPrice: extraShowerPrice,
           totalPrice: extraShowerQty * extraShowerPrice,
@@ -121,7 +125,7 @@ export default function BookComboPage() {
     });
 
     window.scrollTo({ top: 0, behavior: "auto" });
-router.push("/checkout");
+    router.push(`/checkout?lang=${language}`);
   }
 
   function decrease(
@@ -138,21 +142,20 @@ router.push("/checkout");
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-<button
-  onClick={() => router.push("/")}
-  className="text-sm text-gray-600 hover:text-black"
->
-  ← Back
-</button>
-      <h1 className="text-2xl font-bold uppercase">Luggage + Shower</h1>
+      <button
+        onClick={() => router.push(`/?lang=${language}`)}
+        className="text-sm text-gray-600 hover:text-black"
+      >
+        ← {t.back}
+      </button>
 
-      <p className="text-sm text-gray-600">
-        Leave your bags, enjoy the day and take a refreshing shower
-      </p>
+      <h1 className="text-2xl font-bold uppercase">{t.bookComboTitle}</h1>
+
+      <p className="text-sm text-gray-600">{t.bookComboSubtitle}</p>
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-semibold">Choose the date</label>
+          <label className="text-sm font-semibold">{t.chooseComboDate}</label>
           <input
             type="date"
             min={getTodayString()}
@@ -163,7 +166,9 @@ router.push("/checkout");
         </div>
 
         <div>
-          <label className="text-sm font-semibold">Luggage drop-off time</label>
+          <label className="text-sm font-semibold">
+            {t.chooseLuggageDropOffTime}
+          </label>
           <select
             className="mt-1 w-full rounded border p-2"
             value={dropOffTime}
@@ -179,7 +184,7 @@ router.push("/checkout");
 
         <div>
           <label className="text-sm font-semibold">
-            Shower time (approx.)
+            {t.chooseApproxShowerTime}
           </label>
           <select
             className="mt-1 w-full rounded border p-2"
@@ -192,17 +197,14 @@ router.push("/checkout");
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-500">
-            You can take your shower and still come back later to collect your
-            luggage.
-          </p>
+          <p className="mt-1 text-xs text-gray-500">{t.comboShowerHelpText}</p>
         </div>
 
         <div className="space-y-3 rounded-2xl border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold">Luggage + Shower</p>
-              <p className="text-sm text-gray-600">€18 / person</p>
+              <p className="font-semibold">{t.comboMainLabel}</p>
+              <p className="text-sm text-gray-600">{t.comboMainPriceLabel}</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -228,8 +230,10 @@ router.push("/checkout");
         <div className="space-y-3 rounded-2xl border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold">Additional luggage</p>
-              <p className="text-sm text-gray-600">€8 / item / all day</p>
+              <p className="font-semibold">{t.comboExtraLuggageLabel}</p>
+              <p className="text-sm text-gray-600">
+                {t.comboExtraLuggagePriceLabel}
+              </p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -255,8 +259,10 @@ router.push("/checkout");
         <div className="space-y-3 rounded-2xl border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold">Additional shower</p>
-              <p className="text-sm text-gray-600">€12 / person</p>
+              <p className="font-semibold">{t.comboExtraShowerLabel}</p>
+              <p className="text-sm text-gray-600">
+                {t.comboExtraShowerPriceLabel}
+              </p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -281,7 +287,7 @@ router.push("/checkout");
       </div>
 
       <div className="space-y-2 rounded-2xl border p-4">
-        <p className="text-sm font-semibold">Total price</p>
+        <p className="text-sm font-semibold">{t.totalPrice}</p>
         <p className="text-2xl font-bold">€ {totalPrice}</p>
       </div>
 
@@ -290,11 +296,11 @@ router.push("/checkout");
         onClick={handleAddToBooking}
         className="w-full rounded-xl border border-black bg-black px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98]"
       >
-        Book now
+        {t.bookNow}
       </button>
 
       <div>
-        <label className="text-sm font-semibold">Comments (optional)</label>
+        <label className="text-sm font-semibold">{t.commentsOptional}</label>
         <textarea
           className="mt-1 w-full rounded border p-2"
           value={comments}

@@ -170,6 +170,38 @@ const baseMessages: Messages = {
   bookLuggageChooseDateAlert: "Please choose a date.",
   bookLuggageChooseDropOffAlert: "Please choose a drop-off time.",
   bookLuggageChoosePickUpAlert: "Please choose an estimated pick-up time.",
+
+
+  bookShowerTitle: "Take a Shower",
+  bookShowerSubtitle: "Refresh yourself before your trip or after the beach",
+  chooseShowerTime: "Choose shower time",
+  numberOfShowers: "Number of showers",
+
+  bookShowerChooseDateAlert: "Please choose a date.",
+  bookShowerChooseTimeAlert: "Please choose a shower time.",
+  bookShowerProductName: "Shower",
+
+bookComboTitle: "Luggage + Shower",
+  bookComboSubtitle: "Leave your bags, enjoy the day and take a refreshing shower",
+  chooseComboDate: "Choose the date",
+  chooseLuggageDropOffTime: "Luggage drop-off time",
+  chooseApproxShowerTime: "Shower time (approx.)",
+  comboShowerHelpText: "You can take your shower and still come back later to collect your luggage.",
+
+  comboMainLabel: "Luggage + Shower",
+  comboMainPriceLabel: "€18 / person",
+  comboExtraLuggageLabel: "Additional luggage",
+  comboExtraLuggagePriceLabel: "€8 / item / all day",
+  comboExtraShowerLabel: "Additional shower",
+  comboExtraShowerPriceLabel: "€12 / person",
+
+  bookComboChooseDateAlert: "Please choose a date.",
+  bookComboChooseDropOffAlert: "Please choose a luggage drop-off time.",
+  bookComboChooseShowerAlert: "Please choose a shower time.",
+  bookComboProductName: "Luggage + Shower",
+  comboBreakdownMainLabel: "Luggage + Shower",
+  comboBreakdownExtraLuggageLabel: "Additional luggage",
+  comboBreakdownExtraShowerLabel: "Additional shower",
   bookLuggageProductName: "Store Luggage",
 
   bookingConfirmedTitle: "Booking confirmed",
@@ -197,17 +229,6 @@ const baseMessages: Messages = {
   createBooking: "Create booking",
   creatingBooking: "Creating booking...",
   checkoutError: "An error occurred during checkout.",
-
-
-
-  bookShowerTitle: "Take a Shower",
-  bookShowerSubtitle: "Refresh yourself before your trip or after the beach",
-  chooseShowerTime: "Choose shower time",
-  numberOfShowers: "Number of showers",
-
-  bookShowerChooseDateAlert: "Please choose a date.",
-  bookShowerChooseTimeAlert: "Please choose a shower time.",
-  bookShowerProductName: "Shower",
 };
 
 const messages: Record<AppLanguage, Messages> = {
@@ -270,6 +291,27 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Por favor, elige una fecha.",
     bookShowerChooseTimeAlert: "Por favor, elige una hora de ducha.",
     bookShowerProductName: "Ducha",
+    bookComboTitle: "Equipaje + Ducha",
+    bookComboSubtitle: "Deja tus maletas, disfruta del día y date una ducha refrescante",
+    chooseComboDate: "Elegir fecha",
+    chooseLuggageDropOffTime: "Hora de entrega del equipaje",
+    chooseApproxShowerTime: "Hora de la ducha (aprox.)",
+    comboShowerHelpText: "Puedes ducharte y volver más tarde para recoger tu equipaje.",
+
+    comboMainLabel: "Equipaje + Ducha",
+    comboMainPriceLabel: "€18 / persona",
+    comboExtraLuggageLabel: "Equipaje adicional",
+    comboExtraLuggagePriceLabel: "€8 / artículo / todo el día",
+    comboExtraShowerLabel: "Ducha adicional",
+    comboExtraShowerPriceLabel: "€12 / persona",
+
+    bookComboChooseDateAlert: "Por favor, elige una fecha.",
+    bookComboChooseDropOffAlert: "Por favor, elige una hora de entrega del equipaje.",
+    bookComboChooseShowerAlert: "Por favor, elige una hora de ducha.",
+    bookComboProductName: "Equipaje + Ducha",
+    comboBreakdownMainLabel: "Equipaje + Ducha",
+    comboBreakdownExtraLuggageLabel: "Equipaje adicional",
+    comboBreakdownExtraShowerLabel: "Ducha adicional",
 },
 
     pt: {
@@ -348,6 +390,27 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Por favor, escolhe uma data.",
     bookShowerChooseTimeAlert: "Por favor, escolhe uma hora de duche.",
     bookShowerProductName: "Duche",
+    bookComboTitle: "Bagagem + Duche",
+    bookComboSubtitle: "Deixa as malas, aproveita o dia e toma um duche refrescante",
+    chooseComboDate: "Escolher data",
+    chooseLuggageDropOffTime: "Hora de entrega da bagagem",
+    chooseApproxShowerTime: "Hora do duche (aprox.)",
+    comboShowerHelpText: "Podes tomar o teu duche e voltar mais tarde para recolher a bagagem.",
+
+    comboMainLabel: "Bagagem + Duche",
+    comboMainPriceLabel: "€18 / pessoa",
+    comboExtraLuggageLabel: "Bagagem adicional",
+    comboExtraLuggagePriceLabel: "€8 / item / todo o dia",
+    comboExtraShowerLabel: "Duche adicional",
+    comboExtraShowerPriceLabel: "€12 / pessoa",
+
+    bookComboChooseDateAlert: "Por favor, escolhe uma data.",
+    bookComboChooseDropOffAlert: "Por favor, escolhe uma hora de entrega da bagagem.",
+    bookComboChooseShowerAlert: "Por favor, escolhe uma hora de duche.",
+    bookComboProductName: "Bagagem + Duche",
+    comboBreakdownMainLabel: "Bagagem + Duche",
+    comboBreakdownExtraLuggageLabel: "Bagagem adicional",
+    comboBreakdownExtraShowerLabel: "Duche adicional",
   },
 
   fr: {
@@ -402,6 +465,27 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Veuillez choisir une date.",
     bookShowerChooseTimeAlert: "Veuillez choisir une heure de douche.",
     bookShowerProductName: "Douche",
+    bookComboTitle: "Bagages + Douche",
+    bookComboSubtitle: "Laissez vos bagages, profitez de la journée et prenez une douche rafraîchissante",
+    chooseComboDate: "Choisir la date",
+    chooseLuggageDropOffTime: "Heure de dépôt des bagages",
+    chooseApproxShowerTime: "Heure de la douche (approx.)",
+    comboShowerHelpText: "Vous pouvez prendre votre douche et revenir plus tard pour récupérer vos bagages.",
+
+    comboMainLabel: "Bagages + Douche",
+    comboMainPriceLabel: "€18 / personne",
+    comboExtraLuggageLabel: "Bagage supplémentaire",
+    comboExtraLuggagePriceLabel: "€8 / article / toute la journée",
+    comboExtraShowerLabel: "Douche supplémentaire",
+    comboExtraShowerPriceLabel: "€12 / personne",
+
+    bookComboChooseDateAlert: "Veuillez choisir une date.",
+    bookComboChooseDropOffAlert: "Veuillez choisir une heure de dépôt des bagages.",
+    bookComboChooseShowerAlert: "Veuillez choisir une heure de douche.",
+    bookComboProductName: "Bagages + Douche",
+    comboBreakdownMainLabel: "Bagages + Douche",
+    comboBreakdownExtraLuggageLabel: "Bagage supplémentaire",
+    comboBreakdownExtraShowerLabel: "Douche supplémentaire",
 },
 
   it: {
