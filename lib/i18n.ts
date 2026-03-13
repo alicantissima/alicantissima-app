@@ -231,6 +231,14 @@ const messages: Record<AppLanguage, Messages> = {
   totalLabel: "Total:",
 
   checkoutError: "Se produjo un error durante la reserva.",
+    bookShowerTitle: "Tomar una ducha",
+    bookShowerSubtitle: "Refréscate antes de tu viaje o después de la playa",
+    chooseShowerTime: "Elegir hora de la ducha",
+    numberOfShowers: "Número de duchas",
+
+    bookShowerChooseDateAlert: "Por favor, elige una fecha.",
+    bookShowerChooseTimeAlert: "Por favor, elige una hora de ducha.",
+    bookShowerProductName: "Ducha",
 },
 
     pt: {
@@ -310,6 +318,14 @@ const messages: Record<AppLanguage, Messages> = {
     createBooking: "Criar reserva",
     creatingBooking: "A criar reserva...",
     checkoutError: "Ocorreu um erro durante a reserva.",
+    bookShowerTitle: "Tomar um duche",
+    bookShowerSubtitle: "Refresca-te antes da viagem ou depois da praia",
+    chooseShowerTime: "Escolher hora do duche",
+    numberOfShowers: "Número de duches",
+
+    bookShowerChooseDateAlert: "Por favor, escolhe uma data.",
+    bookShowerChooseTimeAlert: "Por favor, escolhe uma hora de duche.",
+    bookShowerProductName: "Duche",
   },,
 
   fr: {
@@ -356,7 +372,16 @@ const messages: Record<AppLanguage, Messages> = {
   totalLabel: "Total:",
 
   checkoutError: "Une erreur s'est produite lors de la réservation.",
+    bookShowerTitle: "Prendre une douche",
+    bookShowerSubtitle: "Rafraîchissez-vous avant votre voyage ou après la plage",
+    chooseShowerTime: "Choisir l'heure de la douche",
+    numberOfShowers: "Nombre de douches",
+
+    bookShowerChooseDateAlert: "Veuillez choisir une date.",
+    bookShowerChooseTimeAlert: "Veuillez choisir une heure de douche.",
+    bookShowerProductName: "Douche",
 },
+
   it: {
   ...baseMessages,
 
@@ -426,7 +451,17 @@ const messages: Record<AppLanguage, Messages> = {
   createBooking: "Crea prenotazione",
   creatingBooking: "Creazione prenotazione...",
   checkoutError: "Si è verificato un errore durante la prenotazione.",
+    bookShowerTitle: "Fare una doccia",
+    bookShowerSubtitle: "Rinfrescati prima del viaggio o dopo la spiaggia",
+    chooseShowerTime: "Scegli l'orario della doccia",
+    numberOfShowers: "Numero di docce",
+
+    bookShowerChooseDateAlert: "Per favore, scegli una data.",
+    bookShowerChooseTimeAlert: "Per favore, scegli un orario per la doccia.",
+    bookShowerProductName: "Doccia",
 },
+
+
   no: {
     ...baseMessages,
     bookingPassTitle: "Alicantissima reservasjonskort",
@@ -495,7 +530,17 @@ const messages: Record<AppLanguage, Messages> = {
     createBooking: "Opprett bestilling",
     creatingBooking: "Oppretter bestilling...",
     checkoutError: "Det oppstod en feil under bestillingen.",
+    bookShowerTitle: "Ta en dusj",
+    bookShowerSubtitle: "Frisk deg opp før reisen eller etter stranden",
+    chooseShowerTime: "Velg dusjtid",
+    numberOfShowers: "Antall dusjer",
+
+    bookShowerChooseDateAlert: "Vennligst velg en dato.",
+    bookShowerChooseTimeAlert: "Vennligst velg dusjtid.",
+    bookShowerProductName: "Dusj",
   },
+
+
   de: {
     ...baseMessages,
     bookingPassTitle: "Alicantissima Buchungspass",
@@ -564,7 +609,17 @@ const messages: Record<AppLanguage, Messages> = {
     createBooking: "Buchung erstellen",
     creatingBooking: "Buchung wird erstellt...",
     checkoutError: "Während der Buchung ist ein Fehler aufgetreten.",
+    bookShowerTitle: "Dusche nehmen",
+    bookShowerSubtitle: "Erfrische dich vor deiner Reise oder nach dem Strand",
+    chooseShowerTime: "Duschzeit wählen",
+    numberOfShowers: "Anzahl Duschen",
+
+    bookShowerChooseDateAlert: "Bitte wähle ein Datum.",
+    bookShowerChooseTimeAlert: "Bitte wähle eine Duschzeit.",
+    bookShowerProductName: "Dusche",
   },
+
+
   pl: {
   ...baseMessages,
   bookingPassTitle: "Karta rezerwacji Alicantissima",
@@ -632,7 +687,17 @@ const messages: Record<AppLanguage, Messages> = {
   createBooking: "Utwórz rezerwację",
   creatingBooking: "Tworzenie rezerwacji...",
   checkoutError: "Wystąpił błąd podczas rezerwacji.",
+    bookShowerTitle: "Wziąć prysznic",
+    bookShowerSubtitle: "Odśwież się przed podróżą lub po plaży",
+    chooseShowerTime: "Wybierz godzinę prysznica",
+    numberOfShowers: "Liczba pryszniców",
+
+    bookShowerChooseDateAlert: "Proszę wybrać datę.",
+    bookShowerChooseTimeAlert: "Proszę wybrać godzinę prysznica.",
+    bookShowerProductName: "Prysznic",
 },
+
+
   sv: {
     ...baseMessages,
     bookingPassTitle: "Alicantissima bokningspass",
@@ -701,7 +766,17 @@ const messages: Record<AppLanguage, Messages> = {
     createBooking: "Skapa bokning",
     creatingBooking: "Skapar bokning...",
     checkoutError: "Ett fel uppstod under bokningen.",
+    bookShowerTitle: "Ta en dusch",
+    bookShowerSubtitle: "Fräscha upp dig före resan eller efter stranden",
+    chooseShowerTime: "Välj duschtid",
+    numberOfShowers: "Antal duschar",
+
+    bookShowerChooseDateAlert: "Välj ett datum.",
+    bookShowerChooseTimeAlert: "Välj en duschtid.",
+    bookShowerProductName: "Dusch",
   },
+
+
   fi: {
     ...baseMessages,
     bookingPassTitle: "Alicantissima-varauspassi",
@@ -769,8 +844,17 @@ const messages: Record<AppLanguage, Messages> = {
     cityPlaceholder: "Helsinki, Berliini, Madrid...",
     createBooking: "Luo varaus",
     creatingBooking: "Luodaan varausta...",
-    checkoutError: "Varauksen aikana tapahtui virhe.",
+    checkoutError: "Varauksen aikana tapahtui virhe.",    bookShowerTitle: "Käy suihkussa",
+    bookShowerSubtitle: "Raikastu ennen matkaa tai rannan jälkeen",
+    chooseShowerTime: "Valitse suihkuaika",
+    numberOfShowers: "Suihkujen määrä",
+
+    bookShowerChooseDateAlert: "Valitse päivämäärä.",
+    bookShowerChooseTimeAlert: "Valitse suihkuaika.",
+    bookShowerProductName: "Suihku",
   },
+
+
   da: {
     ...baseMessages,
     bookingPassTitle: "Alicantissima bookingpas",
@@ -839,7 +923,17 @@ const messages: Record<AppLanguage, Messages> = {
     createBooking: "Opret booking",
     creatingBooking: "Opretter booking...",
     checkoutError: "Der opstod en fejl under bookingen.",
+    bookShowerTitle: "Tag et bad",
+    bookShowerSubtitle: "Frisk dig op før din rejse eller efter stranden",
+    chooseShowerTime: "Vælg badetid",
+    numberOfShowers: "Antal bade",
+
+    bookShowerChooseDateAlert: "Vælg venligst en dato.",
+    bookShowerChooseTimeAlert: "Vælg venligst et badetidspunkt.",
+    bookShowerProductName: "Bad",
   },
+
+
   hu: {
     ...baseMessages,
     bookingPassTitle: "Alicantissima foglalási belépő",
@@ -908,6 +1002,14 @@ const messages: Record<AppLanguage, Messages> = {
     createBooking: "Foglalás létrehozása",
     creatingBooking: "Foglalás létrehozása...",
     checkoutError: "Hiba történt a foglalás során.",
+    bookShowerTitle: "Zuhanyozni",
+    bookShowerSubtitle: "Frissülj fel utazás előtt vagy a strand után",
+    chooseShowerTime: "Válassz zuhanyidőt",
+    numberOfShowers: "Zuhanyok száma",
+
+    bookShowerChooseDateAlert: "Kérlek, válassz dátumot.",
+    bookShowerChooseTimeAlert: "Kérlek, válassz zuhanyidőt.",
+    bookShowerProductName: "Zuhany",
   },
 };
 
