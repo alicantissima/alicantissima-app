@@ -172,17 +172,55 @@ const messages: Record<AppLanguage, Messages> = {
   en: baseMessages,
 
   es: {
-    ...baseMessages,
-    back: "Volver",
-    bookLuggageTitle: "Guardar equipaje",
-    bookLuggageSubtitle: "Consigna segura y rápida en el centro de Alicante",
-    chooseDate: "Elegir fecha",
-    chooseDropOffTime: "Hora de entrega",
-    estimatedPickUpTime: "Hora estimada de recogida",
-    numberOfLuggage: "Número de maletas",
-    totalPrice: "Precio total",
-    bookNow: "Reservar",
-  },
+  ...baseMessages,
+
+  bookingPassTitle: "Pase de reserva Alicantissima",
+  showAtReception: "Muestra esta pantalla en recepción para un check-in más rápido.",
+  checkInQr: "Código QR de check-in",
+  paymentOnSite: "El pago se realiza en el local, con tarjeta o efectivo.",
+
+  back: "Volver",
+  backToProductMenu: "Volver al menú de servicios",
+
+  bookLuggageTitle: "Consigna de equipaje",
+  bookLuggageSubtitle: "Consigna segura y rápida en el centro de Alicante",
+
+  chooseDate: "Elegir fecha",
+  chooseDropOffTime: "Elegir hora de entrega",
+  estimatedPickUpTime: "Hora estimada de recogida",
+
+  numberOfLuggage: "Número de maletas",
+
+  totalPrice: "Precio total",
+
+  bookNow: "Reservar ahora",
+
+  commentsOptional: "Comentarios (opcional)",
+
+  nameLabel: "Nombre y apellido:",
+  cityLabel: "Ciudad (de dónde vienes)",
+  cityPlaceholder: "Londres, Berlín, Madrid...",
+
+  email: "Email",
+  phone: "Teléfono",
+
+  createBooking: "Crear reserva",
+  creatingBooking: "Creando reserva...",
+
+  checkoutEmpty: "Tu reserva está vacía.",
+
+  bookingSummary: "Resumen de la reserva",
+
+  dateLabel: "Fecha:",
+  dropOffLabel: "Entrega:",
+  estimatedPickUpLabel: "Recogida estimada:",
+  showerTimeLabel: "Hora de ducha:",
+
+  qtyLabel: "Cantidad:",
+  totalLabel: "Total:",
+
+  checkoutError: "Se produjo un error durante la reserva.",
+},
 
   pt: {
     ...baseMessages,
@@ -197,8 +235,96 @@ const messages: Record<AppLanguage, Messages> = {
     bookNow: "Reservar",
   },
 
-  fr: { ...baseMessages },
-  it: { ...baseMessages },
+  fr: {
+  ...baseMessages,
+
+  back: "Retour",
+  backToProductMenu: "Retour au choix du service",
+
+  bookLuggageTitle: "Consigne à bagages",
+  bookLuggageSubtitle: "Consigne rapide et sécurisée au centre d'Alicante",
+
+  chooseDate: "Choisir la date",
+  chooseDropOffTime: "Choisir l'heure de dépôt",
+  estimatedPickUpTime: "Heure estimée de récupération",
+
+  numberOfLuggage: "Nombre de bagages",
+
+  totalPrice: "Prix total",
+
+  bookNow: "Réserver maintenant",
+
+  commentsOptional: "Commentaires (optionnel)",
+
+  nameLabel: "Nom et prénom:",
+  cityLabel: "Ville (d'où vous venez)",
+  cityPlaceholder: "Paris, Berlin, Madrid...",
+
+  email: "Email",
+  phone: "Téléphone",
+
+  createBooking: "Créer la réservation",
+  creatingBooking: "Création de la réservation...",
+
+  checkoutEmpty: "Votre réservation est vide.",
+
+  bookingSummary: "Résumé de la réservation",
+
+  dateLabel: "Date:",
+  dropOffLabel: "Dépôt:",
+  estimatedPickUpLabel: "Récupération estimée:",
+  showerTimeLabel: "Heure de douche:",
+
+  qtyLabel: "Quantité:",
+  totalLabel: "Total:",
+
+  checkoutError: "Une erreur s'est produite lors de la réservation.",
+},
+  it: {
+  ...baseMessages,
+
+  back: "Indietro",
+  backToProductMenu: "Torna alla scelta del servizio",
+
+  bookLuggageTitle: "Deposito bagagli",
+  bookLuggageSubtitle: "Deposito bagagli sicuro e veloce nel centro di Alicante",
+
+  chooseDate: "Scegli la data",
+  chooseDropOffTime: "Scegli l'orario di consegna",
+  estimatedPickUpTime: "Orario stimato di ritiro",
+
+  numberOfLuggage: "Numero di bagagli",
+
+  totalPrice: "Prezzo totale",
+
+  bookNow: "Prenota ora",
+
+  commentsOptional: "Commenti (opzionale)",
+
+  nameLabel: "Nome e cognome:",
+  cityLabel: "Città (da dove vieni)",
+  cityPlaceholder: "Roma, Berlino, Madrid...",
+
+  email: "Email",
+  phone: "Telefono",
+
+  createBooking: "Crea prenotazione",
+  creatingBooking: "Creazione prenotazione...",
+
+  checkoutEmpty: "La tua prenotazione è vuota.",
+
+  bookingSummary: "Riepilogo prenotazione",
+
+  dateLabel: "Data:",
+  dropOffLabel: "Consegna:",
+  estimatedPickUpLabel: "Ritiro stimato:",
+  showerTimeLabel: "Orario doccia:",
+
+  qtyLabel: "Quantità:",
+  totalLabel: "Totale:",
+
+  checkoutError: "Si è verificato un errore durante la prenotazione.",
+},
   no: { ...baseMessages },
   de: { ...baseMessages },
   pl: {
