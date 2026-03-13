@@ -4,9 +4,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
-import { useEffect } from "react";
+import { getMessages, normalizeLanguage } from "@/lib/i18n";
 
 function pad(value: number) {
   return value.toString().padStart(2, "0");
@@ -48,7 +48,11 @@ function getTodayString() {
 
 export default function BookShowerPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const addItem = useBookingStore((state) => state.addItem);
+
+  const language = normalizeLanguage(searchParams.get("lang"));
+  const t = getMessages(language);
 
   const showerSlots = useMemo(() => generateTimeSlots(10, 20), []);
 
@@ -62,18 +66,18 @@ export default function BookShowerPage() {
 
   function handleAddToBooking() {
     if (!date) {
-      alert("Please choose a date.");
+      alert(t.bookShowerChooseDateAlert);
       return;
     }
 
     if (!showerTime) {
-      alert("Please choose a shower time.");
+      alert(t.bookShowerChooseTimeAlert);
       return;
     }
 
     addItem({
       productCode: "shower",
-      productName: "Shower",
+      productName: t.bookShowerProductName,
       quantity: showers,
       date,
       showerTime,
@@ -83,26 +87,25 @@ export default function BookShowerPage() {
     });
 
     window.scrollTo({ top: 0, behavior: "auto" });
-router.push("/checkout");
+    router.push(`/checkout?lang=${language}`);
   }
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-<button
-  onClick={() => router.push("/")}
-  className="text-sm text-gray-600 hover:text-black"
->
-  ← Back
-</button>
-      <h1 className="text-2xl font-bold uppercase">Take a Shower</h1>
+      <button
+        onClick={() => router.push(`/?lang=${language}`)}
+        className="text-sm text-gray-600 hover:text-black"
+      >
+        ← {t.back}
+      </button>
 
-      <p className="text-sm text-gray-600">
-        Refresh yourself before your trip or after the beach
-      </p>
+      <h1 className="text-2xl font-bold uppercase">{t.bookShowerTitle}</h1>
+
+      <p className="text-sm text-gray-600">{t.bookShowerSubtitle}</p>
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-semibold">Choose date</label>
+          <label className="text-sm font-semibold">{t.chooseDate}</label>
           <input
             type="date"
             min={getTodayString()}
@@ -113,7 +116,7 @@ router.push("/checkout");
         </div>
 
         <div>
-          <label className="text-sm font-semibold">Choose shower time</label>
+          <label className="text-sm font-semibold">{t.chooseShowerTime}</label>
           <select
             className="mt-1 w-full rounded border p-2"
             value={showerTime}
@@ -128,7 +131,7 @@ router.push("/checkout");
         </div>
 
         <div>
-          <label className="text-sm font-semibold">Number of showers</label>
+          <label className="text-sm font-semibold">{t.numberOfShowers}</label>
 
           <div className="mt-1 flex items-center gap-4">
             <button
@@ -153,7 +156,7 @@ router.push("/checkout");
       </div>
 
       <div className="rounded-2xl border p-4">
-        <p className="text-sm font-semibold">Total price</p>
+        <p className="text-sm font-semibold">{t.totalPrice}</p>
         <p className="mt-1 text-2xl font-bold">€ {totalPrice}</p>
       </div>
 
@@ -162,11 +165,11 @@ router.push("/checkout");
         onClick={handleAddToBooking}
         className="w-full rounded-xl border border-black bg-black px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98]"
       >
-        Book now
+        {t.bookNow}
       </button>
 
       <div>
-        <label className="text-sm font-semibold">Comments (optional)</label>
+        <label className="text-sm font-semibold">{t.commentsOptional}</label>
         <textarea
           className="mt-1 w-full rounded border p-2"
           value={comments}
