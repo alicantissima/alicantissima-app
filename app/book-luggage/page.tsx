@@ -1,15 +1,12 @@
 
 
 
-
-
-
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
-import { useEffect } from "react";
 
 function pad(value: number) {
   return value.toString().padStart(2, "0");
@@ -51,9 +48,15 @@ function getTodayString() {
 
 export default function BookLuggagePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const addItem = useBookingStore((state) => state.addItem);
   const clearItems = useBookingStore((state) => state.clearItems);
 
+  const language = useMemo(() => {
+    return normalizeLanguage(searchParams.get("lang"));
+  }, [searchParams]);
+
+  const t = getMessages(language);
   const timeSlots = useMemo(() => generateTimeSlots(10, 20), []);
 
   const [date, setDate] = useState("");
@@ -67,17 +70,17 @@ export default function BookLuggagePage() {
 
   function handleAddToBooking() {
     if (!date) {
-      alert("Please choose a date.");
+      alert(t.bookLuggageChooseDateAlert);
       return;
     }
 
     if (!dropOff) {
-      alert("Please choose a drop-off time.");
+      alert(t.bookLuggageChooseDropOffAlert);
       return;
     }
 
     if (!pickUp) {
-      alert("Please choose an estimated pick-up time.");
+      alert(t.bookLuggageChoosePickUpAlert);
       return;
     }
 
@@ -85,7 +88,7 @@ export default function BookLuggagePage() {
 
     addItem({
       productCode: "luggage",
-      productName: "Store Luggage",
+      productName: t.bookLuggageProductName,
       quantity: luggage,
       date,
       dropOffTime: dropOff,
@@ -96,26 +99,30 @@ export default function BookLuggagePage() {
     });
 
     window.scrollTo({ top: 0, behavior: "auto" });
-router.push("/checkout");
+    router.push(`/checkout?lang=${language}`);
+  }
+
+  function handleBack() {
+    router.back();
   }
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-<button
-  onClick={() => router.push("/")}
-  className="text-sm text-gray-600 hover:text-black"
->
-  ← Back
-</button>
-      <h1 className="text-2xl font-bold uppercase">Store Luggage</h1>
+      <button
+        type="button"
+        onClick={handleBack}
+        className="text-sm text-gray-600 hover:text-black"
+      >
+        ← {t.back}
+      </button>
 
-      <p className="text-sm text-gray-600">
-        Safe & fast luggage storage in Alicante city center
-      </p>
+      <h1 className="text-2xl font-bold uppercase">{t.bookLuggageTitle}</h1>
+
+      <p className="text-sm text-gray-600">{t.bookLuggageSubtitle}</p>
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-semibold">Choose date</label>
+          <label className="text-sm font-semibold">{t.chooseDate}</label>
           <input
             type="date"
             min={getTodayString()}
@@ -126,7 +133,7 @@ router.push("/checkout");
         </div>
 
         <div>
-          <label className="text-sm font-semibold">Choose drop-off time</label>
+          <label className="text-sm font-semibold">{t.chooseDropOffTime}</label>
           <select
             className="mt-1 w-full rounded border p-2"
             value={dropOff}
@@ -141,7 +148,7 @@ router.push("/checkout");
         </div>
 
         <div>
-          <label className="text-sm font-semibold">Estimated pick-up time</label>
+          <label className="text-sm font-semibold">{t.estimatedPickUpTime}</label>
           <select
             className="mt-1 w-full rounded border p-2"
             value={pickUp}
@@ -153,13 +160,11 @@ router.push("/checkout");
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-500">
-            Helps us organize luggage during the day.
-          </p>
+          <p className="mt-1 text-xs text-gray-500">{t.pickUpHelpText}</p>
         </div>
 
         <div>
-          <label className="text-sm font-semibold">Number of luggage</label>
+          <label className="text-sm font-semibold">{t.numberOfLuggage}</label>
 
           <div className="mt-1 flex items-center gap-4">
             <button
@@ -184,7 +189,7 @@ router.push("/checkout");
       </div>
 
       <div className="rounded-2xl border p-4">
-        <p className="text-sm font-semibold">Total price</p>
+        <p className="text-sm font-semibold">{t.totalPrice}</p>
         <p className="mt-1 text-2xl font-bold">€ {totalPrice}</p>
       </div>
 
@@ -193,11 +198,11 @@ router.push("/checkout");
         onClick={handleAddToBooking}
         className="w-full rounded-xl border border-black bg-black px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98]"
       >
-        Book now
+        {t.bookNow}
       </button>
 
       <div>
-        <label className="text-sm font-semibold">Comments (optional)</label>
+        <label className="text-sm font-semibold">{t.commentsOptional}</label>
         <textarea
           className="mt-1 w-full rounded border p-2"
           value={comments}
