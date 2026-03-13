@@ -65,6 +65,43 @@ function formatServiceDate(value?: string | null) {
   }).format(new Date(`${value}T00:00:00`));
 }
 
+function extractBookingCodeFromScan(raw: string) {
+  const value = raw.trim();
+
+  // 1) código directo
+  if (/^[A-Z]{3}-[A-Z0-9]+$/i.test(value)) {
+    return value.toUpperCase();
+  }
+
+  // 2) tenta ler como URL
+  try {
+    const url = new URL(value);
+
+    // formato: /admin?code=ALI-XXXX
+    const codeParam = url.searchParams.get("code");
+    if (codeParam && /^[A-Z]{3}-[A-Z0-9]+$/i.test(codeParam.trim())) {
+      return codeParam.trim().toUpperCase();
+    }
+
+    // formato: /b/ALI-XXXX
+    const parts = url.pathname.split("/").filter(Boolean);
+    const lastPart = parts[parts.length - 1];
+    if (lastPart && /^[A-Z]{3}-[A-Z0-9]+$/i.test(lastPart.trim())) {
+      return lastPart.trim().toUpperCase();
+    }
+  } catch {
+    // não era URL, seguimos abaixo
+  }
+
+  // 3) fallback: procurar um booking code perdido dentro do texto
+  const match = value.match(/[A-Z]{3}-[A-Z0-9]+/i);
+  if (match) {
+    return match[0].toUpperCase();
+  }
+
+  return null;
+}
+
 export default function AdminQrScanner() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -76,7 +113,13 @@ export default function AdminQrScanner() {
     setLoading(true);
     setError("");
 
-    const cleaned = code.trim().toUpperCase();
+    const cleaned = extractBookingCodeFromScan(code);
+
+if (!cleaned) {
+  setError("QR inválido para reservas.");
+  setLoading(false);
+  return;
+}
     const todayMadrid = getTodayMadridDate();
 
     const { data: booking, error: fetchError } = await supabase
@@ -152,6 +195,7 @@ return;
         .eq("id", booking.id);
 
       if (updateError) {
+        playErrorBeep();
         setLoading(false);
         setError("Não foi possível registar a entrada da reserva.");
         return;
@@ -171,26 +215,8 @@ router.push(`/admin/booking/${booking.id}`);
   }
 
   async function handleScan(result: string) {
-    try {
-      const url = new URL(result);
-
-      if (url.pathname.startsWith("/b/")) {
-        const code = decodeURIComponent(url.pathname.replace("/b/", ""));
-        await openAdminBookingFromCode(code);
-        return;
-      }
-
-      setError("QR inválido para reservas.");
-    } catch {
-      if (result.startsWith("/b/")) {
-        const code = decodeURIComponent(result.replace("/b/", ""));
-        await openAdminBookingFromCode(code);
-        return;
-      }
-
-      await openAdminBookingFromCode(result);
-    }
-  }
+  await openAdminBookingFromCode(result);
+}
 
   return (
     <div className="space-y-3">

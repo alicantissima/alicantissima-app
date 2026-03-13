@@ -8,6 +8,76 @@ import { Scanner } from "@yudiel/react-qr-scanner";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+function playBeep() {
+  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.value = 900;
+
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+
+  oscillator.start();
+
+  setTimeout(() => {
+    oscillator.stop();
+    ctx.close();
+  }, 80);
+}
+
+function playErrorBeep() {
+  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.value = 300;
+
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+
+  oscillator.start();
+
+  setTimeout(() => {
+    oscillator.stop();
+    ctx.close();
+  }, 300);
+}
+
+function extractBookingCodeFromScan(raw: string) {
+  const value = raw.trim();
+
+  if (/^[A-Z]{3}-[A-Z0-9]+$/i.test(value)) {
+    return value.toUpperCase();
+  }
+
+  try {
+    const url = new URL(value);
+
+    const codeParam = url.searchParams.get("code");
+    if (codeParam && /^[A-Z]{3}-[A-Z0-9]+$/i.test(codeParam.trim())) {
+      return codeParam.trim().toUpperCase();
+    }
+
+    const parts = url.pathname.split("/").filter(Boolean);
+    const lastPart = parts[parts.length - 1];
+    if (lastPart && /^[A-Z]{3}-[A-Z0-9]+$/i.test(lastPart.trim())) {
+      return lastPart.trim().toUpperCase();
+    }
+  } catch {
+    // não era URL
+  }
+
+  const match = value.match(/[A-Z]{3}-[A-Z0-9]+/i);
+  if (match) {
+    return match[0].toUpperCase();
+  }
+
+  return null;
+}
+
 export default function AdminFinishQrScanner() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -15,96 +85,100 @@ export default function AdminFinishQrScanner() {
   const router = useRouter();
   const supabase = createClient();
 
-async function finishBookingFromCode(code: string) {
-  setLoading(true);
-  setError("");
+  async function finishBookingFromCode(code: string) {
+    setLoading(true);
+    setError("");
 
-  const cleaned = code.trim().toUpperCase();
+    const cleaned = extractBookingCodeFromScan(code);
 
-  const { data: booking, error: fetchError } = await supabase
-    .from("bookings")
-    .select("id, booking_code, status, check_out_time")
-    .eq("booking_code", cleaned)
-    .maybeSingle();
-
-  if (fetchError || !booking) {
-    setLoading(false);
-    setError("Reserva não encontrada.");
-    return;
-  }
-
-  if (booking.status === "inside") {
-    const updateData: {
-      status: string;
-      updated_at: string;
-      check_out_time?: string;
-    } = {
-      status: "finished",
-      updated_at: new Date().toISOString(),
-    };
-
-    if (!booking.check_out_time) {
-      updateData.check_out_time = new Date().toISOString();
-    }
-
-    const { error: updateError } = await supabase
-      .from("bookings")
-      .update(updateData)
-      .eq("id", booking.id);
-
-    if (updateError) {
+    if (!cleaned) {
+      playErrorBeep();
       setLoading(false);
-      setError("Não foi possível finalizar a reserva.");
+      setError("QR inválido para reservas.");
       return;
     }
-  } else if (booking.status === "finished") {
-    setLoading(false);
-    setOpen(false);
-    router.push(`/admin/booking/${booking.id}`);
-    return;
-  } else if (booking.status === "pending") {
-    setLoading(false);
-    setError("Esta reserva ainda não entrou. Use primeiro o Scan QR.");
-    return;
-  } else if (booking.status === "cancelled") {
-    setLoading(false);
-    setError("Esta reserva está cancelada.");
-    return;
-  } else {
+
+    const { data: booking, error: fetchError } = await supabase
+      .from("bookings")
+      .select("id, booking_code, status, check_out_time")
+      .eq("booking_code", cleaned)
+      .maybeSingle();
+
+    if (fetchError || !booking) {
+      playErrorBeep();
+      setLoading(false);
+      setError("Reserva não encontrada.");
+      return;
+    }
+
+    if (booking.status === "inside") {
+      const updateData: {
+        status: string;
+        updated_at: string;
+        check_out_time?: string;
+      } = {
+        status: "finished",
+        updated_at: new Date().toISOString(),
+      };
+
+      if (!booking.check_out_time) {
+        updateData.check_out_time = new Date().toISOString();
+      }
+
+      const { error: updateError } = await supabase
+        .from("bookings")
+        .update(updateData)
+        .eq("id", booking.id);
+
+      if (updateError) {
+        playErrorBeep();
+        setLoading(false);
+        setError("Não foi possível finalizar a reserva.");
+        return;
+      }
+
+      playBeep();
+      setTimeout(playBeep, 120);
+
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        navigator.vibrate([120, 80, 120]);
+      }
+
+      setLoading(false);
+      setOpen(false);
+      router.push(`/admin/booking/${booking.id}`);
+      return;
+    }
+
+    if (booking.status === "finished") {
+      playErrorBeep();
+      setLoading(false);
+      setOpen(false);
+      router.push(`/admin/booking/${booking.id}`);
+      return;
+    }
+
+    if (booking.status === "pending") {
+      playErrorBeep();
+      setLoading(false);
+      setError("Esta reserva ainda não entrou. Use primeiro o Scan QR.");
+      return;
+    }
+
+    if (booking.status === "cancelled") {
+      playErrorBeep();
+      setLoading(false);
+      setError("Esta reserva está cancelada.");
+      return;
+    }
+
+    playErrorBeep();
     setLoading(false);
     setError(`Estado inválido: ${booking.status}`);
-    return;
   }
-
-  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-    navigator.vibrate(120);
-  }
-
-  setLoading(false);
-  setOpen(false);
-  router.push(`/admin/booking/${booking.id}`);
-}
 
   async function handleScan(result: string) {
-    try {
-      const url = new URL(result);
-
-      if (url.pathname.startsWith("/b/")) {
-        const code = decodeURIComponent(url.pathname.replace("/b/", ""));
-        await finishBookingFromCode(code);
-        return;
-      }
-
-      setError("QR inválido para reservas.");
-    } catch {
-      if (result.startsWith("/b/")) {
-        const code = decodeURIComponent(result.replace("/b/", ""));
-        await finishBookingFromCode(code);
-        return;
-      }
-
-      await finishBookingFromCode(result);
-    }
+    await finishBookingFromCode(result);
   }
 
   return (
@@ -130,18 +204,18 @@ async function finishBookingFromCode(code: string) {
                 }
               }}
               onError={(err: unknown) => {
-  const isCameraPermissionError =
-    typeof err === "object" &&
-    err !== null &&
-    "name" in err &&
-    (err as { name?: string }).name === "NotAllowedError";
+                const isCameraPermissionError =
+                  typeof err === "object" &&
+                  err !== null &&
+                  "name" in err &&
+                  (err as { name?: string }).name === "NotAllowedError";
 
-  if (isCameraPermissionError) {
-    setError("Permissão da câmara recusada.");
-  } else {
-    setError("Erro ao iniciar a câmara.");
-  }
-}}
+                if (isCameraPermissionError) {
+                  setError("Permissão da câmara recusada.");
+                } else {
+                  setError("Erro ao iniciar a câmara.");
+                }
+              }}
               constraints={{ facingMode: "environment" }}
             />
           </div>
