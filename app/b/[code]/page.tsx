@@ -2,9 +2,10 @@
 
 
 import BookingPass from "@/components/booking-pass";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { notFound } from "next/navigation";
 import FullBrightnessQr from "@/components/full-brightness-qr";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getMessages, normalizeLanguage } from "@/lib/i18n";
+import { notFound } from "next/navigation";
 
 type PageProps = {
   params: Promise<{
@@ -40,16 +41,18 @@ function formatCurrency(amount?: number | string | null) {
   }).format(Number(amount));
 }
 
-function getPublicStatus(status?: string | null) {
+function getPublicStatus(status?: string | null, language?: string | null) {
+  const t = getMessages(language);
+
   switch (status) {
     case "pending":
-      return "Confirmed";
+      return t.confirmed;
     case "inside":
-      return "Checked-in";
+      return t.checkedIn;
     case "finished":
-      return "Completed";
+      return t.completed;
     case "cancelled":
-      return "Cancelled";
+      return t.cancelled;
     default:
       return status || "-";
   }
@@ -89,6 +92,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
       updated_at,
       total_amount,
       currency,
+      language,
       service_date,
       check_in_time,
       check_out_time,
@@ -105,12 +109,15 @@ export default async function BookingByCodePage({ params }: PageProps) {
     notFound();
   }
 
+  const language = normalizeLanguage(booking.language);
+  const t = getMessages(language);
+
   return (
     <main className="mx-auto max-w-lg p-4 sm:p-6">
       <div className="space-y-5 rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
         <div className="space-y-3 text-center">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-gray-500">
-            Alicantíssima Booking Pass
+            {t.bookingPassTitle}
           </p>
 
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
@@ -123,32 +130,28 @@ export default async function BookingByCodePage({ params }: PageProps) {
                 booking.status
               )}`}
             >
-              {getPublicStatus(booking.status)}
+              {getPublicStatus(booking.status, language)}
             </span>
           </div>
 
-          <p className="text-sm text-gray-600">
-            Show this screen at reception for faster check-in.
-          </p>
+          <p className="text-sm text-gray-600">{t.showAtReception}</p>
         </div>
 
         <div className="rounded-2xl border bg-gray-50 p-4 text-center">
-          <div className="mb-3 text-sm font-medium text-gray-500">Check-in QR</div>
+          <div className="mb-3 text-sm font-medium text-gray-500">{t.checkInQr}</div>
 
           <div className="flex justify-center">
             <BookingPass code={booking.booking_code} />
           </div>
 
-          <FullBrightnessQr code={booking.booking_code} />
+          <FullBrightnessQr code={booking.booking_code} label={t.fullBrightnessQr} closeLabel={t.tapAnywhereToClose} />
 
-          <p className="mt-3 text-sm font-medium text-amber-700">
-            Payment is made on site, by card or cash.
-          </p>
+          <p className="mt-3 text-sm font-medium text-amber-700">{t.paymentOnSite}</p>
         </div>
 
         <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
           <div className="rounded-2xl border p-3 sm:col-span-2">
-            <div className="text-gray-500">Customer</div>
+            <div className="text-gray-500">{t.customer}</div>
             <div className="text-base font-semibold text-gray-900">
               {booking.customer_name}
             </div>
@@ -156,7 +159,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
 
           {booking.service_date && (
             <div className="rounded-2xl border p-3">
-              <div className="text-gray-500">Service date</div>
+              <div className="text-gray-500">{t.serviceDate}</div>
               <div className="font-semibold text-gray-900">
                 {formatDate(booking.service_date)}
               </div>
@@ -165,7 +168,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
 
           {booking.total_amount !== null && booking.total_amount !== undefined && (
             <div className="rounded-2xl border p-3">
-              <div className="text-gray-500">Total</div>
+              <div className="text-gray-500">{t.total}</div>
               <div className="font-semibold text-gray-900">
                 {formatCurrency(booking.total_amount)}
               </div>
@@ -174,7 +177,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
 
           {booking.booking_items && booking.booking_items.length > 0 && (
             <div className="rounded-2xl border p-3 sm:col-span-2">
-              <div className="mb-2 text-gray-500">Products</div>
+              <div className="mb-2 text-gray-500">{t.products}</div>
               <ul className="space-y-2">
                 {booking.booking_items.map((item, index) => (
                   <li key={index} className="flex justify-between gap-4">
@@ -192,7 +195,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
 
           {booking.check_in_time && (
             <div className="rounded-2xl border p-3">
-              <div className="text-gray-500">Check-in</div>
+              <div className="text-gray-500">{t.checkIn}</div>
               <div className="font-semibold text-gray-900">
                 {formatDateTime(booking.check_in_time)}
               </div>
@@ -201,7 +204,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
 
           {booking.check_out_time && (
             <div className="rounded-2xl border p-3">
-              <div className="text-gray-500">Check-out</div>
+              <div className="text-gray-500">{t.checkOut}</div>
               <div className="font-semibold text-gray-900">
                 {formatDateTime(booking.check_out_time)}
               </div>
@@ -210,7 +213,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
 
           {booking.notes && (
             <div className="rounded-2xl border p-3 sm:col-span-2">
-              <div className="text-gray-500">Notes</div>
+              <div className="text-gray-500">{t.notes}</div>
               <div className="whitespace-pre-wrap font-semibold text-gray-900">
                 {booking.notes}
               </div>
@@ -220,33 +223,33 @@ export default async function BookingByCodePage({ params }: PageProps) {
 
         <details className="rounded-2xl border p-4">
           <summary className="cursor-pointer text-sm font-semibold text-gray-700">
-            More booking details
+            {t.moreBookingDetails}
           </summary>
 
           <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             <div className="rounded-xl border p-3 sm:col-span-2">
-              <div className="text-gray-500">Booking code</div>
+              <div className="text-gray-500">{t.bookingCode}</div>
               <div className="font-semibold break-all text-gray-900">
                 {booking.booking_code}
               </div>
             </div>
 
             <div className="rounded-xl border p-3 sm:col-span-2">
-              <div className="text-gray-500">Email</div>
+              <div className="text-gray-500">{t.email}</div>
               <div className="font-semibold break-all text-gray-900">
                 {booking.customer_email}
               </div>
             </div>
 
             <div className="rounded-xl border p-3 sm:col-span-2">
-              <div className="text-gray-500">Phone</div>
+              <div className="text-gray-500">{t.phone}</div>
               <div className="font-semibold break-all text-gray-900">
                 {booking.customer_phone || "-"}
               </div>
             </div>
 
             <div className="rounded-xl border p-3 sm:col-span-2">
-              <div className="text-gray-500">Reservation created</div>
+              <div className="text-gray-500">{t.reservationCreated}</div>
               <div className="font-semibold text-gray-900">
                 {formatDateTime(booking.created_at)}
               </div>

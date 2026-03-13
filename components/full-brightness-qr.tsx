@@ -8,9 +8,15 @@ import BookingQr from "@/components/booking-qr";
 
 type Props = {
   code: string;
+  label?: string;
+  closeLabel?: string;
 };
 
-export default function FullBrightnessQr({ code }: Props) {
+export default function FullBrightnessQr({
+  code,
+  label = "Full brightness QR",
+  closeLabel = "Tap anywhere to close",
+}: Props) {
   const [open, setOpen] = useState(false);
 
   if (!open) {
@@ -19,7 +25,7 @@ export default function FullBrightnessQr({ code }: Props) {
         onClick={() => setOpen(true)}
         className="mt-3 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-gray-50"
       >
-        Full brightness QR
+        {label}
       </button>
     );
   }
@@ -32,9 +38,7 @@ export default function FullBrightnessQr({ code }: Props) {
       <div className="text-center">
         <BookingQr code={code} />
 
-        <p className="mt-6 text-sm text-gray-500">
-          Tap anywhere to close
-        </p>
+        <p className="mt-6 text-sm text-gray-500">{closeLabel}</p>
       </div>
     </div>
   );
