@@ -52,9 +52,7 @@ function BookLuggageContent() {
   const addItem = useBookingStore((state) => state.addItem);
   const clearItems = useBookingStore((state) => state.clearItems);
 
-  const language = useMemo(() => {
-    return normalizeLanguage(searchParams.get("lang"));
-  }, [searchParams]);
+    const language = normalizeLanguage(searchParams.get("lang"));
 
   const t = getMessages(language);
   const timeSlots = useMemo(() => generateTimeSlots(10, 20), []);
