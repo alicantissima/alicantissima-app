@@ -36,6 +36,25 @@ function playBeep() {
   }, 80);
 }
 
+function playErrorBeep() {
+  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.value = 300; // som mais grave
+
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+
+  oscillator.start();
+
+  setTimeout(() => {
+    oscillator.stop();
+    ctx.close();
+  }, 300);
+}
+
 function formatServiceDate(value?: string | null) {
   if (!value) return "";
   return new Intl.DateTimeFormat("en-GB", {
@@ -67,30 +86,37 @@ export default function AdminQrScanner() {
       .maybeSingle();
 
     if (fetchError || !booking) {
-      setLoading(false);
-      setError("Reserva não encontrada.");
-      return;
+      playErrorBeep();
+setLoading(false);
+setError("Reserva não encontrada.");
+return;
     }
 
     if (booking.status === "finished") {
-      setLoading(false);
-      setError("Esta reserva já foi finalizada.");
-      return;
+      playErrorBeep();
+setLoading(false);
+setError("Esta reserva já foi finalizada.");
+return;
     }
 
     if (booking.status === "cancelled") {
-      setLoading(false);
-      setError("Esta reserva está cancelada.");
-      return;
+      playErrorBeep();
+setLoading(false);
+setError("Esta reserva está cancelada.");
+return;
     }
 
     if (booking.status !== "pending" && booking.status !== "inside") {
+      playErrorBeep();
       setLoading(false);
       setError(`Estado inválido para check-in: ${booking.status}`);
       return;
     }
 
+
+
     if (!booking.service_date) {
+      playErrorBeep();
       setLoading(false);
       setError("Esta reserva não tem data de serviço definida.");
       return;
@@ -98,11 +124,10 @@ export default function AdminQrScanner() {
 
     if (booking.service_date !== todayMadrid) {
       const formattedDate = formatServiceDate(booking.service_date);
-      setLoading(false);
-      setError(
-        `Esta reserva não é para hoje. Data da reserva: ${formattedDate}.`
-      );
-      return;
+      playErrorBeep();
+setLoading(false);
+setError(`Esta reserva não é para hoje. Data da reserva: ${formattedDate}.`);
+return;
     }
 
     const updateData: {
