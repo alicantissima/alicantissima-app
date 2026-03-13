@@ -157,7 +157,7 @@ function buildConfirmationEmailText(params: {
   }
 
   lines.push("");
-  lines.push("Payment is made on site, by card or cash.");
+  lines.push("{t.paymentOnSite}");
   lines.push("");
   lines.push("Alicantissima | Luggage Storage & Shower Lounge");
   lines.push("Alicante");

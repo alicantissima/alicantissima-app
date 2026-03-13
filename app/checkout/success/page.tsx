@@ -148,7 +148,7 @@ export default async function CheckoutSuccessPage({
                 <div key={item.id} className="flex items-start justify-between gap-4 text-sm">
                   <div>
                     <p className="font-semibold">
-                      {item.title ?? item.product_type ?? t.itemFallback}
+                      {t.bookLuggageProductName}
                     </p>
                     <p className="text-gray-500">
                       {t.qtyLabel} {item.quantity}
