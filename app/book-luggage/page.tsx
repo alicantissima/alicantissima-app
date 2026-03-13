@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
@@ -46,7 +46,7 @@ function getTodayString() {
   return `${year}-${month}-${day}`;
 }
 
-export default function BookLuggagePage() {
+function BookLuggageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const addItem = useBookingStore((state) => state.addItem);
@@ -210,5 +210,13 @@ export default function BookLuggagePage() {
         />
       </div>
     </main>
+  );
+}
+
+export default function BookLuggagePage() {
+  return (
+    <Suspense fallback={<main className="mx-auto max-w-md p-6">Loading...</main>}>
+      <BookLuggageContent />
+    </Suspense>
   );
 }
