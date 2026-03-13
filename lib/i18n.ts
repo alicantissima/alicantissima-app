@@ -801,6 +801,29 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Proszę wybrać datę.",
     bookShowerChooseTimeAlert: "Proszę wybrać godzinę prysznica.",
     bookShowerProductName: "Prysznic",
+
+  bookComboTitle: "Bagaż + Prysznic",
+  bookComboSubtitle: "Zostaw bagaż, ciesz się dniem i weź odświeżający prysznic",
+  chooseComboDate: "Wybierz datę",
+  chooseLuggageDropOffTime: "Godzina pozostawienia bagażu",
+  chooseApproxShowerTime: "Godzina prysznica (orientacyjnie)",
+  comboShowerHelpText:
+    "Możesz wziąć prysznic i wrócić później po swój bagaż.",
+
+  comboMainLabel: "Bagaż + Prysznic",
+  comboMainPriceLabel: "18 € / osoba",
+  comboExtraLuggageLabel: "Dodatkowy bagaż",
+  comboExtraLuggagePriceLabel: "8 € / sztuka / cały dzień",
+  comboExtraShowerLabel: "Dodatkowy prysznic",
+  comboExtraShowerPriceLabel: "12 € / osoba",
+
+  bookComboChooseDateAlert: "Proszę wybrać datę.",
+  bookComboChooseDropOffAlert: "Proszę wybrać godzinę pozostawienia bagażu.",
+  bookComboChooseShowerAlert: "Proszę wybrać godzinę prysznica.",
+  bookComboProductName: "Bagaż + Prysznic",
+  comboBreakdownMainLabel: "Bagaż + Prysznic",
+  comboBreakdownExtraLuggageLabel: "Dodatkowy bagaż",
+  comboBreakdownExtraShowerLabel: "Dodatkowy prysznic",
 },
 
 
