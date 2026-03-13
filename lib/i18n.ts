@@ -72,6 +72,15 @@ type Messages = {
   bookLuggageChoosePickUpAlert: string;
   bookLuggageProductName: string;
 
+  bookShowerTitle: string;
+  bookShowerSubtitle: string;
+  chooseShowerTime: string;
+  numberOfShowers: string;
+
+  bookShowerChooseDateAlert: string;
+  bookShowerChooseTimeAlert: string;
+  bookShowerProductName: string;
+
   bookingConfirmedTitle: string;
   bookingCodeNotFound: string;
   backToBooking: string;
@@ -285,15 +294,6 @@ const messages: Record<AppLanguage, Messages> = {
     bookLuggageChoosePickUpAlert: "Por favor, escolhe uma hora estimada de recolha.",
     bookLuggageProductName: "Guardar bagagem",
 
-  bookShowerTitle: string;
-  bookShowerSubtitle: string;
-  chooseShowerTime: string;
-  numberOfShowers: string;
-
-  bookShowerChooseDateAlert: string;
-  bookShowerChooseTimeAlert: string;
-  bookShowerProductName: string;
-
     bookingConfirmedTitle: "Reserva confirmada",
     bookingCodeNotFound: "Código de reserva não encontrado.",
     backToBooking: "Voltar à reserva",
@@ -326,7 +326,7 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Por favor, escolhe uma data.",
     bookShowerChooseTimeAlert: "Por favor, escolhe uma hora de duche.",
     bookShowerProductName: "Duche",
-  },,
+  },
 
   fr: {
   ...baseMessages,
