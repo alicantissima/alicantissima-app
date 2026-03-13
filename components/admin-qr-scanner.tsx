@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -42,7 +42,7 @@ function playErrorBeep() {
   const gain = ctx.createGain();
 
   oscillator.type = "sine";
-  oscillator.frequency.value = 300; // som mais grave
+  oscillator.frequency.value = 300;
 
   oscillator.connect(gain);
   gain.connect(ctx.destination);
@@ -68,32 +68,27 @@ function formatServiceDate(value?: string | null) {
 function extractBookingCodeFromScan(raw: string) {
   const value = raw.trim();
 
-  // 1) código directo
   if (/^[A-Z]{3}-[A-Z0-9]+$/i.test(value)) {
     return value.toUpperCase();
   }
 
-  // 2) tenta ler como URL
   try {
     const url = new URL(value);
 
-    // formato: /admin?code=ALI-XXXX
     const codeParam = url.searchParams.get("code");
     if (codeParam && /^[A-Z]{3}-[A-Z0-9]+$/i.test(codeParam.trim())) {
       return codeParam.trim().toUpperCase();
     }
 
-    // formato: /b/ALI-XXXX
     const parts = url.pathname.split("/").filter(Boolean);
     const lastPart = parts[parts.length - 1];
     if (lastPart && /^[A-Z]{3}-[A-Z0-9]+$/i.test(lastPart.trim())) {
       return lastPart.trim().toUpperCase();
     }
   } catch {
-    // não era URL, seguimos abaixo
+    // não era URL
   }
 
-  // 3) fallback: procurar um booking code perdido dentro do texto
   const match = value.match(/[A-Z]{3}-[A-Z0-9]+/i);
   if (match) {
     return match[0].toUpperCase();
@@ -106,6 +101,8 @@ export default function AdminQrScanner() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const lastScanRef = useRef("");
+  const lastScanAtRef = useRef(0);
   const router = useRouter();
   const supabase = createClient();
 
@@ -115,11 +112,13 @@ export default function AdminQrScanner() {
 
     const cleaned = extractBookingCodeFromScan(code);
 
-if (!cleaned) {
-  setError("QR inválido para reservas.");
-  setLoading(false);
-  return;
-}
+    if (!cleaned) {
+      playErrorBeep();
+      setLoading(false);
+      setError("QR inválido para reservas.");
+      return;
+    }
+
     const todayMadrid = getTodayMadridDate();
 
     const { data: booking, error: fetchError } = await supabase
@@ -130,23 +129,23 @@ if (!cleaned) {
 
     if (fetchError || !booking) {
       playErrorBeep();
-setLoading(false);
-setError("Reserva não encontrada.");
-return;
+      setLoading(false);
+      setError("Reserva não encontrada.");
+      return;
     }
 
     if (booking.status === "finished") {
       playErrorBeep();
-setLoading(false);
-setError("Esta reserva já foi finalizada.");
-return;
+      setLoading(false);
+      setError("Esta reserva já foi finalizada.");
+      return;
     }
 
     if (booking.status === "cancelled") {
       playErrorBeep();
-setLoading(false);
-setError("Esta reserva está cancelada.");
-return;
+      setLoading(false);
+      setError("Esta reserva está cancelada.");
+      return;
     }
 
     if (booking.status !== "pending" && booking.status !== "inside") {
@@ -155,8 +154,6 @@ return;
       setError(`Estado inválido para check-in: ${booking.status}`);
       return;
     }
-
-
 
     if (!booking.service_date) {
       playErrorBeep();
@@ -168,9 +165,9 @@ return;
     if (booking.service_date !== todayMadrid) {
       const formattedDate = formatServiceDate(booking.service_date);
       playErrorBeep();
-setLoading(false);
-setError(`Esta reserva não é para hoje. Data da reserva: ${formattedDate}.`);
-return;
+      setLoading(false);
+      setError(`Esta reserva não é para hoje. Data da reserva: ${formattedDate}.`);
+      return;
     }
 
     const updateData: {
@@ -203,26 +200,31 @@ return;
     }
 
     playBeep();
-setTimeout(playBeep, 120);
+    setTimeout(playBeep, 120);
 
-if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-  navigator.vibrate([120, 80, 120]);
-}
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate([120, 80, 120]);
+    }
 
-setLoading(false);
-setOpen(false);
-router.push(`/admin/booking/${booking.id}`);
+    lastScanRef.current = "";
+    lastScanAtRef.current = 0;
+
+    setLoading(false);
+    setOpen(false);
+    router.push(`/admin/booking/${booking.id}`);
   }
 
   async function handleScan(result: string) {
-  await openAdminBookingFromCode(result);
-}
+    await openAdminBookingFromCode(result);
+  }
 
   return (
     <div className="space-y-3">
       <button
         onClick={() => {
           setError("");
+          lastScanRef.current = "";
+          lastScanAtRef.current = 0;
           setOpen((prev) => !prev);
         }}
         className="rounded-xl border px-4 py-2 font-medium"
@@ -235,10 +237,21 @@ router.push(`/admin/booking/${booking.id}`);
           <div className="overflow-hidden rounded-xl">
             <Scanner
               onScan={(detectedCodes) => {
-                const rawValue = detectedCodes?.[0]?.rawValue;
-                if (rawValue && !loading) {
-                  void handleScan(rawValue);
+                const rawValue = detectedCodes?.[0]?.rawValue?.trim();
+                if (!rawValue || loading) return;
+
+                const now = Date.now();
+                const isSameAsLast = rawValue === lastScanRef.current;
+                const isTooSoon = now - lastScanAtRef.current < 2000;
+
+                if (isSameAsLast && isTooSoon) {
+                  return;
                 }
+
+                lastScanRef.current = rawValue;
+                lastScanAtRef.current = now;
+
+                void handleScan(rawValue);
               }}
               onError={(err: unknown) => {
                 const isCameraPermissionError =
