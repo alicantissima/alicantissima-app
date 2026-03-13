@@ -565,6 +565,29 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Per favore, scegli una data.",
     bookShowerChooseTimeAlert: "Per favore, scegli un orario per la doccia.",
     bookShowerProductName: "Doccia",
+bookComboTitle: "Bagagli + Doccia",
+bookComboSubtitle: "Lascia i bagagli, goditi la giornata e fai una doccia rinfrescante",
+chooseComboDate: "Scegli la data",
+chooseLuggageDropOffTime: "Orario di consegna dei bagagli",
+chooseApproxShowerTime: "Orario doccia (circa)",
+comboShowerHelpText:
+  "Puoi fare la doccia e tornare più tardi a ritirare i bagagli.",
+
+comboMainLabel: "Bagagli + Doccia",
+comboMainPriceLabel: "18 € / persona",
+comboExtraLuggageLabel: "Bagaglio aggiuntivo",
+comboExtraLuggagePriceLabel: "8 € / pezzo / tutto il giorno",
+comboExtraShowerLabel: "Doccia aggiuntiva",
+comboExtraShowerPriceLabel: "12 € / persona",
+
+bookComboChooseDateAlert: "Seleziona una data.",
+bookComboChooseDropOffAlert: "Seleziona un orario per lasciare i bagagli.",
+bookComboChooseShowerAlert: "Seleziona un orario per la doccia.",
+bookComboProductName: "Bagagli + Doccia",
+
+comboBreakdownMainLabel: "Bagagli + Doccia",
+comboBreakdownExtraLuggageLabel: "Bagaglio aggiuntivo",
+comboBreakdownExtraShowerLabel: "Doccia aggiuntiva",
 },
 
 
@@ -644,6 +667,29 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Vennligst velg en dato.",
     bookShowerChooseTimeAlert: "Vennligst velg dusjtid.",
     bookShowerProductName: "Dusj",
+bookComboTitle: "Bagasje + Dusj",
+bookComboSubtitle: "La bagasjen stå, nyt dagen og ta en forfriskende dusj",
+chooseComboDate: "Velg dato",
+chooseLuggageDropOffTime: "Tid for levering av bagasje",
+chooseApproxShowerTime: "Dusjtid (ca.)",
+comboShowerHelpText:
+  "Du kan ta en dusj og komme tilbake senere for å hente bagasjen.",
+
+comboMainLabel: "Bagasje + Dusj",
+comboMainPriceLabel: "18 € / person",
+comboExtraLuggageLabel: "Ekstra bagasje",
+comboExtraLuggagePriceLabel: "8 € / stk / hele dagen",
+comboExtraShowerLabel: "Ekstra dusj",
+comboExtraShowerPriceLabel: "12 € / person",
+
+bookComboChooseDateAlert: "Velg en dato.",
+bookComboChooseDropOffAlert: "Velg tidspunkt for levering av bagasje.",
+bookComboChooseShowerAlert: "Velg tidspunkt for dusj.",
+bookComboProductName: "Bagasje + Dusj",
+
+comboBreakdownMainLabel: "Bagasje + Dusj",
+comboBreakdownExtraLuggageLabel: "Ekstra bagasje",
+comboBreakdownExtraShowerLabel: "Ekstra dusj",
   },
 
 
@@ -723,6 +769,29 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Bitte wähle ein Datum.",
     bookShowerChooseTimeAlert: "Bitte wähle eine Duschzeit.",
     bookShowerProductName: "Dusche",
+bookComboTitle: "Gepäck + Dusche",
+bookComboSubtitle: "Lass dein Gepäck hier, genieße den Tag und nimm eine erfrischende Dusche",
+chooseComboDate: "Datum wählen",
+chooseLuggageDropOffTime: "Uhrzeit für Gepäckabgabe",
+chooseApproxShowerTime: "Duschzeit (ca.)",
+comboShowerHelpText:
+  "Du kannst duschen und später zurückkommen, um dein Gepäck abzuholen.",
+
+comboMainLabel: "Gepäck + Dusche",
+comboMainPriceLabel: "18 € / Person",
+comboExtraLuggageLabel: "Zusätzliches Gepäck",
+comboExtraLuggagePriceLabel: "8 € / Stück / ganzer Tag",
+comboExtraShowerLabel: "Zusätzliche Dusche",
+comboExtraShowerPriceLabel: "12 € / Person",
+
+bookComboChooseDateAlert: "Bitte ein Datum wählen.",
+bookComboChooseDropOffAlert: "Bitte eine Uhrzeit für die Gepäckabgabe wählen.",
+bookComboChooseShowerAlert: "Bitte eine Duschzeit wählen.",
+bookComboProductName: "Gepäck + Dusche",
+
+comboBreakdownMainLabel: "Gepäck + Dusche",
+comboBreakdownExtraLuggageLabel: "Zusätzliches Gepäck",
+comboBreakdownExtraShowerLabel: "Zusätzliche Dusche",
   },
 
 
@@ -903,6 +972,29 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Välj ett datum.",
     bookShowerChooseTimeAlert: "Välj en duschtid.",
     bookShowerProductName: "Dusch",
+bookComboTitle: "Bagage + Dusch",
+bookComboSubtitle: "Lämna ditt bagage, njut av dagen och ta en uppfriskande dusch",
+chooseComboDate: "Välj datum",
+chooseLuggageDropOffTime: "Tid för att lämna bagage",
+chooseApproxShowerTime: "Duschtid (ca.)",
+comboShowerHelpText:
+  "Du kan duscha och komma tillbaka senare för att hämta ditt bagage.",
+
+comboMainLabel: "Bagage + Dusch",
+comboMainPriceLabel: "18 € / person",
+comboExtraLuggageLabel: "Extra bagage",
+comboExtraLuggagePriceLabel: "8 € / styck / hela dagen",
+comboExtraShowerLabel: "Extra dusch",
+comboExtraShowerPriceLabel: "12 € / person",
+
+bookComboChooseDateAlert: "Välj ett datum.",
+bookComboChooseDropOffAlert: "Välj en tid för att lämna bagage.",
+bookComboChooseShowerAlert: "Välj en duschtid.",
+bookComboProductName: "Bagage + Dusch",
+
+comboBreakdownMainLabel: "Bagage + Dusch",
+comboBreakdownExtraLuggageLabel: "Extra bagage",
+comboBreakdownExtraShowerLabel: "Extra dusch",
   },
 
 
@@ -981,6 +1073,29 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Valitse päivämäärä.",
     bookShowerChooseTimeAlert: "Valitse suihkuaika.",
     bookShowerProductName: "Suihku",
+bookComboTitle: "Matkatavarat + Suihku",
+bookComboSubtitle: "Jätä matkatavarat, nauti päivästä ja käy virkistävässä suihkussa",
+chooseComboDate: "Valitse päivämäärä",
+chooseLuggageDropOffTime: "Matkatavaroiden jättöaika",
+chooseApproxShowerTime: "Suihkun aika (noin)",
+comboShowerHelpText:
+  "Voit käydä suihkussa ja palata myöhemmin hakemaan matkatavarasi.",
+
+comboMainLabel: "Matkatavarat + Suihku",
+comboMainPriceLabel: "18 € / henkilö",
+comboExtraLuggageLabel: "Lisämatkatavara",
+comboExtraLuggagePriceLabel: "8 € / kpl / koko päivä",
+comboExtraShowerLabel: "Lisäsuihku",
+comboExtraShowerPriceLabel: "12 € / henkilö",
+
+bookComboChooseDateAlert: "Valitse päivämäärä.",
+bookComboChooseDropOffAlert: "Valitse matkatavaroiden jättöaika.",
+bookComboChooseShowerAlert: "Valitse suihkun aika.",
+bookComboProductName: "Matkatavarat + Suihku",
+
+comboBreakdownMainLabel: "Matkatavarat + Suihku",
+comboBreakdownExtraLuggageLabel: "Lisämatkatavara",
+comboBreakdownExtraShowerLabel: "Lisäsuihku",
   },
 
 
@@ -1060,6 +1175,29 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Vælg venligst en dato.",
     bookShowerChooseTimeAlert: "Vælg venligst et badetidspunkt.",
     bookShowerProductName: "Bad",
+bookComboTitle: "Bagage + Bruser",
+bookComboSubtitle: "Efterlad dine tasker, nyd dagen og tag et forfriskende bad",
+chooseComboDate: "Vælg dato",
+chooseLuggageDropOffTime: "Tid for aflevering af bagage",
+chooseApproxShowerTime: "Brusetid (ca.)",
+comboShowerHelpText:
+  "Du kan tage et bad og komme tilbage senere for at hente din bagage.",
+
+comboMainLabel: "Bagage + Bruser",
+comboMainPriceLabel: "18 € / person",
+comboExtraLuggageLabel: "Ekstra bagage",
+comboExtraLuggagePriceLabel: "8 € / stk / hele dagen",
+comboExtraShowerLabel: "Ekstra bruser",
+comboExtraShowerPriceLabel: "12 € / person",
+
+bookComboChooseDateAlert: "Vælg en dato.",
+bookComboChooseDropOffAlert: "Vælg tidspunkt for aflevering af bagage.",
+bookComboChooseShowerAlert: "Vælg tidspunkt for bruser.",
+bookComboProductName: "Bagage + Bruser",
+
+comboBreakdownMainLabel: "Bagage + Bruser",
+comboBreakdownExtraLuggageLabel: "Ekstra bagage",
+comboBreakdownExtraShowerLabel: "Ekstra bruser",
   },
 
 
@@ -1139,6 +1277,29 @@ const messages: Record<AppLanguage, Messages> = {
     bookShowerChooseDateAlert: "Kérlek, válassz dátumot.",
     bookShowerChooseTimeAlert: "Kérlek, válassz zuhanyidőt.",
     bookShowerProductName: "Zuhany",
+bookComboTitle: "Csomag + Zuhany",
+bookComboSubtitle: "Hagyd itt a csomagodat, élvezd a napot és vegyél egy frissítő zuhanyt",
+chooseComboDate: "Válassz dátumot",
+chooseLuggageDropOffTime: "Csomagleadás ideje",
+chooseApproxShowerTime: "Zuhany időpont (kb.)",
+comboShowerHelpText:
+  "Lezuhanyozhatsz, majd később visszatérhetsz a csomagodért.",
+
+comboMainLabel: "Csomag + Zuhany",
+comboMainPriceLabel: "18 € / fő",
+comboExtraLuggageLabel: "Extra csomag",
+comboExtraLuggagePriceLabel: "8 € / darab / egész nap",
+comboExtraShowerLabel: "Extra zuhany",
+comboExtraShowerPriceLabel: "12 € / fő",
+
+bookComboChooseDateAlert: "Kérjük válasszon dátumot.",
+bookComboChooseDropOffAlert: "Kérjük válassza ki a csomagleadás idejét.",
+bookComboChooseShowerAlert: "Kérjük válassza ki a zuhany idejét.",
+bookComboProductName: "Csomag + Zuhany",
+
+comboBreakdownMainLabel: "Csomag + Zuhany",
+comboBreakdownExtraLuggageLabel: "Extra csomag",
+comboBreakdownExtraShowerLabel: "Extra zuhany",
   },
 };
 
