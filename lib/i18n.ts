@@ -89,6 +89,14 @@ type Messages = {
   showQrAtReception: string;
   qrAltPrefix: string;
   itemFallback: string;
+
+  checkoutEmpty: string;
+  backToProductMenu: string;
+  cityLabel: string;
+  cityPlaceholder: string;
+  createBooking: string;
+  creatingBooking: string;
+  checkoutError: string;
 };
 
 const baseMessages: Messages = {
@@ -114,6 +122,7 @@ const baseMessages: Messages = {
   cancelled: "Cancelled",
   fullBrightnessQr: "Full brightness QR",
   tapAnywhereToClose: "Tap anywhere to close",
+
 
   back: "Back",
   bookLuggageTitle: "Store Luggage",
@@ -149,6 +158,14 @@ const baseMessages: Messages = {
   showQrAtReception: "Show this QR code at reception for faster check-in.",
   qrAltPrefix: "QR code for booking",
   itemFallback: "Item",
+
+  checkoutEmpty: "Your booking is empty.",
+  backToProductMenu: "Back to product menu",
+  cityLabel: "City (where you are from)",
+  cityPlaceholder: "London, Berlin, Madrid...",
+  createBooking: "Create booking",
+  creatingBooking: "Creating booking...",
+  checkoutError: "An error occurred during checkout.",
 };
 
 const messages: Record<AppLanguage, Messages> = {
@@ -243,6 +260,14 @@ const messages: Record<AppLanguage, Messages> = {
   showQrAtReception: "Pokaż ten kod QR w recepcji, aby przyspieszyć check-in.",
   qrAltPrefix: "Kod QR dla rezerwacji",
   itemFallback: "Pozycja",
+
+  checkoutEmpty: "Twoja rezerwacja jest pusta.",
+  backToProductMenu: "Powrót do wyboru usługi",
+  cityLabel: "Miasto (skąd jesteś)",
+  cityPlaceholder: "Londyn, Berlin, Madryt...",
+  createBooking: "Utwórz rezerwację",
+  creatingBooking: "Tworzenie rezerwacji...",
+  checkoutError: "Wystąpił błąd podczas rezerwacji.",
 },
   sv: { ...baseMessages },
   fi: { ...baseMessages },

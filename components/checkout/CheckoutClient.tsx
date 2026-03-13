@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { submitCheckout } from "@/app/checkout/actions";
-import { normalizeLanguage } from "@/lib/i18n";
+import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
 
 export default function CheckoutClient() {
@@ -25,6 +25,8 @@ export default function CheckoutClient() {
   const language = useMemo(() => {
     return normalizeLanguage(searchParams.get("lang"));
   }, [searchParams]);
+
+  const t = getMessages(language);
 
   const total = useMemo(() => {
     return items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
@@ -69,12 +71,12 @@ export default function CheckoutClient() {
       const result = await submitCheckout(payload);
 
       if (!result.ok) {
-        setError(result.error ?? "Ocorreu um erro no checkout.");
+        setError(result.error ?? t.checkoutError);
         return;
       }
 
       clearItems();
-      router.push(`/checkout/success?code=${result.bookingCode}`);
+      router.push(`/checkout/success?code=${result.bookingCode}&lang=${language}`);
     });
   }
 
@@ -85,7 +87,7 @@ export default function CheckoutClient() {
   if (!items.length) {
     return (
       <div className="rounded-2xl border p-6">
-        <p className="font-semibold">Your booking is empty.</p>
+        <p className="font-semibold">{t.checkoutEmpty}</p>
       </div>
     );
   }
@@ -98,12 +100,12 @@ export default function CheckoutClient() {
           onClick={handleBack}
           className="text-sm font-medium text-gray-600 hover:text-black"
         >
-          ← Back to product menu
+          ← {t.backToProductMenu}
         </button>
 
         <div>
           <label htmlFor="customerName" className="mb-1 block text-sm font-medium">
-            Name
+            {t.nameLabel}
           </label>
           <input
             id="customerName"
@@ -116,14 +118,14 @@ export default function CheckoutClient() {
 
         <div className="space-y-1">
           <label htmlFor="city" className="text-sm font-medium">
-            City (where you are from)
+            {t.cityLabel}
           </label>
 
           <input
             id="city"
             type="text"
             name="city"
-            placeholder="London, Berlin, Madrid..."
+            placeholder={t.cityPlaceholder}
             disabled={pending}
             className="w-full rounded-xl border px-3 py-2 text-sm disabled:opacity-60"
           />
@@ -131,7 +133,7 @@ export default function CheckoutClient() {
 
         <div>
           <label htmlFor="customerEmail" className="mb-1 block text-sm font-medium">
-            Email
+            {t.email}
           </label>
           <input
             id="customerEmail"
@@ -145,7 +147,7 @@ export default function CheckoutClient() {
 
         <div>
           <label htmlFor="customerPhone" className="mb-1 block text-sm font-medium">
-            Phone
+            {t.phone}
           </label>
           <input
             id="customerPhone"
@@ -167,12 +169,12 @@ export default function CheckoutClient() {
           aria-disabled={pending}
           className="w-full rounded-xl border border-black bg-black px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? "Creating booking..." : "Create booking"}
+          {pending ? t.creatingBooking : t.createBooking}
         </button>
       </form>
 
       <aside className="rounded-2xl border p-6">
-        <h2 className="mb-4 text-xl font-bold">Booking summary</h2>
+        <h2 className="mb-4 text-xl font-bold">{t.bookingSummary}</h2>
 
         <div className="space-y-4">
           {items.map((item, index) => (
@@ -183,29 +185,31 @@ export default function CheckoutClient() {
                     {item.quantity} × {item.productName}
                   </p>
 
-                  <p className="text-sm text-gray-600">Date: {item.date}</p>
+                  <p className="text-sm text-gray-600">
+                    {t.dateLabel} {item.date}
+                  </p>
 
                   {item.dropOffTime && (
                     <p className="text-sm text-gray-600">
-                      Drop-off: {item.dropOffTime}
+                      {t.dropOffLabel} {item.dropOffTime}
                     </p>
                   )}
 
                   {item.pickUpTime && (
                     <p className="text-sm text-gray-600">
-                      Estimated pick-up: {item.pickUpTime}
+                      {t.estimatedPickUpLabel} {item.pickUpTime}
                     </p>
                   )}
 
                   {item.showerTime && (
                     <p className="text-sm text-gray-600">
-                      Shower time: {item.showerTime}
+                      {t.showerTimeLabel} {item.showerTime}
                     </p>
                   )}
 
                   {item.comments && (
                     <p className="text-sm text-gray-600">
-                      Comments: {item.comments}
+                      {t.commentsOptional} {item.comments}
                     </p>
                   )}
                 </div>
@@ -219,7 +223,7 @@ export default function CheckoutClient() {
         </div>
 
         <div className="mt-5 border-t pt-4">
-          <p className="text-sm font-semibold">Total</p>
+          <p className="text-sm font-semibold">{t.totalLabel}</p>
           <p className="text-2xl font-bold">€ {total.toFixed(2)}</p>
         </div>
       </aside>
