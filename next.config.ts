@@ -1,7 +1,24 @@
+
+
+
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: "/",
+        has: [
+          {
+            type: "host",
+            value: "desk.alicantissima.es",
+          },
+        ],
+        destination: "/desk",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
