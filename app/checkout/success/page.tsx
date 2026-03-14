@@ -4,7 +4,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
-import ScrollToTop from "@/components/scroll-to-top";
 
 type SuccessSearchParams = Promise<{ code?: string }>;
 
@@ -65,7 +64,6 @@ export default async function CheckoutSuccessPage({
 
     return (
       <main className="mx-auto max-w-2xl px-4 py-12 text-center">
-        <ScrollToTop />
         <h1 className="mb-4 text-3xl font-semibold">{t.bookingConfirmedTitle}</h1>
         <p className="text-gray-600">{t.bookingCodeNotFound}</p>
 
@@ -114,7 +112,6 @@ export default async function CheckoutSuccessPage({
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 text-center">
-      <ScrollToTop />
 
       <h1 className="mb-4 text-3xl font-semibold">{t.bookingConfirmedTitle}</h1>
 
