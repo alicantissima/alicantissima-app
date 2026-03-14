@@ -77,11 +77,13 @@ export default async function BookingPage({ params }: PageProps) {
     notFound();
   }
 
-  const { data: bookingItems = [] } = await supabase
-    .from("booking_items")
-    .select("id, title, quantity, line_total, product_type, meta")
-    .eq("booking_id", booking.id)
-    .order("id", { ascending: true });
+  const { data: bookingItemsData } = await supabase
+  .from("booking_items")
+  .select("id, title, quantity, line_total, product_type, meta")
+  .eq("booking_id", booking.id)
+  .order("id", { ascending: true });
+
+const bookingItems = (bookingItemsData ?? []) as BookingItem[];
 
   return (
     <main className="mx-auto max-w-5xl space-y-4 p-4">
@@ -204,7 +206,7 @@ export default async function BookingPage({ params }: PageProps) {
           <p className="text-sm text-gray-500">Sem items associados.</p>
         ) : (
           <div className="space-y-3">
-            {(bookingItems as BookingItem[]).map((item) => (
+            {bookingItems.map((item) => (
               <div key={item.id} className="rounded-lg border p-3 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="font-semibold">
