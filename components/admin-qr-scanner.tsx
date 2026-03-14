@@ -123,7 +123,7 @@ export default function AdminQrScanner() {
 
     const { data: booking, error: fetchError } = await supabase
       .from("bookings")
-      .select("id, booking_code, status, check_in_time, service_date")
+      .select("id, booking_code, status, service_date")
       .eq("booking_code", cleaned)
       .maybeSingle();
 
@@ -134,24 +134,10 @@ export default function AdminQrScanner() {
       return;
     }
 
-    if (booking.status === "finished") {
-      playErrorBeep();
-      setLoading(false);
-      setError("Esta reserva já foi finalizada.");
-      return;
-    }
-
     if (booking.status === "cancelled") {
       playErrorBeep();
       setLoading(false);
       setError("Esta reserva está cancelada.");
-      return;
-    }
-
-    if (booking.status !== "pending" && booking.status !== "inside") {
-      playErrorBeep();
-      setLoading(false);
-      setError(`Estado inválido para check-in: ${booking.status}`);
       return;
     }
 
@@ -168,35 +154,6 @@ export default function AdminQrScanner() {
       setLoading(false);
       setError(`Esta reserva não é para hoje. Data da reserva: ${formattedDate}.`);
       return;
-    }
-
-    const updateData: {
-      status?: string;
-      updated_at?: string;
-      check_in_time?: string;
-    } = {};
-
-    if (booking.status === "pending") {
-      updateData.status = "inside";
-      updateData.updated_at = new Date().toISOString();
-    }
-
-    if (!booking.check_in_time) {
-      updateData.check_in_time = new Date().toISOString();
-    }
-
-    if (Object.keys(updateData).length > 0) {
-      const { error: updateError } = await supabase
-        .from("bookings")
-        .update(updateData)
-        .eq("id", booking.id);
-
-      if (updateError) {
-        playErrorBeep();
-        setLoading(false);
-        setError("Não foi possível registar a entrada da reserva.");
-        return;
-      }
     }
 
     playBeep();
