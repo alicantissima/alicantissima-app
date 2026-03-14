@@ -49,7 +49,7 @@ export default function CheckInBookingButton({
     const todayMadrid = getTodayMadridDate();
 
     if (serviceDate !== todayMadrid) {
-      alert(`Check-in apenas disponível na data do serviço: ${serviceDate}.`);
+      alert(`O check-in só pode ser feito no dia da reserva ${serviceDate}.`);
       return;
     }
 
@@ -69,9 +69,10 @@ export default function CheckInBookingButton({
     }
 
     const { error } = await supabase
-      .from("bookings")
-      .update(updateData)
-      .eq("id", bookingId);
+  .from("bookings")
+  .update(updateData)
+  .eq("id", bookingId)
+  .eq("status", "pending");
 
     setLoading(false);
 
