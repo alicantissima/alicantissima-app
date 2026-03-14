@@ -53,48 +53,45 @@ export default async function BookingPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto max-w-5xl space-y-4 p-4">
-      <Link href="/admin" className="text-sm text-gray-600 hover:text-black">
-        ← Voltar ao admin
-      </Link>
+      
+     <section className="rounded-xl border p-4 space-y-4">
+  <div className="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 className="text-xl font-bold">Reserva</h1>
+      <p className="text-sm text-gray-500">Gestão operacional da reserva</p>
+    </div>
+  </div>
 
-      <section className="rounded-xl border p-4 space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold">Reserva</h1>
-            <p className="text-sm text-gray-500">
-              Gestão operacional da reserva
-            </p>
-          </div>
+  <div className="flex flex-wrap items-center justify-between gap-3">
+    <Link
+      href="/desk"
+      className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
+    >
+      Return
+    </Link>
 
-          <div className="flex flex-wrap gap-2">
-            {booking.status === "pending" && (
-              <>
-                <CheckInBookingButton
-                  bookingId={booking.id}
-                  currentStatus={booking.status}
-                  serviceDate={booking.service_date}
-                  checkInTime={booking.check_in_time}
-                />
-                <CancelBookingButton bookingId={booking.id} />
-              </>
-            )}
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      {booking.status === "pending" && (
+        <>
+          <CheckInBookingButton
+            bookingId={booking.id}
+            currentStatus={booking.status}
+            serviceDate={booking.service_date}
+            checkInTime={booking.check_in_time}
+          />
+          <CancelBookingButton bookingId={booking.id} />
+        </>
+      )}
 
-            {booking.status === "inside" && (
-              <FinishBookingButton
-                bookingId={booking.id}
-                currentStatus={booking.status}
-                checkOutTime={booking.check_out_time}
-              />
-            )}
-
-            <Link
-              href="/desk"
-              className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
-            >
-              Return
-            </Link>
-          </div>
-        </div>
+      {booking.status === "inside" && (
+        <FinishBookingButton
+          bookingId={booking.id}
+          currentStatus={booking.status}
+          checkOutTime={booking.check_out_time}
+        />
+      )}
+    </div>
+  </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-lg border p-2">
