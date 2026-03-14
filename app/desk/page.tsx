@@ -14,6 +14,7 @@ type BookingRow = {
   status: string;
   service_date: string | null;
   check_in_time: string | null;
+  check_out_time: string | null;
   created_at: string;
 };
 
@@ -48,10 +49,12 @@ function DeskTable({
   title,
   rows,
   emptyText,
+  timeField = "check_in_time",
 }: {
   title: string;
   rows: BookingRow[];
   emptyText: string;
+  timeField?: "check_in_time" | "check_out_time";
 }) {
   return (
     <section className="rounded-3xl border bg-white p-4 shadow-sm">
@@ -66,50 +69,52 @@ function DeskTable({
         <p className="text-sm text-gray-500">{emptyText}</p>
       ) : (
         <div className="overflow-x-auto">
-<table className="w-full table-fixed text-sm">
-  <thead>
-    <tr className="border-b text-left text-gray-500">
-      <th className="w-[88px] py-2 pr-2 font-medium">Code</th>
-      <th className="py-2 pr-2 font-medium">Cliente</th>
-      <th className="w-[64px] py-2 pr-2 font-medium">Data</th>
-      <th className="w-[64px] py-2 pr-2 font-medium">Hora</th>
-      <th className="w-[82px] py-2 pr-0 font-medium">Estado</th>
-    </tr>
-  </thead>
-  <tbody>
-    {rows.map((booking) => (
-      <tr key={booking.id} className="border-b last:border-b-0">
-        <td className="py-2 pr-2 align-top">
-          <Link
-            href={`/admin/booking/${booking.id}`}
-            className="block truncate font-semibold hover:underline"
-            title={booking.booking_code}
-          >
-            {booking.booking_code}
-          </Link>
-        </td>
+          <table className="w-full table-fixed text-sm">
+            <thead>
+              <tr className="border-b text-left text-gray-500">
+                <th className="w-[92px] py-2 pr-2 font-medium">Code</th>
+                <th className="py-2 pr-2 font-medium">Cliente</th>
+                <th className="w-[56px] py-2 pr-2 font-medium">Data</th>
+                <th className="w-[56px] py-2 pr-0 font-medium">Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((booking) => (
+                <tr key={booking.id} className="border-b last:border-b-0">
+                  <td className="py-2 pr-2 align-top">
+                    <Link
+                      href={`/admin/booking/${booking.id}`}
+                      className="block break-all text-xs font-semibold leading-tight hover:underline"
+                      title={booking.booking_code}
+                    >
+                      {booking.booking_code}
+                    </Link>
+                  </td>
 
-        <td className="py-2 pr-2 align-top">
-          <div className="truncate" title={booking.customer_name}>
-            {booking.customer_name}
-          </div>
-        </td>
+                  <td className="py-2 pr-2 align-top">
+                    <div
+                      className="break-words text-sm leading-tight"
+                      title={booking.customer_name}
+                    >
+                      {booking.customer_name}
+                    </div>
+                  </td>
 
-        <td className="py-2 pr-2 align-top">
-          {formatDate(booking.service_date)}
-        </td>
+                  <td className="py-2 pr-2 align-top text-sm">
+                    {formatDate(booking.service_date)}
+                  </td>
 
-        <td className="py-2 pr-2 align-top">
-          {formatTime(booking.check_in_time)}
-        </td>
-
-        <td className="py-2 pr-0 align-top uppercase truncate">
-          {booking.status}
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+                  <td className="py-2 pr-0 align-top text-sm">
+                    {formatTime(
+                      timeField === "check_out_time"
+                        ? booking.check_out_time
+                        : booking.check_in_time
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </section>
@@ -139,12 +144,12 @@ export default async function DeskPage() {
 
   const todayMadrid = getTodayMadridDate();
 
-  const [{ data: inside = [] }, { data: today = [] }, { data: upcoming = [] }] =
+  const [{ data: inside = [] }, { data: today = [] }, { data: finished = [] }] =
     await Promise.all([
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, service_date, check_in_time, created_at"
+          "id, booking_code, customer_name, status, service_date, check_in_time, check_out_time, created_at"
         )
         .eq("status", "inside")
         .order("check_in_time", { ascending: true }),
@@ -152,20 +157,20 @@ export default async function DeskPage() {
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, service_date, check_in_time, created_at"
+          "id, booking_code, customer_name, status, service_date, check_in_time, check_out_time, created_at"
         )
         .eq("service_date", todayMadrid)
-        .in("status", ["pending", "inside"])
-        .order("created_at", { ascending: false }),
+        .eq("status", "pending")
+        .order("created_at", { ascending: true }),
 
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, service_date, check_in_time, created_at"
+          "id, booking_code, customer_name, status, service_date, check_in_time, check_out_time, created_at"
         )
-        .gt("service_date", todayMadrid)
-        .in("status", ["pending", "inside"])
-        .order("service_date", { ascending: true })
+        .eq("service_date", todayMadrid)
+        .eq("status", "finished")
+        .order("check_out_time", { ascending: false })
         .limit(20),
     ]);
 
@@ -206,18 +211,21 @@ export default async function DeskPage() {
           title="Inside"
           rows={inside as BookingRow[]}
           emptyText="Nenhuma reserva em inside."
+          timeField="check_in_time"
         />
 
         <DeskTable
           title="Today"
           rows={today as BookingRow[]}
-          emptyText="Nenhuma reserva para hoje."
+          emptyText="Nenhuma chegada pendente para hoje."
+          timeField="check_in_time"
         />
 
         <DeskTable
-          title="Upcoming"
-          rows={upcoming as BookingRow[]}
-          emptyText="Sem reservas futuras."
+          title="Finished"
+          rows={finished as BookingRow[]}
+          emptyText="Nenhuma reserva finalizada hoje."
+          timeField="check_out_time"
         />
       </section>
     </main>
