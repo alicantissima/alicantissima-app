@@ -85,7 +85,6 @@ function getLocalizedProductTitle(
   if (type === "combo") return t.bookComboProductName;
 
   return item.title || t.itemFallback;
-  }
 }
 
 function getLocalizedProductTitle(
