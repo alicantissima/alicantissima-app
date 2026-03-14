@@ -61,44 +61,53 @@ function DeskTable({
         <div className="overflow-x-auto">
           <table className="w-full table-fixed text-sm">
             <thead>
-              <tr className="border-b text-left text-gray-500">
-                <th className="w-[96px] py-2 pr-2 font-medium">Code</th>
-                <th className="py-2 pr-2 font-medium">Cliente</th>
-                <th className="w-[64px] py-2 pr-0 font-medium">Hora</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((booking) => (
-                <tr key={booking.id} className="border-b last:border-b-0">
-                  <td className="py-2 pr-2 align-top">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="block break-all text-xs font-semibold leading-tight underline hover:opacity-80"
-                      title={booking.booking_code}
-                    >
-                      {booking.booking_code}
-                    </Link>
-                  </td>
+  <tr className="border-b text-left text-gray-500">
+    <th className="w-[96px] px-2 py-2 font-medium">Code</th>
+    <th className="px-2 py-2 font-medium">Cliente</th>
+    <th className="w-[64px] px-0 py-2 font-medium">Hora</th>
+  </tr>
+</thead>
+<tbody>
+  {rows.map((booking) => (
+    <tr
+      key={booking.id}
+      className="border-b last:border-b-0 hover:bg-gray-50"
+    >
+      <td className="p-0 align-top">
+        <Link
+          href={`/admin/booking/${booking.id}`}
+          className="block h-full w-full break-all px-2 py-2 text-xs font-semibold leading-tight underline hover:opacity-80"
+          title={booking.booking_code}
+        >
+          {booking.booking_code}
+        </Link>
+      </td>
 
-                  <td className="py-2 pr-2 align-top">
-                    <div
-                      className="break-words text-sm leading-tight"
-                      title={booking.customer_name}
-                    >
-                      {booking.customer_name}
-                    </div>
-                  </td>
+      <td className="p-0 align-top">
+        <Link
+          href={`/admin/booking/${booking.id}`}
+          className="block h-full w-full break-words px-2 py-2 text-sm leading-tight hover:opacity-80"
+          title={booking.customer_name}
+        >
+          {booking.customer_name}
+        </Link>
+      </td>
 
-                  <td className="py-2 pr-0 align-top text-sm">
-                    {formatTime(
-                      timeField === "check_out_time"
-                        ? booking.check_out_time
-                        : booking.check_in_time
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+      <td className="p-0 align-top">
+        <Link
+          href={`/admin/booking/${booking.id}`}
+          className="block h-full w-full px-0 py-2 text-sm hover:opacity-80"
+        >
+          {formatTime(
+            timeField === "check_out_time"
+              ? booking.check_out_time
+              : booking.check_in_time
+          )}
+        </Link>
+      </td>
+    </tr>
+  ))}
+</tbody>
           </table>
         </div>
       )}
