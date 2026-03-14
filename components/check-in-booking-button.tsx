@@ -49,7 +49,7 @@ export default function CheckInBookingButton({
     const todayMadrid = getTodayMadridDate();
 
     if (serviceDate !== todayMadrid) {
-      alert("Esta reserva não é para hoje.");
+      alert(`Check-in apenas disponível na data do serviço: ${serviceDate}.`);
       return;
     }
 

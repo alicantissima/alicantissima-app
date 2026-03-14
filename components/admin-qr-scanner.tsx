@@ -119,56 +119,46 @@ export default function AdminQrScanner() {
       return;
     }
 
-    const todayMadrid = getTodayMadridDate();
+const { data: booking, error: fetchError } = await supabase
+  .from("bookings")
+  .select("id, booking_code, status, service_date")
+  .eq("booking_code", cleaned)
+  .maybeSingle();
 
-    const { data: booking, error: fetchError } = await supabase
-      .from("bookings")
-      .select("id, booking_code, status, service_date")
-      .eq("booking_code", cleaned)
-      .maybeSingle();
+if (fetchError || !booking) {
+  playErrorBeep();
+  setLoading(false);
+  setError("Reserva não encontrada.");
+  return;
+}
 
-    if (fetchError || !booking) {
-      playErrorBeep();
-      setLoading(false);
-      setError("Reserva não encontrada.");
-      return;
-    }
+if (booking.status === "cancelled") {
+  playErrorBeep();
+  setLoading(false);
+  setError("Esta reserva está cancelada.");
+  return;
+}
 
-    if (booking.status === "cancelled") {
-      playErrorBeep();
-      setLoading(false);
-      setError("Esta reserva está cancelada.");
-      return;
-    }
+if (!booking.service_date) {
+  playErrorBeep();
+  setLoading(false);
+  setError("Esta reserva não tem data de serviço definida.");
+  return;
+}
 
-    if (!booking.service_date) {
-      playErrorBeep();
-      setLoading(false);
-      setError("Esta reserva não tem data de serviço definida.");
-      return;
-    }
+playBeep();
+setTimeout(playBeep, 120);
 
-    if (booking.service_date !== todayMadrid) {
-      const formattedDate = formatServiceDate(booking.service_date);
-      playErrorBeep();
-      setLoading(false);
-      setError(`Esta reserva não é para hoje. Data da reserva: ${formattedDate}.`);
-      return;
-    }
+if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+  navigator.vibrate([120, 80, 120]);
+}
 
-    playBeep();
-    setTimeout(playBeep, 120);
+lastScanRef.current = "";
+lastScanAtRef.current = 0;
 
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate([120, 80, 120]);
-    }
-
-    lastScanRef.current = "";
-    lastScanAtRef.current = 0;
-
-    setLoading(false);
-    setOpen(false);
-    router.push(`/admin/booking/${booking.id}`);
+setLoading(false);
+setOpen(false);
+router.push(`/admin/booking/${booking.id}`);
   }
 
   async function handleScan(result: string) {

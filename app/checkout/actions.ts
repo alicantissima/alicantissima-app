@@ -540,7 +540,7 @@ async function sendBookingConfirmationEmail(params: {
   notes?: string | null;
   language?: string;
 }) {
-  const subject = `Alicantissima – ${params.bookingCode}`;
+  const subject = `Alicantissima booking confirmation – ${params.bookingCode}`;
 
   await sendEmail({
     to: params.customerEmail,
