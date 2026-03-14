@@ -12,7 +12,6 @@ type BookingRow = {
   booking_code: string;
   customer_name: string;
   status: string;
-  service_date: string | null;
   check_in_time: string | null;
   check_out_time: string | null;
   created_at: string;
@@ -25,15 +24,6 @@ function getTodayMadridDate() {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-}
-
-function formatDate(value?: string | null) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("pt-PT", {
-    timeZone: "Europe/Madrid",
-    day: "2-digit",
-    month: "2-digit",
-  }).format(new Date(`${value}T00:00:00`));
 }
 
 function formatTime(value?: string | null) {
@@ -72,10 +62,9 @@ function DeskTable({
           <table className="w-full table-fixed text-sm">
             <thead>
               <tr className="border-b text-left text-gray-500">
-                <th className="w-[92px] py-2 pr-2 font-medium">Code</th>
+                <th className="w-[96px] py-2 pr-2 font-medium">Code</th>
                 <th className="py-2 pr-2 font-medium">Cliente</th>
-                <th className="w-[56px] py-2 pr-2 font-medium">Data</th>
-                <th className="w-[56px] py-2 pr-0 font-medium">Hora</th>
+                <th className="w-[64px] py-2 pr-0 font-medium">Hora</th>
               </tr>
             </thead>
             <tbody>
@@ -84,7 +73,7 @@ function DeskTable({
                   <td className="py-2 pr-2 align-top">
                     <Link
                       href={`/admin/booking/${booking.id}`}
-                      className="block break-all text-xs font-semibold leading-tight hover:underline"
+                      className="block break-all text-xs font-semibold leading-tight underline hover:opacity-80"
                       title={booking.booking_code}
                     >
                       {booking.booking_code}
@@ -98,10 +87,6 @@ function DeskTable({
                     >
                       {booking.customer_name}
                     </div>
-                  </td>
-
-                  <td className="py-2 pr-2 align-top text-sm">
-                    {formatDate(booking.service_date)}
                   </td>
 
                   <td className="py-2 pr-0 align-top text-sm">
@@ -149,15 +134,16 @@ export default async function DeskPage() {
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, service_date, check_in_time, check_out_time, created_at"
+          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at"
         )
+        .eq("service_date", todayMadrid)
         .eq("status", "inside")
         .order("check_in_time", { ascending: true }),
 
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, service_date, check_in_time, check_out_time, created_at"
+          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at"
         )
         .eq("service_date", todayMadrid)
         .eq("status", "pending")
@@ -166,7 +152,7 @@ export default async function DeskPage() {
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, service_date, check_in_time, check_out_time, created_at"
+          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at"
         )
         .eq("service_date", todayMadrid)
         .eq("status", "finished")
