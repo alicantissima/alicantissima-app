@@ -171,7 +171,7 @@ export default async function DeskPage() {
         <div className="flex items-center gap-3">
   <Link
     href="/admin"
-    className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
   >
     Abrir Admin
   </Link>
