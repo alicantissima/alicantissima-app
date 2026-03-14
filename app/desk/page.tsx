@@ -32,7 +32,6 @@ function formatDate(value?: string | null) {
     timeZone: "Europe/Madrid",
     day: "2-digit",
     month: "2-digit",
-    year: "2-digit",
   }).format(new Date(`${value}T00:00:00`));
 }
 
@@ -67,39 +66,50 @@ function DeskTable({
         <p className="text-sm text-gray-500">{emptyText}</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[420px] text-sm">
-            <thead>
-              <tr className="border-b text-left text-gray-500">
-                <th className="py-2 pr-3 font-medium">Code</th>
-                <th className="py-2 pr-3 font-medium">Cliente</th>
-                <th className="py-2 pr-3 font-medium">Data</th>
-                <th className="py-2 pr-3 font-medium">Hora</th>
-                <th className="py-2 pr-0 font-medium">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((booking) => (
-                <tr key={booking.id} className="border-b last:border-b-0">
-                  <td className="py-2 pr-3">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="font-semibold hover:underline"
-                    >
-                      {booking.booking_code}
-                    </Link>
-                  </td>
-                  <td className="py-2 pr-3">{booking.customer_name}</td>
-                  <td className="py-2 pr-3">{formatDate(booking.service_date)}</td>
-                  <td className="py-2 pr-3">
-                    {booking.status === "inside"
-                      ? formatTime(booking.check_in_time)
-                      : "-"}
-                  </td>
-                  <td className="py-2 pr-0 uppercase">{booking.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+<table className="w-full table-fixed text-sm">
+  <thead>
+    <tr className="border-b text-left text-gray-500">
+      <th className="w-[88px] py-2 pr-2 font-medium">Code</th>
+      <th className="py-2 pr-2 font-medium">Cliente</th>
+      <th className="w-[64px] py-2 pr-2 font-medium">Data</th>
+      <th className="w-[64px] py-2 pr-2 font-medium">Hora</th>
+      <th className="w-[82px] py-2 pr-0 font-medium">Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    {rows.map((booking) => (
+      <tr key={booking.id} className="border-b last:border-b-0">
+        <td className="py-2 pr-2 align-top">
+          <Link
+            href={`/admin/booking/${booking.id}`}
+            className="block truncate font-semibold hover:underline"
+            title={booking.booking_code}
+          >
+            {booking.booking_code}
+          </Link>
+        </td>
+
+        <td className="py-2 pr-2 align-top">
+          <div className="truncate" title={booking.customer_name}>
+            {booking.customer_name}
+          </div>
+        </td>
+
+        <td className="py-2 pr-2 align-top">
+          {formatDate(booking.service_date)}
+        </td>
+
+        <td className="py-2 pr-2 align-top">
+          {formatTime(booking.check_in_time)}
+        </td>
+
+        <td className="py-2 pr-0 align-top uppercase truncate">
+          {booking.status}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
         </div>
       )}
     </section>
