@@ -4,7 +4,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { normalizeLanguage } from "@/lib/i18n";
+import { getMessages, normalizeLanguage } from "@/lib/i18n";
 
 type CheckoutItem = {
   id: string;
@@ -73,6 +73,20 @@ function getQrCodeUrl(text: string) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(text)}`;
 }
 
+function getLocalizedProductTitle(params: {
+  productType?: string;
+  fallbackTitle: string;
+  language?: string;
+}) {
+  const t = getMessages(params.language);
+
+  if (params.productType === "booking") return t.bookLuggageProductName;
+  if (params.productType === "shower") return t.bookShowerProductName;
+  if (params.productType === "combo") return t.bookComboProductName;
+
+  return params.fallbackTitle;
+}
+
 function buildBookingLines(params: {
   items: Array<{
     title: string;
@@ -132,39 +146,66 @@ function buildConfirmationEmailText(params: {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
+    productType?: string;
     meta?: Record<string, unknown>;
   }>;
   totalAmount: number;
   notes?: string | null;
+  language?: string;
 }) {
+  const t = getMessages(params.language);
   const lines: string[] = [];
 
-  lines.push(`Hello ${params.customerName},`);
+  lines.push(`${t.bookingConfirmedTitle}`);
   lines.push("");
-  lines.push("Your booking is confirmed.");
+  lines.push(`${t.nameLabel} ${params.customerName}`);
+  lines.push(`${t.bookingCode} ${params.bookingCode}`);
+  lines.push(`Link: ${params.bookingUrl}`);
   lines.push("");
-  lines.push(`Booking code: ${params.bookingCode}`);
-  lines.push(`View your booking: ${params.bookingUrl}`);
+  lines.push(`${t.bookingSummary}`);
   lines.push("");
-  lines.push("Booking details:");
-  lines.push(...buildBookingLines({ items: params.items }));
-  lines.push("");
-  lines.push(`Total: € ${formatPrice(params.totalAmount)}`);
+
+  params.items.forEach((item) => {
+    const productTitle = getLocalizedProductTitle({
+      productType: item.productType,
+      fallbackTitle: item.title,
+      language: params.language,
+    });
+
+    lines.push(`${item.quantity} × ${productTitle} - € ${formatPrice(item.totalPrice)}`);
+
+    const date = formatHumanDate(item.meta?.date);
+    const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
+    const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
+    const showerTime = formatTimeRange(item.meta?.showerTime);
+    const comments = item.meta?.comments;
+
+    if (date) lines.push(`${t.dateLabel} ${date}`);
+    if (dropOffTime) lines.push(`${t.dropOffLabel} ${dropOffTime}`);
+    if (pickUpTime) lines.push(`${t.estimatedPickUpLabel} ${pickUpTime}`);
+    if (showerTime) lines.push(`${t.showerTimeLabel} ${showerTime}`);
+    if (typeof comments === "string" && comments.trim()) {
+      lines.push(`${t.commentsOptional.replace(" (optional)", "").replace(" (opcional)", "")}: ${comments.trim()}`);
+    }
+
+    lines.push("");
+  });
+
+  lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
 
   if (params.notes) {
     lines.push("");
-    lines.push(`Notes: ${params.notes}`);
+    lines.push(`${t.notes}: ${params.notes}`);
   }
 
   lines.push("");
-  lines.push("{t.paymentOnSite}");
+  lines.push(t.paymentOnSite);
   lines.push("");
   lines.push("Alicantissima | Luggage Storage & Shower Lounge");
   lines.push("Alicante");
-  lines.push("");
-  lines.push("Thank you!");
 
   return lines.join("\n");
+}
 }
 
 function buildConfirmationEmailHtml(params: {
@@ -177,13 +218,23 @@ function buildConfirmationEmailHtml(params: {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
+    productType?: string;
     meta?: Record<string, unknown>;
   }>;
   totalAmount: number;
   notes?: string | null;
+  language?: string;
 }) {
+  const t = getMessages(params.language);
+
   const itemBlocks = params.items
     .map((item) => {
+      const productTitle = getLocalizedProductTitle({
+        productType: item.productType,
+        fallbackTitle: item.title,
+        language: params.language,
+      });
+
       const date = formatHumanDate(item.meta?.date);
       const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
       const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
@@ -194,13 +245,13 @@ function buildConfirmationEmailHtml(params: {
       return `
         <div style="margin:0 0 18px 0; padding:0 0 18px 0; border-bottom:1px solid #e5e7eb;">
           <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-            ${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}
+            ${item.quantity} × ${productTitle} - € ${formatPrice(item.totalPrice)}
           </p>
-          ${date ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Date: ${date}</p>` : ""}
-          ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Drop-off: ${dropOffTime}</p>` : ""}
-          ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Estimated pick-up: ${pickUpTime}</p>` : ""}
-          ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Shower time: ${showerTime}</p>` : ""}
-          ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Comments: ${comments}</p>` : ""}
+          ${date ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.dateLabel} ${date}</p>` : ""}
+          ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.dropOffLabel} ${dropOffTime}</p>` : ""}
+          ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.estimatedPickUpLabel} ${pickUpTime}</p>` : ""}
+          ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.showerTimeLabel} ${showerTime}</p>` : ""}
+          ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.notes} / Comments: ${comments}</p>` : ""}
         </div>
       `;
     })
@@ -211,24 +262,20 @@ function buildConfirmationEmailHtml(params: {
       <div style="max-width:640px; margin:0 auto; padding:32px 20px;">
         <div style="background:#ffffff; border-radius:20px; padding:32px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
           <h1 style="margin:0 0 18px 0; font-size:30px; line-height:36px; color:#111827;">
-            Booking confirmed
+            ${t.bookingConfirmedTitle}
           </h1>
 
           <p style="margin:0 0 16px 0; font-size:17px; line-height:26px; color:#111827;">
-            Hello ${params.customerName},
-          </p>
-
-          <p style="margin:0 0 20px 0; font-size:17px; line-height:26px; color:#111827;">
-            Your booking is confirmed.
+            ${t.nameLabel} ${params.customerName}
           </p>
 
           <div style="margin:0 0 24px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
             <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
-              <strong>Booking code:</strong> ${params.bookingCode}
+              <strong>${t.bookingCode}:</strong> ${params.bookingCode}
             </p>
             <p style="margin:0; font-size:16px; line-height:24px;">
               <a href="${params.bookingUrl}" style="color:#0f766e; text-decoration:none; font-weight:700;">
-                View your booking
+                ${t.backToBooking}
               </a>
             </p>
           </div>
@@ -236,25 +283,25 @@ function buildConfirmationEmailHtml(params: {
           <div style="text-align:center; margin:0 0 28px 0;">
             <img
               src="${params.qrCodeUrl}"
-              alt="Booking QR Code"
+              alt="${t.qrAltPrefix} ${params.bookingCode}"
               width="220"
               height="220"
               style="display:block; margin:0 auto 12px auto; border-radius:12px;"
             />
             <p style="margin:0; font-size:14px; line-height:20px; color:#6b7280;">
-              Show this QR code at check-in
+              ${t.showQrAtReception}
             </p>
           </div>
 
           <h2 style="margin:0 0 16px 0; font-size:22px; line-height:28px; color:#111827;">
-            Booking details
+            ${t.bookingSummary}
           </h2>
 
           ${itemBlocks}
 
           <div style="margin:24px 0 0 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
             <p style="margin:0; font-size:18px; line-height:28px; color:#111827; font-weight:700;">
-              Total: € ${formatPrice(params.totalAmount)}
+              ${t.totalLabel} € ${formatPrice(params.totalAmount)}
             </p>
           </div>
 
@@ -262,23 +309,19 @@ function buildConfirmationEmailHtml(params: {
             params.notes
               ? `
             <p style="margin:20px 0 0 0; font-size:15px; line-height:24px; color:#374151;">
-              <strong>Notes:</strong> ${params.notes}
+              <strong>${t.notes}:</strong> ${params.notes}
             </p>
           `
               : ""
           }
 
           <p style="margin:24px 0 0 0; font-size:16px; line-height:24px; color:#111827;">
-            Payment is made on site, by card or cash.
+            ${t.paymentOnSite}
           </p>
 
           <p style="margin:24px 0 0 0; font-size:16px; line-height:24px; color:#111827;">
             Alicantissima | Luggage Storage & Shower Lounge<br />
             Alicante
-          </p>
-
-          <p style="margin:24px 0 0 0; font-size:16px; line-height:24px; color:#111827;">
-            Thank you!
           </p>
         </div>
       </div>
@@ -491,12 +534,14 @@ async function sendBookingConfirmationEmail(params: {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
+    productType?: string;
     meta?: Record<string, unknown>;
   }>;
   totalAmount: number;
   notes?: string | null;
+  language?: string;
 }) {
-  const subject = `Alicantissima booking confirmed – ${params.bookingCode}`;
+  const subject = `Alicantissima – ${params.bookingCode}`;
 
   await sendEmail({
     to: params.customerEmail,
@@ -674,14 +719,16 @@ const qrCodeUrl = getQrCodeUrl(customerBookingUrl);
     bookingUrl: customerBookingUrl,
     qrCodeUrl,
     items: items.map((item) => ({
-      title: item.title,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      totalPrice: item.totalPrice,
-      meta: item.meta,
-    })),
-    totalAmount,
-    notes,
+  title: item.title,
+  quantity: item.quantity,
+  unitPrice: item.unitPrice,
+  totalPrice: item.totalPrice,
+  productType: item.productType,
+  meta: item.meta,
+})),
+totalAmount,
+notes,
+language,
   });
 } catch (emailError) {
   console.error("booking confirmation email error:", emailError);
