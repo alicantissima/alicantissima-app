@@ -6,13 +6,13 @@ import "./globals.css";
 import InstallAppButton from "@/components/install-app-button";
 import IframeHeightReporter from "@/components/iframe-height-reporter";
 
-export const metadata: Metadata = {
-  title: "Alicantíssima",
-  description: "Luggage Storage & Shower Lounge in Alicante",
+export const metadata = {
+  title: "Alicantissima",
+  description: "Luggage Storage & Shower Lounge",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Alicantíssima",
+    title: "Alicantissima",
   },
 };
 

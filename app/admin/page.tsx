@@ -743,22 +743,29 @@ export default async function AdminPage({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <AdminQrScanner />
-        <AdminFinishQrScanner />
-        <FinishAllInsideButton count={bagsInside + showersInside} />
+      <div className="flex items-center gap-3 flex-wrap">
+  <AdminQrScanner />
+  <AdminFinishQrScanner />
+  <FinishAllInsideButton count={bagsInside + showersInside} />
 
-        <Link
-          href="/admin/history"
-          className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
-        >
-          Histórico
-        </Link>
+  <Link
+    href="/desk"
+    className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
+  >
+    Abrir Desk
+  </Link>
 
-        <div className="rounded-xl border px-4 py-2 text-sm">
-          Total visíveis: <strong>{visibleBookingsCount}</strong>
-        </div>
-      </div>
+  <Link
+    href="/admin/history"
+    className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
+  >
+    Histórico
+  </Link>
+
+  <div className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm">
+    Total visíveis: <strong className="ml-1">{visibleBookingsCount}</strong>
+  </div>
+</div>
 
       {codeFilter && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">

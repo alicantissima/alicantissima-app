@@ -1,38 +1,28 @@
 
 
 
-import { NextResponse } from "next/server";
+import type { MetadataRoute } from "next";
 
-export const dynamic = "force-dynamic";
-
-export async function GET() {
-  const manifest = {
-    name: "Alicantíssima",
-    short_name: "Alicantíssima",
-    description: "Book luggage storage and showers in Alicante",
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "Alicantissima",
+    short_name: "Alicantissima",
+    description: "Luggage Storage & Shower Lounge",
     start_url: "/",
-    scope: "/",
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#ffffff",
     icons: [
       {
-        src: "/icon-192x192.png",
+        src: "/icon-192.png",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/icon-512x512.png",
+        src: "/icon-512.png",
         sizes: "512x512",
         type: "image/png",
       },
     ],
   };
-
-  return new NextResponse(JSON.stringify(manifest), {
-    headers: {
-      "Content-Type": "application/manifest+json",
-      "Cache-Control": "no-store",
-    },
-  });
 }
