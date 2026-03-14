@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
+import InstallAppButton from "@/components/install-app-button";
 
 type SuccessSearchParams = Promise<{ code?: string }>;
 
@@ -67,6 +68,16 @@ export default async function CheckoutSuccessPage({
         <h1 className="mb-4 text-3xl font-semibold">{t.bookingConfirmedTitle}</h1>
         <p className="text-gray-600">{t.bookingCodeNotFound}</p>
 
+        <div className="mt-8 rounded-2xl border bg-white p-5 text-center">
+          <h3 className="text-lg font-bold text-gray-900">Install the app</h3>
+          <p className="mt-2 text-sm text-gray-600">
+            Add Alicantissima to your home screen for faster access to your booking and QR code.
+          </p>
+          <div className="mt-4 flex justify-center">
+            <InstallAppButton />
+          </div>
+        </div>
+
         <div className="mt-8">
           <Link
             href="/book-luggage?lang=en"
@@ -112,7 +123,6 @@ export default async function CheckoutSuccessPage({
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 text-center">
-
       <h1 className="mb-4 text-3xl font-semibold">{t.bookingConfirmedTitle}</h1>
 
       <p className="text-gray-600">
@@ -162,9 +172,7 @@ export default async function CheckoutSuccessPage({
               {bookingItems.map((item) => (
                 <div key={item.id} className="flex items-start justify-between gap-4 text-sm">
                   <div>
-                    <p className="font-semibold">
-                      {getLocalizedProductTitle(item, language)}
-                    </p>
+                    <p className="font-semibold">{getLocalizedProductTitle(item, language)}</p>
                     <p className="text-gray-500">
                       {t.qtyLabel} {item.quantity}
                     </p>
@@ -197,6 +205,16 @@ export default async function CheckoutSuccessPage({
             width={220}
             height={220}
           />
+        </div>
+      </section>
+
+      <section className="mx-auto mt-8 max-w-xl rounded-2xl border bg-white p-5 text-center">
+        <h2 className="text-xl font-bold text-gray-900">Install the app</h2>
+        <p className="mt-2 text-sm text-gray-600">
+          Add Alicantissima to your home screen for faster access to your booking and check-in QR code.
+        </p>
+        <div className="mt-4 flex justify-center">
+          <InstallAppButton />
         </div>
       </section>
 
