@@ -187,28 +187,6 @@ function getItemCode(item: BookingItemRow) {
   return null;
 }
 
-function isPastScheduledTime(
-  checkoutTime: string | null,
-  status: string,
-  timeOut: string | null
-) {
-  if (timeOut) return false;
-  if (!checkoutTime) return false;
-  if (normalizeStatus(status) !== "inside") return false;
-
-  const match = checkoutTime.match(/^(\d{1,2})[:.](\d{2})$/);
-  if (!match) return false;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const targetMinutes = hours * 60 + minutes;
-
-  return currentMinutes > targetMinutes;
-}
-
 function getTodayString() {
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -303,12 +281,6 @@ function renderSectionTable({
               const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
 
               const normalizedStatus = normalizeStatus(booking.status);
-              const isLate = isPastScheduledTime(
-                meta.checkout_time,
-                booking.status,
-                meta.time_out
-              );
-
               const isFilteredMatch = codeFilter === booking.booking_code;
               const sourceRowClass = getSourceRowClass(booking.source ?? null);
 
@@ -317,9 +289,7 @@ function renderSectionTable({
                 : isFilteredMatch
                 ? "bg-blue-50 border-l-4 border-blue-400"
                 : normalizedStatus === "inside"
-                ? isLate
-                  ? "bg-orange-50 border-l-4 border-orange-400"
-                  : "bg-green-50 border-l-4 border-green-400"
+                ? "bg-green-50 border-l-4 border-green-400"
                 : sourceRowClass;
 
               return (
@@ -373,13 +343,8 @@ function renderSectionTable({
                     {meta.time_in ?? "-"}
                   </td>
 
-                  <td
-                    className={`px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap ${
-                      !cancelled && isLate ? "font-semibold text-orange-600" : ""
-                    }`}
-                  >
+                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
                     {meta.time_out ?? meta.checkout_time ?? "-"}
-                    {!cancelled && isLate && " ⚠"}
                   </td>
 
                   <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
@@ -554,7 +519,6 @@ export default async function AdminPage({
 
   let bagsInside = 0;
   let showersInside = 0;
-  let overdueCount = 0;
 
   const sourceTodayCounts = {
     site: 0,
@@ -582,29 +546,7 @@ export default async function AdminPage({
     const bookingDate = meta.date;
 
     const itemsForBooking =
-      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ??
-      [];
-
-    let bookingCheckoutTime: string | null = null;
-    let bookingTimeOut: string | null = null;
-
-    for (const item of itemsForBooking) {
-      if (
-        !bookingCheckoutTime &&
-        typeof item.meta?.checkout_time === "string" &&
-        item.meta.checkout_time.trim() !== ""
-      ) {
-        bookingCheckoutTime = item.meta.checkout_time;
-      }
-
-      if (
-        !bookingTimeOut &&
-        typeof item.meta?.time_out === "string" &&
-        item.meta.time_out.trim() !== ""
-      ) {
-        bookingTimeOut = item.meta.time_out;
-      }
-    }
+      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
 
     if (isToday(bookingDate) && normalizedStatus !== "cancelled") {
       const currentSource = (booking.source ?? "na") as keyof typeof sourceTodayCounts;
@@ -643,16 +585,6 @@ export default async function AdminPage({
     }
 
     if (normalizedStatus === "inside") {
-      if (
-        isPastScheduledTime(
-          bookingCheckoutTime,
-          booking.status,
-          bookingTimeOut
-        )
-      ) {
-        overdueCount++;
-      }
-
       for (const item of itemsForBooking) {
         const code = getItemCode(item);
 
@@ -738,34 +670,33 @@ export default async function AdminPage({
           <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
         </div>
 
-        <div className="mt-1">
-          <LogoutButton />
+        <div className="mt-1 flex items-center gap-3">
+          <Link
+            href="/desk"
+            className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
+          >
+            Abrir Desk
+          </Link>
+          <LogoutButton className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50" />
         </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
-  <AdminQrScanner />
-  <AdminFinishQrScanner />
-  <FinishAllInsideButton count={bagsInside + showersInside} />
+        <AdminQrScanner />
+        <AdminFinishQrScanner />
+        <FinishAllInsideButton count={bagsInside + showersInside} />
 
-  <Link
-    href="/desk"
-    className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
-  >
-    Abrir Desk
-  </Link>
+        <Link
+          href="/admin/history"
+          className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
+        >
+          Histórico
+        </Link>
 
-  <Link
-    href="/admin/history"
-    className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
-  >
-    Histórico
-  </Link>
-
-  <div className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm">
-    Total visíveis: <strong className="ml-1">{visibleBookingsCount}</strong>
-  </div>
-</div>
+        <div className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm">
+          Total visíveis: <strong className="ml-1">{visibleBookingsCount}</strong>
+        </div>
+      </div>
 
       {codeFilter && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
@@ -780,11 +711,6 @@ export default async function AdminPage({
         <div className="rounded-xl border p-4">
           <div className="text-sm text-gray-500">Bags today</div>
           <div className="text-2xl font-bold">{bagsToday}</div>
-        </div>
-
-        <div className="rounded-xl border bg-orange-50 p-4">
-          <div className="text-sm text-orange-600">Overdue</div>
-          <div className="text-2xl font-bold text-orange-700">{overdueCount}</div>
         </div>
 
         <div className="rounded-xl border p-4">
