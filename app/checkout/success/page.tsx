@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
+import ScrollToTop from "@/components/scroll-to-top";
 
 type SuccessSearchParams = Promise<{ code?: string }>;
 
@@ -37,6 +38,20 @@ function getBaseUrl() {
   ).replace(/\/$/, "");
 }
 
+function getLocalizedProductTitle(
+  item: { title?: string | null; product_type?: string | null },
+  language?: string | null
+) {
+  const t = getMessages(language);
+  const type = item.product_type?.toLowerCase();
+
+  if (type === "booking") return t.bookLuggageProductName;
+  if (type === "shower") return t.bookShowerProductName;
+  if (type === "combo") return t.bookComboProductName;
+
+  return item.title || t.itemFallback;
+}
+
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
@@ -50,6 +65,7 @@ export default async function CheckoutSuccessPage({
 
     return (
       <main className="mx-auto max-w-2xl px-4 py-12 text-center">
+        <ScrollToTop />
         <h1 className="mb-4 text-3xl font-semibold">{t.bookingConfirmedTitle}</h1>
         <p className="text-gray-600">{t.bookingCodeNotFound}</p>
 
@@ -98,6 +114,8 @@ export default async function CheckoutSuccessPage({
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 text-center">
+      <ScrollToTop />
+
       <h1 className="mb-4 text-3xl font-semibold">{t.bookingConfirmedTitle}</h1>
 
       <p className="text-gray-600">
@@ -148,13 +166,7 @@ export default async function CheckoutSuccessPage({
                 <div key={item.id} className="flex items-start justify-between gap-4 text-sm">
                   <div>
                     <p className="font-semibold">
-                      {item.product_type === "booking"
-                        ? t.bookLuggageProductName
-                        : item.product_type === "shower"
-                        ? t.bookShowerProductName
-                        : item.product_type === "combo"
-                        ? t.bookComboProductName
-                        : item.title ?? item.product_type ?? t.itemFallback}
+                      {getLocalizedProductTitle(item, language)}
                     </p>
                     <p className="text-gray-500">
                       {t.qtyLabel} {item.quantity}

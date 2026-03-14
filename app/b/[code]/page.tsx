@@ -71,6 +71,22 @@ function getStatusClasses(status?: string | null) {
     default:
       return "bg-gray-50 text-gray-700 border-gray-200";
   }
+
+function getLocalizedProductTitle(
+  item: { title?: string | null; product_type?: string | null },
+  language?: string | null
+) {
+  const t = getMessages(language);
+
+  const type = item.product_type?.toLowerCase();
+
+  if (type === "booking") return t.bookLuggageProductName;
+  if (type === "shower") return t.bookShowerProductName;
+  if (type === "combo") return t.bookComboProductName;
+
+  return item.title || t.itemFallback;
+}
+
 }
 
 export default async function BookingByCodePage({ params }: PageProps) {
@@ -97,10 +113,11 @@ export default async function BookingByCodePage({ params }: PageProps) {
       check_in_time,
       check_out_time,
       booking_items (
-        title,
-        quantity,
-        line_total
-      )
+  title,
+  product_type,
+  quantity,
+  line_total
+)
     `)
     .eq("booking_code", bookingCode)
     .maybeSingle();
@@ -182,7 +199,7 @@ export default async function BookingByCodePage({ params }: PageProps) {
                 {booking.booking_items.map((item, index) => (
                   <li key={index} className="flex justify-between gap-4">
                     <span className="text-gray-900">
-                      {item.quantity} × {item.title}
+                      {item.quantity} × {getLocalizedProductTitle(item, language)}
                     </span>
                     <span className="whitespace-nowrap font-medium text-gray-900">
                       {formatCurrency(item.line_total)}
