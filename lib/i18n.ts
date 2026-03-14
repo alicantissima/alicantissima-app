@@ -202,7 +202,7 @@ bookComboTitle: "Luggage + Shower",
   comboBreakdownMainLabel: "Luggage + Shower",
   comboBreakdownExtraLuggageLabel: "Additional luggage",
   comboBreakdownExtraShowerLabel: "Additional shower",
-  bookLuggageProductName: "Store Luggage",
+  bookLuggageProductName: "Luggage Storage",
 
   bookingConfirmedTitle: "Booking confirmed",
   bookingCodeNotFound: "Booking code not found.",

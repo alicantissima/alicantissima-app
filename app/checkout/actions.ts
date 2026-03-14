@@ -206,7 +206,6 @@ function buildConfirmationEmailText(params: {
 
   return lines.join("\n");
 }
-}
 
 function buildConfirmationEmailHtml(params: {
   customerName: string;
