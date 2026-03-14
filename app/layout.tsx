@@ -2,12 +2,13 @@
 
 
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import InstallAppButton from "@/components/install-app-button";
 import IframeHeightReporter from "@/components/iframe-height-reporter";
 import RouteScrollReset from "@/components/route-scroll-reset";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Alicantissima",
   description: "Luggage Storage & Shower Lounge",
   appleWebApp: {
@@ -29,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 text-gray-900">
-        <RouteScrollReset />
+        <Suspense fallback={null}>
+          <RouteScrollReset />
+        </Suspense>
         <IframeHeightReporter />
         <main className="min-h-screen">{children}</main>
         <InstallAppButton />

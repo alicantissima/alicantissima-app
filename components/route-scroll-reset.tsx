@@ -18,9 +18,7 @@ export default function RouteScrollReset() {
 
       try {
         window.parent?.postMessage({ type: "alicantissima-scroll-top" }, "*");
-      } catch {
-        // ignore
-      }
+      } catch {}
     };
 
     scrollNow();
