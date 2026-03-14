@@ -6,7 +6,11 @@
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
-export default function LogoutButton() {
+type Props = {
+  className?: string;
+};
+
+export default function LogoutButton({ className }: Props) {
   const supabase = createClient();
   const router = useRouter();
 
@@ -19,7 +23,10 @@ export default function LogoutButton() {
   return (
     <button
       onClick={logout}
-      className="border rounded-xl px-3 py-1 text-sm"
+      className={
+        className ??
+        "inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
+      }
     >
       Logout
     </button>
