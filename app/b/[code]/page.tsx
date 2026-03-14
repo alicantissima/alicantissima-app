@@ -87,20 +87,6 @@ function getLocalizedProductTitle(
   return item.title || t.itemFallback;
 }
 
-function getLocalizedProductTitle(
-  item: { title?: string | null; product_type?: string | null },
-  language?: string | null
-) {
-  const t = getMessages(language);
-  const type = item.product_type?.toLowerCase();
-
-  if (type === "booking") return t.bookLuggageProductName;
-  if (type === "shower") return t.bookShowerProductName;
-  if (type === "combo") return t.bookComboProductName;
-
-  return item.title || t.itemFallback;
-}
-
 export default async function BookingByCodePage({ params }: PageProps) {
   const supabase = createAdminClient();
   const { code } = await params;
