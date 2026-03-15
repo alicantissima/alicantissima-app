@@ -158,12 +158,12 @@ function buildConfirmationEmailText(params: {
 
   lines.push(`${t.bookingConfirmedTitle}`);
   lines.push("");
-  lines.push(`${t.nameLabel} ${params.customerName}`);
-  lines.push(`${t.bookingCode} ${params.bookingCode}`);
-  lines.push(`Link: ${params.bookingUrl}`);
+  lines.push(`Thank you. Your booking code is ${params.bookingCode}.`);
+  lines.push(`Open booking: ${params.bookingUrl}`);
   lines.push("");
   lines.push(`${t.bookingSummary}`);
   lines.push("");
+  lines.push(`${t.nameLabel} ${params.customerName}`);
 
   params.items.forEach((item) => {
     const productTitle = getLocalizedProductTitle({
@@ -171,8 +171,6 @@ function buildConfirmationEmailText(params: {
       fallbackTitle: item.title,
       language: params.language,
     });
-
-    lines.push(`${item.quantity} × ${productTitle} - € ${formatPrice(item.totalPrice)}`);
 
     const date = formatHumanDate(item.meta?.date);
     const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
@@ -184,14 +182,20 @@ function buildConfirmationEmailText(params: {
     if (dropOffTime) lines.push(`${t.dropOffLabel} ${dropOffTime}`);
     if (pickUpTime) lines.push(`${t.estimatedPickUpLabel} ${pickUpTime}`);
     if (showerTime) lines.push(`${t.showerTimeLabel} ${showerTime}`);
+
+    lines.push(`${productTitle} - € ${formatPrice(item.totalPrice)}`);
+    lines.push(`Qty: ${item.quantity}`);
+
     if (typeof comments === "string" && comments.trim()) {
-      lines.push(`${t.commentsOptional.replace(" (optional)", "").replace(" (opcional)", "")}: ${comments.trim()}`);
+      lines.push(`Comments: ${comments.trim()}`);
     }
 
     lines.push("");
   });
 
   lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
+  lines.push("");
+  lines.push(t.paymentOnSite);
 
   if (params.notes) {
     lines.push("");
@@ -199,10 +203,10 @@ function buildConfirmationEmailText(params: {
   }
 
   lines.push("");
-  lines.push(t.paymentOnSite);
+  lines.push("Check-in QR");
+  lines.push(t.showQrAtReception);
   lines.push("");
   lines.push("Alicantissima | Luggage Storage & Shower Lounge");
-  lines.push("Alicante");
 
   return lines.join("\n");
 }
@@ -242,87 +246,114 @@ function buildConfirmationEmailHtml(params: {
         typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
 
       return `
-        <div style="margin:0 0 18px 0; padding:0 0 18px 0; border-bottom:1px solid #e5e7eb;">
-          <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-            ${item.quantity} × ${productTitle} - € ${formatPrice(item.totalPrice)}
+        <div style="padding:0 0 24px 0; margin:0 0 24px 0; border-bottom:1px solid #d1d5db;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+                ${productTitle}
+              </td>
+              <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
+                € ${formatPrice(item.totalPrice)}
+              </td>
+            </tr>
+          </table>
+
+          <p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#6b7280;">
+            Qty: ${item.quantity}
           </p>
-          ${date ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.dateLabel} ${date}</p>` : ""}
-          ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.dropOffLabel} ${dropOffTime}</p>` : ""}
-          ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.estimatedPickUpLabel} ${pickUpTime}</p>` : ""}
-          ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.showerTimeLabel} ${showerTime}</p>` : ""}
-          ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">${t.notes} / Comments: ${comments}</p>` : ""}
+
+          ${date ? `<p style="margin:12px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.dateLabel}</strong> ${date}</p>` : ""}
+          ${dropOffTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.dropOffLabel}</strong> ${dropOffTime}</p>` : ""}
+          ${pickUpTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.estimatedPickUpLabel}</strong> ${pickUpTime}</p>` : ""}
+          ${showerTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.showerTimeLabel}</strong> ${showerTime}</p>` : ""}
+          ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>Comments:</strong> ${comments}</p>` : ""}
         </div>
       `;
     })
     .join("");
 
   return `
-    <div style="margin:0; padding:0; background:#f7f7f2;">
-      <div style="max-width:640px; margin:0 auto; padding:32px 20px;">
-        <div style="background:#ffffff; border-radius:20px; padding:32px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
-          <h1 style="margin:0 0 18px 0; font-size:30px; line-height:36px; color:#111827;">
+    <div style="margin:0; padding:0; background:#f3f4f6;">
+      <div style="max-width:680px; margin:0 auto; padding:24px 16px; font-family:Arial,Helvetica,sans-serif;">
+        <div style="background:#f3f4f6; padding:8px 0 0 0; text-align:center;">
+          <h1 style="margin:0 0 14px 0; font-size:32px; line-height:38px; color:#111827; font-weight:800;">
             ${t.bookingConfirmedTitle}
           </h1>
 
-          <p style="margin:0 0 16px 0; font-size:17px; line-height:26px; color:#111827;">
-            ${t.nameLabel} ${params.customerName}
+          <p style="margin:0 0 10px 0; font-size:17px; line-height:26px; color:#374151;">
+            Thank you. Your booking code is <strong>${params.bookingCode}</strong>.
           </p>
 
-          <div style="margin:0 0 24px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
-            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
-              <strong>${t.bookingCode}:</strong> ${params.bookingCode}
-            </p>
-            <p style="margin:0; font-size:16px; line-height:24px;">
-              <a href="${params.bookingUrl}" style="color:#0f766e; text-decoration:none; font-weight:700;">
-                ${t.backToBooking}
-              </a>
-            </p>
-          </div>
+          <p style="margin:0 0 28px 0;">
+            <a
+              href="${params.bookingUrl}"
+              style="display:inline-block; padding:12px 20px; border-radius:999px; background:#111827; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
+            >
+              ${t.backToBooking}
+            </a>
+          </p>
+        </div>
 
-          <div style="text-align:center; margin:0 0 28px 0;">
-            <img
-              src="${params.qrCodeUrl}"
-              alt="${t.qrAltPrefix} ${params.bookingCode}"
-              width="220"
-              height="220"
-              style="display:block; margin:0 auto 12px auto; border-radius:12px;"
-            />
-            <p style="margin:0; font-size:14px; line-height:20px; color:#6b7280;">
-              ${t.showQrAtReception}
-            </p>
-          </div>
-
-          <h2 style="margin:0 0 16px 0; font-size:22px; line-height:28px; color:#111827;">
+        <div style="background:#ffffff; border:1.5px solid #111827; border-radius:22px; padding:26px 24px; margin:0 0 28px 0;">
+          <h2 style="margin:0 0 24px 0; text-align:center; font-size:22px; line-height:28px; color:#111827; font-weight:800;">
             ${t.bookingSummary}
           </h2>
 
+          <p style="margin:0 0 12px 0; font-size:16px; line-height:24px; color:#111827;">
+            <strong>${t.nameLabel}</strong> ${params.customerName}
+          </p>
+
           ${itemBlocks}
 
-          <div style="margin:24px 0 0 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
-            <p style="margin:0; font-size:18px; line-height:28px; color:#111827; font-weight:700;">
-              ${t.totalLabel} € ${formatPrice(params.totalAmount)}
-            </p>
-          </div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px 0;">
+            <tr>
+              <td style="font-size:17px; line-height:26px; color:#111827; font-weight:800;">
+                ${t.totalLabel}
+              </td>
+              <td align="right" style="font-size:17px; line-height:26px; color:#111827; font-weight:800; white-space:nowrap;">
+                € ${formatPrice(params.totalAmount)}
+              </td>
+            </tr>
+          </table>
+
+          <p style="margin:0; font-size:16px; line-height:24px; color:#ea580c;">
+            ${t.paymentOnSite}
+          </p>
 
           ${
             params.notes
               ? `
-            <p style="margin:20px 0 0 0; font-size:15px; line-height:24px; color:#374151;">
+            <p style="margin:18px 0 0 0; font-size:15px; line-height:24px; color:#374151;">
               <strong>${t.notes}:</strong> ${params.notes}
             </p>
           `
               : ""
           }
-
-          <p style="margin:24px 0 0 0; font-size:16px; line-height:24px; color:#111827;">
-            ${t.paymentOnSite}
-          </p>
-
-          <p style="margin:24px 0 0 0; font-size:16px; line-height:24px; color:#111827;">
-            Alicantissima | Luggage Storage & Shower Lounge<br />
-            Alicante
-          </p>
         </div>
+
+        <div style="text-align:center; padding:0 0 8px 0;">
+          <h2 style="margin:0 0 12px 0; font-size:22px; line-height:28px; color:#111827; font-weight:800;">
+            Check-in QR
+          </h2>
+
+          <p style="margin:0 0 18px 0; font-size:15px; line-height:22px; color:#6b7280;">
+            ${t.showQrAtReception}
+          </p>
+
+          <div style="display:inline-block; background:#ffffff; border:1px solid #111827; border-radius:18px; padding:12px;">
+            <img
+              src="${params.qrCodeUrl}"
+              alt="${t.qrAltPrefix} ${params.bookingCode}"
+              width="220"
+              height="220"
+              style="display:block; margin:0 auto; border-radius:10px;"
+            />
+          </div>
+        </div>
+
+        <p style="margin:28px 0 0 0; text-align:center; font-size:15px; line-height:22px; color:#374151;">
+          Alicantissima | Luggage Storage & Shower Lounge
+        </p>
       </div>
     </div>
   `;
