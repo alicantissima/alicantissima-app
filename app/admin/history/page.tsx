@@ -93,8 +93,10 @@ function getSourceRowClass(source: string | null) {
   if (current === "site") return "bg-pink-50";
   if (current === "viator") return "bg-green-50";
   if (current === "booking") return "bg-blue-50";
-  if (current === "hector") return "bg-yellow-50";
-  if (current === "porta") return "bg-gray-50";
+  if (current === "hector") return "bg-grey-50";
+  if (current === "porta") return "bg-orange-50";
+  if (current === "turismo") return "bg-yellow-50";
+
   return "";
 }
 

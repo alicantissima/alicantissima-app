@@ -18,9 +18,9 @@ const sourceStyles: Record<string, string> = {
   site: "bg-pink-100 text-pink-800",
   viator: "bg-green-100 text-green-800",
   booking: "bg-blue-100 text-blue-800",
-  hector: "bg-orange-100 text-yellow-800",
-  porta: "bg-yellow-200 text-gray-800",
-  turismo: "bg-gray-100 text-gray-500",
+  hector: "bg-gray-100 text-gray-800",
+  porta: "bg-orange-200 text-orange-800",
+  turismo: "bg-yellow-100 text-yellow-500",
 };
 
 export default function AdminSourceSelect({
