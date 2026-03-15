@@ -135,7 +135,6 @@ export default async function DeskPage() {
   if (!profile || !["admin", "desk"].includes(profile.role)) {
   return <AccessDenied />;
 }
-  }
 
   const todayMadrid = getTodayMadridDate();
 
