@@ -158,7 +158,7 @@ function buildConfirmationEmailText(params: {
 
   lines.push(`${t.bookingConfirmedTitle}`);
   lines.push("");
-  lines.push(`${t.thankYouBookingCode} ${params.bookingCode}.`);
+  lines.push(`${t.thankYouBookingCodePrefix} ${params.bookingCode}.`);
   lines.push(`${t.backToBooking}: ${params.bookingUrl}`);
   lines.push("");
   lines.push(`${t.bookingSummary}`);
@@ -278,7 +278,7 @@ function buildConfirmationEmailHtml(params: {
           </h1>
 
           <p style="margin:0 0 10px 0; font-size:17px; line-height:26px; color:#374151;">
-            ${t.thankYouBookingCode} <strong>${params.bookingCode}</strong>.
+            ${t.thankYouBookingCodePrefix} <strong>${params.bookingCode}</strong>.
           </p>
 
           <p style="margin:0 0 28px 0;">

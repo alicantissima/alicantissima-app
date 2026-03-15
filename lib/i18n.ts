@@ -128,6 +128,13 @@ type Messages = {
   createBooking: string;
   creatingBooking: string;
   checkoutError: string;
+
+qtyLabel: string;
+commentsLabel: string;
+checkInQrTitle: string;
+installAppTitle: string;
+installAppText: string;
+openInApp: string;
 };
 
 const baseMessages: Messages = {
