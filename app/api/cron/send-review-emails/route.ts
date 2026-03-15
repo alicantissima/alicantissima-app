@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getMessages, normalizeLanguage } from "@/lib/i18n";
+import { normalizeLanguage } from "@/lib/i18n";
 
 function getReviewSendAt(checkOutTime?: string | null) {
   if (!checkOutTime) return null;
@@ -16,6 +16,10 @@ function getReviewSendAt(checkOutTime?: string | null) {
   sendAt.setHours(21, 0, 0, 0);
 
   return sendAt;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function sendEmail(params: {
@@ -338,8 +342,14 @@ export async function GET(request: NextRequest) {
   let sent = 0;
   let skipped = 0;
   const errors: Array<{ booking_code: string; error: string }> = [];
+  const MAX_SENDS_PER_RUN = 20;
 
   for (const booking of bookings || []) {
+    if (sent >= MAX_SENDS_PER_RUN) {
+      skipped += 1;
+      continue;
+    }
+
     if (!booking.customer_email?.trim()) {
       skipped += 1;
       continue;
@@ -398,11 +408,15 @@ export async function GET(request: NextRequest) {
       } else {
         sent += 1;
       }
+
+      await sleep(600);
     } catch (err) {
       errors.push({
         booking_code: booking.booking_code,
         error: err instanceof Error ? err.message : "Unknown error",
       });
+
+      await sleep(600);
     }
   }
 
