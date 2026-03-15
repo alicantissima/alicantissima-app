@@ -306,8 +306,8 @@ export async function GET(request: NextRequest) {
   }
 
   const reviewUrl =
-    process.env.GOOGLE_REVIEW_URL ||
-    process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL;
+  (process.env.NEXT_PUBLIC_APP_URL || "https://alicantissima-app.vercel.app") +
+  "/review";
 
   if (!reviewUrl) {
     return NextResponse.json(
