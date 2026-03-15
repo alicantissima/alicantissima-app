@@ -129,7 +129,6 @@ type Messages = {
   creatingBooking: string;
   checkoutError: string;
 
-qtyLabel: string;
 commentsLabel: string;
 checkInQrTitle: string;
 installAppTitle: string;
