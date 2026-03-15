@@ -145,7 +145,7 @@ function getSourceRowClass(source: string | null) {
   if (current === "site") return "bg-pink-50";
   if (current === "viator") return "bg-green-50";
   if (current === "booking") return "bg-blue-50";
-  if (current === "bokun") return "bg-yellow-50";
+  if (current === "hector") return "bg-yellow-50";
   if (current === "porta") return "bg-gray-50";
   return "";
 }
@@ -524,18 +524,18 @@ export default async function AdminPage({
     site: 0,
     viator: 0,
     booking: 0,
-    bokun: 0,
+    hector: 0,
     porta: 0,
-    na: 0,
+    turismo: 0,
   };
 
   const sourceTodayRevenue = {
     site: 0,
     viator: 0,
     booking: 0,
-    bokun: 0,
+    hector: 0,
     porta: 0,
-    na: 0,
+    turismo: 0,
   };
 
   const citiesTodayCounts: Record<string, number> = {};
@@ -757,13 +757,13 @@ export default async function AdminPage({
             booking: {sourceTodayCounts.booking}
           </span>
           <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
-            bokun: {sourceTodayCounts.bokun}
+            hector: {sourceTodayCounts.hector}
           </span>
           <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
             porta: {sourceTodayCounts.porta}
           </span>
           <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
-            na: {sourceTodayCounts.na}
+            turismo: {sourceTodayCounts.turismo}
           </span>
         </div>
       </section>
@@ -784,13 +784,13 @@ export default async function AdminPage({
             booking: {formatCurrency(sourceTodayRevenue.booking, "EUR")}
           </span>
           <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
-            bokun: {formatCurrency(sourceTodayRevenue.bokun, "EUR")}
+            hector: {formatCurrency(sourceTodayRevenue.hector, "EUR")}
           </span>
           <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
             porta: {formatCurrency(sourceTodayRevenue.porta, "EUR")}
           </span>
           <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
-            na: {formatCurrency(sourceTodayRevenue.na, "EUR")}
+            turismo: {formatCurrency(sourceTodayRevenue.turismo, "EUR")}
           </span>
         </div>
       </section>
