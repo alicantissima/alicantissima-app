@@ -158,8 +158,8 @@ function buildConfirmationEmailText(params: {
 
   lines.push(`${t.bookingConfirmedTitle}`);
   lines.push("");
-  lines.push(`Thank you. Your booking code is ${params.bookingCode}.`);
-  lines.push(`Open booking: ${params.bookingUrl}`);
+  lines.push(`${t.thankYouBookingCode} ${params.bookingCode}.`);
+  lines.push(`${t.backToBooking}: ${params.bookingUrl}`);
   lines.push("");
   lines.push(`${t.bookingSummary}`);
   lines.push("");
@@ -184,10 +184,10 @@ function buildConfirmationEmailText(params: {
     if (showerTime) lines.push(`${t.showerTimeLabel} ${showerTime}`);
 
     lines.push(`${productTitle} - € ${formatPrice(item.totalPrice)}`);
-    lines.push(`Qty: ${item.quantity}`);
+    lines.push(`${t.qtyLabel}: ${item.quantity}`);
 
     if (typeof comments === "string" && comments.trim()) {
-      lines.push(`Comments: ${comments.trim()}`);
+      lines.push(`${t.commentsLabel}: ${comments.trim()}`);
     }
 
     lines.push("");
@@ -196,14 +196,11 @@ function buildConfirmationEmailText(params: {
   lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
   lines.push("");
   lines.push(t.paymentOnSite);
-
-  if (params.notes) {
-    lines.push("");
-    lines.push(`${t.notes}: ${params.notes}`);
-  }
-
   lines.push("");
-  lines.push("Check-in QR");
+  lines.push(`${t.installAppTitle}: ${params.bookingUrl}`);
+  lines.push(t.installAppText);
+  lines.push("");
+  lines.push(`${t.checkInQrTitle}`);
   lines.push(t.showQrAtReception);
   lines.push("");
   lines.push("Alicantissima | Luggage Storage & Shower Lounge");
@@ -259,14 +256,14 @@ function buildConfirmationEmailHtml(params: {
           </table>
 
           <p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#6b7280;">
-            Qty: ${item.quantity}
+            ${t.qtyLabel}: ${item.quantity}
           </p>
 
           ${date ? `<p style="margin:12px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.dateLabel}</strong> ${date}</p>` : ""}
           ${dropOffTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.dropOffLabel}</strong> ${dropOffTime}</p>` : ""}
           ${pickUpTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.estimatedPickUpLabel}</strong> ${pickUpTime}</p>` : ""}
           ${showerTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.showerTimeLabel}</strong> ${showerTime}</p>` : ""}
-          ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>Comments:</strong> ${comments}</p>` : ""}
+          ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.commentsLabel}:</strong> ${comments}</p>` : ""}
         </div>
       `;
     })
@@ -281,7 +278,7 @@ function buildConfirmationEmailHtml(params: {
           </h1>
 
           <p style="margin:0 0 10px 0; font-size:17px; line-height:26px; color:#374151;">
-            Thank you. Your booking code is <strong>${params.bookingCode}</strong>.
+            ${t.thankYouBookingCode} <strong>${params.bookingCode}</strong>.
           </p>
 
           <p style="margin:0 0 28px 0;">
@@ -294,7 +291,7 @@ function buildConfirmationEmailHtml(params: {
           </p>
         </div>
 
-        <div style="background:#ffffff; border:1.5px solid #111827; border-radius:22px; padding:26px 24px; margin:0 0 28px 0;">
+        <div style="background:#ffffff; border:1.5px solid #111827; border-radius:22px; padding:26px 24px; margin:0 0 20px 0;">
           <h2 style="margin:0 0 24px 0; text-align:center; font-size:22px; line-height:28px; color:#111827; font-weight:800;">
             ${t.bookingSummary}
           </h2>
@@ -331,9 +328,26 @@ function buildConfirmationEmailHtml(params: {
           }
         </div>
 
+        <div style="background:#ffffff; border:1px solid #d1d5db; border-radius:22px; padding:22px 24px; margin:0 0 28px 0; text-align:center;">
+          <h2 style="margin:0 0 10px 0; font-size:20px; line-height:26px; color:#111827; font-weight:800;">
+            ${t.installAppTitle}
+          </h2>
+
+          <p style="margin:0 0 16px 0; font-size:15px; line-height:22px; color:#4b5563;">
+            ${t.installAppText}
+          </p>
+
+          <a
+            href="${params.bookingUrl}"
+            style="display:inline-block; padding:11px 18px; border-radius:999px; background:#0f766e; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
+          >
+            ${t.openInApp}
+          </a>
+        </div>
+
         <div style="text-align:center; padding:0 0 8px 0;">
           <h2 style="margin:0 0 12px 0; font-size:22px; line-height:28px; color:#111827; font-weight:800;">
-            Check-in QR
+            ${t.checkInQrTitle}
           </h2>
 
           <p style="margin:0 0 18px 0; font-size:15px; line-height:22px; color:#6b7280;">
