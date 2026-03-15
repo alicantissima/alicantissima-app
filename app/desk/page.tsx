@@ -133,7 +133,14 @@ export default async function DeskPage() {
     .single();
 
   if (!profile || !["admin", "desk"].includes(profile.role)) {
-  return <AccessDenied />;
+  return (
+    <main className="p-6">
+      <h1 className="text-xl font-semibold">Acesso negado.</h1>
+      <p className="mt-2 text-sm text-gray-600">
+        Esta conta não tem permissão para aceder ao desk.
+      </p>
+    </main>
+  );
 }
 
   const todayMadrid = getTodayMadridDate();
