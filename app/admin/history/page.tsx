@@ -93,7 +93,7 @@ function getSourceRowClass(source: string | null) {
   if (current === "site") return "bg-pink-50";
   if (current === "viator") return "bg-green-50";
   if (current === "booking") return "bg-blue-50";
-  if (current === "bokun") return "bg-yellow-50";
+  if (current === "hector") return "bg-yellow-50";
   if (current === "porta") return "bg-gray-50";
   return "";
 }
@@ -316,9 +316,9 @@ export default async function AdminHistoryPage() {
     site: 0,
     viator: 0,
     booking: 0,
-    bokun: 0,
+    hector: 0,
     porta: 0,
-    na: 0,
+    turismo: 0,
   };
 
   for (const booking of historyBookings) {
@@ -373,13 +373,13 @@ export default async function AdminHistoryPage() {
             booking: {sourceHistoryCounts.booking}
           </span>
           <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
-            bokun: {sourceHistoryCounts.bokun}
+            hector: {sourceHistoryCounts.hector}
           </span>
           <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
             porta: {sourceHistoryCounts.porta}
           </span>
           <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
-            na: {sourceHistoryCounts.na}
+            turismo: {sourceHistoryCounts.turismo}
           </span>
         </div>
       </section>

@@ -565,8 +565,7 @@ export default async function AdminPage({
         sourceTodayCounts[currentSource]++;
         sourceTodayRevenue[currentSource] += bookingRevenue;
       } else {
-        sourceTodayCounts.na++;
-        sourceTodayRevenue.na += bookingRevenue;
+        sourceTodayRevenue.turismo += bookingRevenue;
       }
 
       for (const item of itemsForBooking) {
