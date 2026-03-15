@@ -132,8 +132,9 @@ export default async function DeskPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "admin") {
-    return <div className="p-6">Acesso negado.</div>;
+  if (!profile || !["admin", "desk"].includes(profile.role)) {
+  return <AccessDenied />;
+}
   }
 
   const todayMadrid = getTodayMadridDate();
