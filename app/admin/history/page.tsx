@@ -374,13 +374,13 @@ export default async function AdminHistoryPage() {
           <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
             booking: {sourceHistoryCounts.booking}
           </span>
-          <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-800">
             hector: {sourceHistoryCounts.hector}
           </span>
-          <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
+          <span className="rounded-full bg-orange-200 px-3 py-1 text-orange-800">
             porta: {sourceHistoryCounts.porta}
           </span>
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
+          <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-500">
             turismo: {sourceHistoryCounts.turismo}
           </span>
         </div>
