@@ -327,7 +327,7 @@ export default async function AdminHistoryPage() {
     if (currentSource in sourceHistoryCounts) {
       sourceHistoryCounts[currentSource]++;
     } else {
-      sourceHistoryCounts.na++;
+      sourceHistoryCounts.turismo++;
     }
   }
 
