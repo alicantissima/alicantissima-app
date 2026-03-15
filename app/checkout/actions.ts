@@ -159,7 +159,6 @@ function buildConfirmationEmailText(params: {
   lines.push(`${t.bookingConfirmedTitle}`);
   lines.push("");
   lines.push(`${t.thankYouBookingCodePrefix} ${params.bookingCode}.`);
-  lines.push(`${t.backToBooking}: ${params.bookingUrl}`);
   lines.push("");
   lines.push(`${t.bookingSummary}`);
   lines.push("");
@@ -178,13 +177,13 @@ function buildConfirmationEmailText(params: {
     const showerTime = formatTimeRange(item.meta?.showerTime);
     const comments = item.meta?.comments;
 
+    lines.push(`${productTitle} - € ${formatPrice(item.totalPrice)}`);
+    lines.push(`${t.qtyLabel}: ${item.quantity}`);
+
     if (date) lines.push(`${t.dateLabel} ${date}`);
     if (dropOffTime) lines.push(`${t.dropOffLabel} ${dropOffTime}`);
     if (pickUpTime) lines.push(`${t.estimatedPickUpLabel} ${pickUpTime}`);
     if (showerTime) lines.push(`${t.showerTimeLabel} ${showerTime}`);
-
-    lines.push(`${productTitle} - € ${formatPrice(item.totalPrice)}`);
-    lines.push(`${t.qtyLabel}: ${item.quantity}`);
 
     if (typeof comments === "string" && comments.trim()) {
       lines.push(`${t.commentsLabel}: ${comments.trim()}`);
@@ -196,12 +195,19 @@ function buildConfirmationEmailText(params: {
   lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
   lines.push("");
   lines.push(t.paymentOnSite);
-  lines.push("");
-  lines.push(`${t.installAppTitle}: ${params.bookingUrl}`);
-  lines.push(t.installAppText);
+
+  if (params.notes) {
+    lines.push("");
+    lines.push(`${t.notes}: ${params.notes}`);
+  }
+
   lines.push("");
   lines.push(`${t.checkInQrTitle}`);
   lines.push(t.showQrAtReception);
+  lines.push("");
+  lines.push(`${t.installAppTitle}`);
+  lines.push(t.installAppText);
+  lines.push(`${t.openInApp}: ${params.bookingUrl}`);
   lines.push("");
   lines.push("Alicantissima | Luggage Storage & Shower Lounge");
 
@@ -243,7 +249,7 @@ function buildConfirmationEmailHtml(params: {
         typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
 
       return `
-        <div style="padding:0 0 24px 0; margin:0 0 24px 0; border-bottom:1px solid #d1d5db;">
+        <div style="padding:0 0 18px 0; margin:0 0 18px 0; border-bottom:1px solid #d1d5db;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
@@ -255,7 +261,7 @@ function buildConfirmationEmailHtml(params: {
             </tr>
           </table>
 
-          <p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#6b7280;">
+          <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
             ${t.qtyLabel}: ${item.quantity}
           </p>
 
@@ -272,55 +278,46 @@ function buildConfirmationEmailHtml(params: {
   return `
     <div style="margin:0; padding:0; background:#f3f4f6;">
       <div style="max-width:680px; margin:0 auto; padding:24px 16px; font-family:Arial,Helvetica,sans-serif;">
-        <div style="background:#f3f4f6; padding:8px 0 0 0; text-align:center;">
-          <h1 style="margin:0 0 14px 0; font-size:32px; line-height:38px; color:#111827; font-weight:800;">
+        <div style="text-align:center; padding:4px 0 0 0;">
+          <h1 style="margin:0 0 10px 0; font-size:26px; line-height:32px; color:#111827; font-weight:700;">
             ${t.bookingConfirmedTitle}
           </h1>
 
-          <p style="margin:0 0 10px 0; font-size:17px; line-height:26px; color:#374151;">
+          <p style="margin:0 0 24px 0; font-size:16px; line-height:24px; color:#374151;">
             ${t.thankYouBookingCodePrefix} <strong>${params.bookingCode}</strong>.
-          </p>
-
-          <p style="margin:0 0 28px 0;">
-            <a
-              href="${params.bookingUrl}"
-              style="display:inline-block; padding:12px 20px; border-radius:999px; background:#111827; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
-            >
-              ${t.backToBooking}
-            </a>
           </p>
         </div>
 
-        <div style="background:#ffffff; border:1.5px solid #111827; border-radius:22px; padding:26px 24px; margin:0 0 20px 0;">
-          <h2 style="margin:0 0 24px 0; text-align:center; font-size:22px; line-height:28px; color:#111827; font-weight:800;">
+        <div style="background:#ffffff; border:1.5px solid #111827; border-radius:22px; padding:24px 22px; margin:0 0 22px 0;">
+          <h2 style="margin:0 0 20px 0; text-align:center; font-size:20px; line-height:26px; color:#111827; font-weight:700;">
             ${t.bookingSummary}
           </h2>
 
-          <p style="margin:0 0 12px 0; font-size:16px; line-height:24px; color:#111827;">
+          <p style="margin:0 0 14px 0; font-size:15px; line-height:23px; color:#111827;">
             <strong>${t.nameLabel}</strong> ${params.customerName}
           </p>
 
           ${itemBlocks}
 
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px 0;">
             <tr>
-              <td style="font-size:17px; line-height:26px; color:#111827; font-weight:800;">
+              <td style="font-size:17px; line-height:25px; color:#111827; font-weight:700;">
                 ${t.totalLabel}
               </td>
-              <td align="right" style="font-size:17px; line-height:26px; color:#111827; font-weight:800; white-space:nowrap;">
+              <td align="right" style="font-size:17px; line-height:25px; color:#111827; font-weight:700; white-space:nowrap;">
                 € ${formatPrice(params.totalAmount)}
               </td>
             </tr>
           </table>
 
-          <p style="margin:0; font-size:16px; line-height:24px; color:#ea580c;">
+          <p style="margin:0; font-size:15px; line-height:23px; color:#ea580c;">
             ${t.paymentOnSite}
           </p>
 
           ${
             params.notes
               ? `
-            <p style="margin:18px 0 0 0; font-size:15px; line-height:24px; color:#374151;">
+            <p style="margin:16px 0 0 0; font-size:15px; line-height:23px; color:#374151;">
               <strong>${t.notes}:</strong> ${params.notes}
             </p>
           `
@@ -328,29 +325,12 @@ function buildConfirmationEmailHtml(params: {
           }
         </div>
 
-        <div style="background:#ffffff; border:1px solid #d1d5db; border-radius:22px; padding:22px 24px; margin:0 0 28px 0; text-align:center;">
-          <h2 style="margin:0 0 10px 0; font-size:20px; line-height:26px; color:#111827; font-weight:800;">
-            ${t.installAppTitle}
-          </h2>
-
-          <p style="margin:0 0 16px 0; font-size:15px; line-height:22px; color:#4b5563;">
-            ${t.installAppText}
-          </p>
-
-          <a
-            href="${params.bookingUrl}"
-            style="display:inline-block; padding:11px 18px; border-radius:999px; background:#0f766e; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
-          >
-            ${t.openInApp}
-          </a>
-        </div>
-
-        <div style="text-align:center; padding:0 0 8px 0;">
-          <h2 style="margin:0 0 12px 0; font-size:22px; line-height:28px; color:#111827; font-weight:800;">
+        <div style="text-align:center; padding:0 0 8px 0; margin:0 0 22px 0;">
+          <h2 style="margin:0 0 10px 0; font-size:18px; line-height:24px; color:#111827; font-weight:700;">
             ${t.checkInQrTitle}
           </h2>
 
-          <p style="margin:0 0 18px 0; font-size:15px; line-height:22px; color:#6b7280;">
+          <p style="margin:0 0 16px 0; font-size:14px; line-height:21px; color:#6b7280;">
             ${t.showQrAtReception}
           </p>
 
@@ -365,7 +345,24 @@ function buildConfirmationEmailHtml(params: {
           </div>
         </div>
 
-        <p style="margin:28px 0 0 0; text-align:center; font-size:15px; line-height:22px; color:#374151;">
+        <div style="background:#ffffff; border:1px solid #d1d5db; border-radius:22px; padding:20px 22px; margin:0 0 22px 0; text-align:center;">
+          <h2 style="margin:0 0 10px 0; font-size:18px; line-height:24px; color:#111827; font-weight:700;">
+            ${t.installAppTitle}
+          </h2>
+
+          <p style="margin:0 0 16px 0; font-size:14px; line-height:21px; color:#4b5563;">
+            ${t.installAppText}
+          </p>
+
+          <a
+            href="${params.bookingUrl}"
+            style="display:inline-block; padding:11px 18px; border-radius:999px; background:#0f766e; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
+          >
+            ${t.openInApp}
+          </a>
+        </div>
+
+        <p style="margin:24px 0 0 0; text-align:center; font-size:14px; line-height:21px; color:#374151;">
           Alicantissima | Luggage Storage & Shower Lounge
         </p>
       </div>

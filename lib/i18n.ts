@@ -1248,7 +1248,6 @@ comboBreakdownExtraLuggageLabel: "Ekstra bagage",
 comboBreakdownExtraShowerLabel: "Ekstra bruser",
   },
 
-
   hu: {
     ...baseMessages,
     bookingPassTitle: "Alicantissima foglalási belépő",
