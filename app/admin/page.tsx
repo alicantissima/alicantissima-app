@@ -402,7 +402,7 @@ export default async function AdminPage({
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "admin") {
+  if (!profile || profile.role !== "admin" && profile.role!== "desk") {
     return (
       <div className="p-6 space-y-2">
         <div className="font-bold">Acesso negado.</div>
