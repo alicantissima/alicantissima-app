@@ -15,6 +15,7 @@ type BookingRow = {
   check_in_time: string | null;
   check_out_time: string | null;
   created_at: string;
+  service_date?: string | null;
 };
 
 function getMadridDatePlusDays(days = 0) {
@@ -118,7 +119,7 @@ function DeskTable({
               <tr className="border-b text-left text-gray-500">
                 <th className="w-[96px] px-2 py-2 font-medium">Code</th>
                 <th className="px-2 py-2 font-medium">Cliente</th>
-                <th className="w-[64px] px-0 py-2 font-medium">Hora</th>
+                <th className="w-[80px] px-0 py-2 font-medium">Hora</th>
               </tr>
             </thead>
             <tbody>
@@ -202,49 +203,64 @@ export default async function DeskPage() {
   const madridHour = getMadridHour();
   const highlightTomorrow = madridHour >= 18;
 
-  const [
-    { data: inside = [] },
-    { data: today = [] },
-    { data: finished = [] },
-    { data: tomorrow = [] },
-  ] = await Promise.all([
-    supabase
-      .from("bookings")
-      .select(
-        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at"
-      )
-      .eq("service_date", todayMadrid)
-      .eq("status", "inside")
-      .order("check_in_time", { ascending: true }),
+  const [insideQuery, todayQuery, finishedQuery, tomorrowQuery] =
+    await Promise.all([
+      supabase
+        .from("bookings")
+        .select(
+          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+        )
+        .eq("service_date", todayMadrid)
+        .eq("status", "inside")
+        .order("check_in_time", { ascending: true }),
 
-    supabase
-      .from("bookings")
-      .select(
-        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at"
-      )
-      .eq("service_date", todayMadrid)
-      .eq("status", "pending")
-      .order("created_at", { ascending: true }),
+      supabase
+        .from("bookings")
+        .select(
+          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+        )
+        .eq("service_date", todayMadrid)
+        .in("status", ["pending", "confirmed"])
+        .order("created_at", { ascending: true }),
 
-    supabase
-      .from("bookings")
-      .select(
-        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at"
-      )
-      .eq("service_date", todayMadrid)
-      .eq("status", "finished")
-      .order("check_out_time", { ascending: false })
-      .limit(20),
+      supabase
+        .from("bookings")
+        .select(
+          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+        )
+        .eq("service_date", todayMadrid)
+        .eq("status", "finished")
+        .order("check_out_time", { ascending: false })
+        .limit(20),
 
-    supabase
-      .from("bookings")
-      .select(
-        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at"
-      )
-      .eq("service_date", tomorrowMadrid)
-      .in("status", ["pending", "inside"])
-      .order("created_at", { ascending: true }),
-  ]);
+      supabase
+        .from("bookings")
+        .select(
+          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+        )
+        .eq("service_date", tomorrowMadrid)
+        .in("status", ["pending", "confirmed", "inside"])
+        .order("created_at", { ascending: true }),
+    ]);
+
+  const inside = (insideQuery.data ?? []) as BookingRow[];
+  const today = (todayQuery.data ?? []) as BookingRow[];
+  const finished = (finishedQuery.data ?? []) as BookingRow[];
+  const tomorrow = (tomorrowQuery.data ?? []) as BookingRow[];
+
+  const debugItems = [
+    `role: ${profile.role}`,
+    `todayMadrid: ${todayMadrid}`,
+    `tomorrowMadrid: ${tomorrowMadrid}`,
+    `inside rows: ${inside.length}`,
+    `today rows: ${today.length}`,
+    `finished rows: ${finished.length}`,
+    `tomorrow rows: ${tomorrow.length}`,
+    `inside error: ${insideQuery.error?.message ?? "none"}`,
+    `today error: ${todayQuery.error?.message ?? "none"}`,
+    `finished error: ${finishedQuery.error?.message ?? "none"}`,
+    `tomorrow error: ${tomorrowQuery.error?.message ?? "none"}`,
+  ];
 
   return (
     <main className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col gap-6 p-4 md:p-6">
@@ -279,31 +295,40 @@ export default async function DeskPage() {
         </div>
       </section>
 
+      <section className="rounded-3xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+        <div className="mb-2 text-sm font-semibold text-amber-900">Debug</div>
+        <div className="grid gap-1 text-xs text-amber-900 md:grid-cols-2">
+          {debugItems.map((item) => (
+            <div key={item}>{item}</div>
+          ))}
+        </div>
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
         <DeskTable
           title="Inside"
-          rows={inside as BookingRow[]}
+          rows={inside}
           emptyText="Nenhuma reserva em inside."
           timeField="check_in_time"
         />
 
         <DeskTable
           title="Today"
-          rows={today as BookingRow[]}
+          rows={today}
           emptyText="Nenhuma chegada pendente para hoje."
           timeField="check_in_time"
         />
 
         <DeskTable
           title="Finished"
-          rows={finished as BookingRow[]}
+          rows={finished}
           emptyText="Nenhuma reserva finalizada hoje."
           timeField="check_out_time"
         />
 
         <DeskTable
           title="Tomorrow"
-          rows={tomorrow as BookingRow[]}
+          rows={tomorrow}
           emptyText="Nenhuma reserva para amanhã."
           timeField="check_in_time"
           highlight={highlightTomorrow}
