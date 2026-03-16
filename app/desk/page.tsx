@@ -295,15 +295,6 @@ export default async function DeskPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
-        <div className="mb-2 text-sm font-semibold text-amber-900">Debug</div>
-        <div className="grid gap-1 text-xs text-amber-900 md:grid-cols-2">
-          {debugItems.map((item) => (
-            <div key={item}>{item}</div>
-          ))}
-        </div>
-      </section>
-
       <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
         <DeskTable
           title="Inside"
