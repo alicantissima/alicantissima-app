@@ -187,16 +187,9 @@ export default async function DeskPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile || !["admin", "desk"].includes(profile.role)) {
-    return (
-      <main className="p-6">
-        <h1 className="text-xl font-semibold">Acesso negado.</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Esta conta não tem permissão para aceder ao desk.
-        </p>
-      </main>
-    );
-  }
+  if (!profile || (profile.role !== "admin" && profile.role !== "desk")) {
+  redirect("/login");
+}
 
   const todayMadrid = getTodayMadridDate();
   const tomorrowMadrid = getTomorrowMadridDate();
@@ -262,38 +255,40 @@ export default async function DeskPage() {
     `tomorrow error: ${tomorrowQuery.error?.message ?? "none"}`,
   ];
 
-  return (
-    <main className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col gap-6 p-4 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Desk</h1>
-          <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
-        </div>
+return (
+  <main className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col gap-6 p-4 md:p-6">
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 className="text-3xl font-bold">Desk</h1>
+        <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
+      </div>
 
-        <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3">
+        {profile.role === "admin" && (
           <Link
             href="/admin"
             className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
           >
             Abrir Admin
           </Link>
+        )}
 
-          <LogoutButton />
-        </div>
+        <LogoutButton />
+      </div>
+    </div>
+
+    <section className="rounded-3xl border p-6 shadow-sm">
+      <div className="mb-5">
+        <h2 className="text-2xl font-bold">Scan QR</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Lê o QR e abre a reserva. A ação é decidida depois dentro da ficha.
+        </p>
       </div>
 
-      <section className="rounded-3xl border p-6 shadow-sm">
-        <div className="mb-5">
-          <h2 className="text-2xl font-bold">Scan QR</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Lê o QR e abre a reserva. A ação é decidida depois dentro da ficha.
-          </p>
-        </div>
-
-        <div className="flex justify-center">
-          <AdminQrScanner />
-        </div>
-      </section>
+      <div className="flex justify-center">
+        <AdminQrScanner />
+      </div>
+    </section>
 
       <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
         <DeskTable
