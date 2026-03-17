@@ -4,6 +4,7 @@
 "use client";
 
 import Link from "next/link";
+import RecoveryRedirect from "@/components/recovery-redirect";
 
 const products = [
   {
@@ -39,6 +40,8 @@ const extrasRows = [
 
 export default function HomeClient() {
   return (
+<>
+  <RecoveryRedirect />
     <main className="min-h-screen bg-[#f6f6f3] text-slate-900">
       <div className="mx-auto w-full max-w-[430px] px-4 pb-8 pt-5">
         <section className="px-2 pb-1 pt-3 text-center">
@@ -126,5 +129,6 @@ export default function HomeClient() {
         </section>
       </div>
     </main>
+</>
   );
 }
