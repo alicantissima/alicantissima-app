@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,6 +20,8 @@ export default function UpdatePasswordPage() {
 
   useEffect(() => {
     async function init() {
+      setError("");
+
       const hash = window.location.hash;
 
       if (hash) {
@@ -29,37 +31,58 @@ export default function UpdatePasswordPage() {
         const type = params.get("type");
 
         if (type === "recovery" && access_token && refresh_token) {
-          await supabase.auth.setSession({
+          const { error: sessionError } = await supabase.auth.setSession({
             access_token,
             refresh_token,
           });
 
-          window.history.replaceState(null, "", "/update-password");
+          if (sessionError) {
+            setError("Link inválido ou expirado.");
+            setChecking(false);
+            return;
+          }
         }
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        setError("Link inválido ou expirado.");
+        setChecking(false);
+        return;
       }
 
       setChecking(false);
     }
 
     init();
-  }, []);
+  }, [supabase]);
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
+    setMessage("");
+
+    if (password.length < 6) {
+      setError("A password deve ter pelo menos 6 caracteres.");
+      return;
+    }
 
     if (password !== confirmPassword) {
-      setError("Passwords não coincidem");
+      setError("Passwords não coincidem.");
       return;
     }
 
     setLoading(true);
 
-    const { error } = await supabase.auth.updateUser({
+    const { error: updateError } = await supabase.auth.updateUser({
       password,
     });
 
-    if (error) {
-      setError(error.message);
+    if (updateError) {
+      setError(updateError.message);
       setLoading(false);
       return;
     }
@@ -71,18 +94,24 @@ export default function UpdatePasswordPage() {
     }, 1200);
   }
 
-  if (checking) return <p style={{ padding: 20 }}>A validar...</p>;
+  if (checking) {
+    return <p style={{ padding: 20 }}>A validar...</p>;
+  }
 
   return (
-    <div style={{ padding: 20, maxWidth: 400, margin: "auto" }}>
+    <div style={{ padding: 20, maxWidth: 400, margin: "40px auto" }}>
       <h2>Nova password</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "grid", gap: 12, marginTop: 16 }}
+      >
         <input
           type="password"
           placeholder="Nova password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          style={{ padding: 10 }}
         />
 
         <input
@@ -90,15 +119,16 @@ export default function UpdatePasswordPage() {
           placeholder="Confirmar password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
+          style={{ padding: 10 }}
         />
 
-        <button disabled={loading}>
+        <button disabled={loading} style={{ padding: 10 }}>
           {loading ? "A guardar..." : "Guardar"}
         </button>
       </form>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {message && <p style={{ color: "green" }}>{message}</p>}
+      {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
+      {message && <p style={{ color: "green", marginTop: 12 }}>{message}</p>}
     </div>
   );
 }
