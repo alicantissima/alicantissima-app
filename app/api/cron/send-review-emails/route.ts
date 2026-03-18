@@ -305,9 +305,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const reviewUrl =
-  (process.env.NEXT_PUBLIC_APP_URL || "https://app.alicantissima.es") +
-  "/review";
+function buildTrackedReviewUrl(params: {
+  bookingCode: string;
+  language?: string | null;
+}) {
+  const url = new URL("/review", appUrl);
+  url.searchParams.set("source", "email");
+  url.searchParams.set("booking", params.bookingCode);
+
+  if (params.language) {
+    url.searchParams.set("lang", normalizeLanguage(params.language));
+  }
+
+  return url.toString();
+}
 
   if (!reviewUrl) {
     return NextResponse.json(
@@ -380,25 +391,30 @@ export async function GET(request: NextRequest) {
     };
 
     try {
-      await sendEmail({
-        to: booking.customer_email,
-        subject: subjectByLanguage[language] || subjectByLanguage.en,
-        text: buildReviewEmailText({
-          reviewUrl,
-          language,
-        }),
-        html: buildReviewEmailHtml({
-          reviewUrl,
-          language,
-        }),
-      });
+  const trackedReviewUrl = buildTrackedReviewUrl({
+    bookingCode: booking.booking_code,
+    language: booking.language,
+  });
 
-      const { error: updateError } = await supabase
-        .from("bookings")
-        .update({
-          review_email_sent_at: new Date().toISOString(),
-        })
-        .eq("id", booking.id);
+  await sendEmail({
+    to: booking.customer_email,
+    subject: subjectByLanguage[language] || subjectByLanguage.en,
+    text: buildReviewEmailText({
+      reviewUrl: trackedReviewUrl,
+      language,
+    }),
+    html: buildReviewEmailHtml({
+      reviewUrl: trackedReviewUrl,
+      language,
+    }),
+  });
+
+  const { error: updateError } = await supabase
+    .from("bookings")
+    .update({
+      review_email_sent_at: new Date().toISOString(),
+    })
+    .eq("id", booking.id);
 
       if (updateError) {
         errors.push({
