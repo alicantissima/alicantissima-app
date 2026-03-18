@@ -305,6 +305,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL || "https://app.alicantissima.es";
+
 function buildTrackedReviewUrl(params: {
   bookingCode: string;
   language?: string | null;
