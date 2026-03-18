@@ -1,11 +1,9 @@
 
-
-
 {
   "crons": [
     {
       "path": "/api/cron/send-review-emails",
-      "schedule": "*/30 * * * *"
+      "schedule": "*/40 * * * *"
     }
   ]
 }
