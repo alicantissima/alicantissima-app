@@ -323,13 +323,6 @@ function buildTrackedReviewUrl(params: {
   return url.toString();
 }
 
-  if (!reviewUrl) {
-    return NextResponse.json(
-      { ok: false, error: "Missing GOOGLE_REVIEW_URL" },
-      { status: 500 }
-    );
-  }
-
   const supabase = createAdminClient();
   const now = new Date();
 
