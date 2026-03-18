@@ -15,8 +15,7 @@ function getReviewSendAt(checkOutTime?: string | null) {
   if (Number.isNaN(checkout.getTime())) return null;
 
   const sendAt = new Date(checkout);
-  sendAt.setDate(sendAt.getDate() + 1);
-  sendAt.setHours(21, 0, 0, 0);
+  sendAt.setHours(sendAt.getHours() + 24);
 
   return sendAt;
 }
