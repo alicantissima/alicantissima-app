@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/cron/send-review-emails",
-      "schedule": "*/40 * * * *"
+      "schedule": "*/30 * * * *"
     }
   ]
 }
