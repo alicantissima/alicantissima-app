@@ -5,6 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeLanguage } from "@/lib/i18n";
 
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL || "https://app.alicantissima.es";
+
 function getReviewSendAt(checkOutTime?: string | null) {
   if (!checkOutTime) return null;
 
@@ -304,9 +307,6 @@ export async function GET(request: NextRequest) {
   if (!isVercelCron && !isManualAuthorized) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
-
-const appUrl =
-  process.env.NEXT_PUBLIC_APP_URL || "https://app.alicantissima.es";
 
 function buildTrackedReviewUrl(params: {
   bookingCode: string;
