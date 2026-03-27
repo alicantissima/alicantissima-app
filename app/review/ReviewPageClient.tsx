@@ -62,7 +62,7 @@ export default function ReviewPageClient() {
           href="/contact"
           className="rounded-xl border py-4 text-lg font-semibold hover:bg-gray-50"
         >
-          😐 Could be better — tell us privately
+          😐 Could be better — tell us how to improve
         </Link>
       </div>
     </main>
