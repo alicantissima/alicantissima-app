@@ -49,22 +49,28 @@ export default function ReviewPageClient() {
       </p>
 
       <div className="flex flex-col gap-4">
-        <a
-          href={googleReviewUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-xl bg-black py-4 text-lg font-semibold text-white hover:opacity-90"
-        >
-          ⭐ Great — leave a Google review
-        </a>
+  <a
+    href={googleReviewUrl}
+    target="_blank"
+    rel="noreferrer"
+    className="rounded-xl bg-black py-4 text-lg font-semibold text-white hover:opacity-90"
+  >
+    ⭐ Great — leave a Google review
+  </a>
 
-        <Link
-          href="/contact"
-          className="rounded-xl border py-4 text-lg font-semibold hover:bg-gray-50"
-        >
-          😐 Could be better — tell us how to improve
-        </Link>
-      </div>
+  <a
+    href={`https://wa.me/34624278808?text=${encodeURIComponent(
+      `Hello Alicantissima. I would like to share some private feedback.${
+        booking ? ` Booking: ${booking}.` : ""
+      }`
+    )}`}
+    target="_blank"
+    rel="noreferrer"
+    className="rounded-xl border py-4 text-lg font-semibold hover:bg-gray-50"
+  >
+    😐 Could be better — tell us how to improve
+  </a>
+</div>
     </main>
   );
 }
