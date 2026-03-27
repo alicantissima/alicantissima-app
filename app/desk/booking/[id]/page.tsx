@@ -58,11 +58,6 @@ function formatDateTime(value?: string | null) {
   }).format(new Date(value));
 }
 
-function formatMoney(amount?: number | null, currency?: string | null) {
-  const value = Number(amount ?? 0);
-  return `${value.toFixed(2)} ${currency ?? "EUR"}`;
-}
-
 function getStatusClasses(status?: string | null) {
   switch (status) {
     case "pending":
@@ -88,7 +83,9 @@ function InfoCard({
   return (
     <div className="rounded-2xl border bg-white p-4">
       <div className="text-xs text-gray-500">{label}</div>
-      <div className="mt-1 text-lg font-semibold leading-tight">{value}</div>
+      <div className="mt-1 text-base font-semibold leading-tight break-words">
+        {value}
+      </div>
     </div>
   );
 }
@@ -142,11 +139,11 @@ export default async function DeskBookingPage({ params }: PageProps) {
             </Link>
 
             <div className="space-y-2">
-              <div className="text-sm text-gray-500">Reserva</div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl font-bold leading-none">
-                  {booking.booking_code}
+                <h1 className="text-2xl font-bold leading-tight md:text-3xl">
+                  {booking.customer_name || "Cliente"}
                 </h1>
+
                 <span
                   className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase ${getStatusClasses(
                     booking.status
@@ -155,9 +152,13 @@ export default async function DeskBookingPage({ params }: PageProps) {
                   {booking.status || "-"}
                 </span>
               </div>
-              <p className="text-sm text-gray-500">
-                Gestão operacional rápida da reserva
-              </p>
+
+              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                <span>Serviço: {formatDate(booking.service_date)}</span>
+                <span className="rounded-full border px-2 py-0.5 text-xs">
+                  {booking.booking_code}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -187,15 +188,6 @@ export default async function DeskBookingPage({ params }: PageProps) {
 
       <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <section className="space-y-4">
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <InfoCard label="Total" value={formatMoney(booking.total_amount, booking.currency)} />
-            <InfoCard label="Data de serviço" value={formatDate(booking.service_date)} />
-            <InfoCard label="Criada em" value={formatDateTime(booking.created_at)} />
-            <InfoCard label="Check-in real" value={formatDateTime(booking.check_in_time)} />
-            <InfoCard label="Check-out real" value={formatDateTime(booking.check_out_time)} />
-            <InfoCard label="Origem" value={booking.source || "-"} />
-          </section>
-
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-2xl font-bold">Produtos comprados</h2>
@@ -231,26 +223,37 @@ export default async function DeskBookingPage({ params }: PageProps) {
                     <div className="mt-4 grid gap-2 sm:grid-cols-3">
                       <div className="rounded-xl bg-gray-50 p-3 text-sm">
                         <div className="text-xs text-gray-500">Entrega</div>
-                        <div className="font-medium">{item.meta?.dropOffTime || "-"}</div>
+                        <div className="font-medium">
+                          {item.meta?.dropOffTime || "-"}
+                        </div>
                       </div>
 
                       <div className="rounded-xl bg-gray-50 p-3 text-sm">
                         <div className="text-xs text-gray-500">Recolha</div>
-                        <div className="font-medium">{item.meta?.pickUpTime || "-"}</div>
+                        <div className="font-medium">
+                          {item.meta?.pickUpTime || "-"}
+                        </div>
                       </div>
 
                       <div className="rounded-xl bg-gray-50 p-3 text-sm">
                         <div className="text-xs text-gray-500">Duche</div>
-                        <div className="font-medium">{item.meta?.showerTime || "-"}</div>
+                        <div className="font-medium">
+                          {item.meta?.showerTime || "-"}
+                        </div>
                       </div>
                     </div>
 
                     {item.meta?.breakdown && item.meta.breakdown.length > 0 && (
                       <div className="mt-4 rounded-2xl bg-gray-50 p-4">
-                        <div className="mb-2 text-sm font-semibold">Breakdown</div>
+                        <div className="mb-2 text-sm font-semibold">
+                          Breakdown
+                        </div>
                         <div className="space-y-2 text-sm">
                           {item.meta.breakdown.map((b, index) => (
-                            <div key={index} className="flex justify-between gap-3">
+                            <div
+                              key={index}
+                              className="flex justify-between gap-3"
+                            >
                               <span>
                                 {b.label} × {b.quantity}
                               </span>
@@ -271,9 +274,9 @@ export default async function DeskBookingPage({ params }: PageProps) {
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <InfoCard label="Nome" value={booking.customer_name || "-"} />
+              <InfoCard label="Cidade" value={booking.city || "-"} />
               <InfoCard label="Telefone" value={booking.customer_phone || "-"} />
               <InfoCard label="Email" value={booking.customer_email || "-"} />
-              <InfoCard label="Cidade" value={booking.city || "-"} />
             </div>
           </section>
 
@@ -290,6 +293,17 @@ export default async function DeskBookingPage({ params }: PageProps) {
               {booking.notes && booking.notes.trim()
                 ? booking.notes
                 : "Sem notas."}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
+            <h2 className="text-2xl font-bold">Dados administrativos</h2>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <InfoCard label="Criada em" value={formatDateTime(booking.created_at)} />
+              <InfoCard label="Check-in real" value={formatDateTime(booking.check_in_time)} />
+              <InfoCard label="Check-out real" value={formatDateTime(booking.check_out_time)} />
+              <InfoCard label="Origem" value={booking.source || "-"} />
             </div>
           </section>
         </section>
