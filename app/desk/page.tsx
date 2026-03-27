@@ -129,37 +129,37 @@ function DeskTable({
                   className="border-b last:border-b-0 hover:bg-gray-50"
                 >
                   <td className="p-0 align-top">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="block h-full w-full break-all px-2 py-2 text-xs font-semibold leading-tight underline hover:opacity-80"
-                      title={booking.booking_code}
-                    >
-                      {booking.booking_code}
-                    </Link>
-                  </td>
+  <Link
+    href={`/desk/booking/${booking.id}`}
+    className="block h-full w-full break-all px-2 py-2 text-xs font-semibold leading-tight underline hover:opacity-80"
+    title={booking.booking_code}
+  >
+    {booking.booking_code}
+  </Link>
+</td>
 
-                  <td className="p-0 align-top">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="block h-full w-full break-words px-2 py-2 text-sm leading-tight hover:opacity-80"
-                      title={booking.customer_name}
-                    >
-                      {booking.customer_name}
-                    </Link>
-                  </td>
+<td className="p-0 align-top">
+  <Link
+    href={`/desk/booking/${booking.id}`}
+    className="block h-full w-full break-words px-2 py-2 text-sm leading-tight hover:opacity-80"
+    title={booking.customer_name}
+  >
+    {booking.customer_name}
+  </Link>
+</td>
 
-                  <td className="p-0 align-top">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="block h-full w-full px-0 py-2 text-sm hover:opacity-80"
-                    >
-                      {formatTime(
-                        timeField === "check_out_time"
-                          ? booking.check_out_time
-                          : booking.check_in_time
-                      )}
-                    </Link>
-                  </td>
+<td className="p-0 align-top">
+  <Link
+    href={`/desk/booking/${booking.id}`}
+    className="block h-full w-full px-0 py-2 text-sm hover:opacity-80"
+  >
+    {formatTime(
+      timeField === "check_out_time"
+        ? booking.check_out_time
+        : booking.check_in_time
+    )}
+  </Link>
+</td>
                 </tr>
               ))}
             </tbody>
