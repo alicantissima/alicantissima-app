@@ -89,14 +89,14 @@ export default function AdminSourceSelect({
   }
 
   return (
-    <div className="relative inline-block w-[128px] min-w-[128px]">
+    <div className="relative inline-block w-[118px] min-w-[118px] shrink-0">
       <select
         value={currentValue}
         onChange={(e) => handleChange(e.target.value)}
         disabled={isPending}
-        className={`h-8 w-full appearance-none rounded-xl border px-3 pr-8 text-[12px] font-medium leading-none outline-none transition ${getSelectTone(
-          currentValue
-        )} ${isPending ? "opacity-60" : ""}`}
+        className={`h-8 w-full appearance-none truncate rounded-xl border px-3 pr-8 text-[12px] font-medium leading-none outline-none transition ${getSelectTone(
+  currentValue
+)} ${isPending ? "opacity-60" : ""}`}
       >
         {OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
