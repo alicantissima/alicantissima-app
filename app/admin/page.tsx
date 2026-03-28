@@ -4,7 +4,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import QuickFinishButton from "./QuickFinishButton";
 import AdminQrScanner from "@/components/admin-qr-scanner";
 import AdminFinishQrScanner from "@/components/admin-finish-qr-scanner";
 import LogoutButton from "@/components/logout-button";
@@ -299,7 +298,6 @@ function renderSectionTable({
     <th className="px-2 py-2">In</th>
     <th className="px-2 py-2">Out</th>
     <th className="px-2 py-2">Total</th>
-    <th className="px-2 py-2">Ação</th>
   </tr>
 </thead>
 
@@ -398,13 +396,6 @@ function renderSectionTable({
       {formatCurrency(Number(booking.total_amount), booking.currency)}
     </td>
 
-    <td className="px-2 py-2 align-top">
-      {!cancelled && normalizeStatus(booking.status) === "inside" ? (
-        <QuickFinishButton bookingId={booking.id} />
-      ) : (
-        <span className="text-[12px]">-</span>
-      )}
-    </td>
   </tr>
 );
             })}
