@@ -72,7 +72,7 @@ export default function CheckInBookingButton({
   .from("bookings")
   .update(updateData)
   .eq("id", bookingId)
-  .eq("status", "pending");
+  .eq("status", "booked");
 
     setLoading(false);
 

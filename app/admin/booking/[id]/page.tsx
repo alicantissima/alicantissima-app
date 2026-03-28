@@ -97,7 +97,7 @@ const bookingItems = (bookingItemsData ?? []) as BookingItem[];
           </Link>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
-            {booking.status === "pending" && (
+            {booking.status === "booked" && (
               <>
                 <CheckInBookingButton
                   bookingId={booking.id}

@@ -165,7 +165,7 @@ export default function AdminFinishQrScanner() {
       return;
     }
 
-    if (booking.status === "pending") {
+    if (booking.status === "inside") {
       playErrorBeep();
       setLoading(false);
       setError("Esta reserva ainda não entrou. Use primeiro o Scan QR.");
