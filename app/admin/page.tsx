@@ -278,22 +278,23 @@ function renderSectionTable({
       >
         <table className="w-full text-sm">
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
-            <tr className="border-b text-left text-[13px]">
-              <th className="px-2 py-2">Source</th>
-<th className="px-2 py-2">Payment</th>
-<th className="px-2 py-2">Status</th>
-<th className="px-2 py-2">Date</th>
-<th className="px-2 py-2">Cliente</th>
-<th className="px-2 py-2">City</th>
-<th className="px-2 py-2">Bags</th>
-<th className="px-2 py-2">Shws</th>
-<th className="px-2 py-2">Lug+Shw</th>
-<th className="px-2 py-2">In</th>
-<th className="px-2 py-2">Out</th>
-<th className="px-2 py-2">Total</th>
-<th className="px-2 py-2">Ação</th>
-            </tr>
-          </thead>
+  <tr className="border-b text-left text-[13px]">
+    <th className="px-3 py-2">Código</th>
+    <th className="px-2 py-2">Source</th>
+    <th className="px-2 py-2">Payment</th>
+    <th className="px-2 py-2">Status</th>
+    <th className="px-2 py-2">Date</th>
+    <th className="px-2 py-2">Cliente</th>
+    <th className="px-2 py-2">City</th>
+    <th className="px-2 py-2">Bags</th>
+    <th className="px-2 py-2">Shws</th>
+    <th className="px-2 py-2">Lug+Shw</th>
+    <th className="px-2 py-2">In</th>
+    <th className="px-2 py-2">Out</th>
+    <th className="px-2 py-2">Total</th>
+    <th className="px-2 py-2">Ação</th>
+  </tr>
+</thead>
 
           <tbody>
             {bookings.map((booking) => {
@@ -312,86 +313,93 @@ function renderSectionTable({
                 : sourceRowClass;
 
               return (
-                <tr key={booking.id} className={`border-b ${rowClass}`}>
-                  <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="underline hover:text-blue-600"
-                    >
-                      {booking.booking_code}
-                    </Link>
-                  </td>
+  <tr key={booking.id} className={`border-b ${rowClass}`}>
+    <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
+      <Link
+        href={`/admin/booking/${booking.id}`}
+        className="underline hover:text-blue-600"
+      >
+        {booking.booking_code}
+      </Link>
+    </td>
 
-                  <td className="px-2 py-2 align-top">
-                    <div className="w-[92px]">
-                      <AdminSourceSelect
-  bookingId={booking.id}
-  value={booking.source ?? "choose"}
-/>
-                    </div>
-                  <td className="px-2 py-2 align-top">
-  <div className="w-[110px]">
-    <AdminPaymentMethodSelect
-      bookingId={booking.id}
-      value={booking.payment_method ?? "unpaid"}
-    />
-  </div>
-</td>
+    <td className="px-2 py-2 align-top">
+      <div className="w-[92px]">
+        <AdminSourceSelect
+          bookingId={booking.id}
+          value={booking.source ?? "choose"}
+        />
+      </div>
+    </td>
 
-<td className="px-2 py-2 align-top">
-  <div className="w-[110px]">
-    <AdminStatusSelect
-      bookingId={booking.id}
-      value={normalizeStatus(booking.status)}
-    />
-  </div>
-</td>
+    <td className="px-2 py-2 align-top">
+      <div className="w-[110px]">
+        <AdminPaymentMethodSelect
+          bookingId={booking.id}
+          value={booking.payment_method ?? "unpaid"}
+        />
+      </div>
+    </td>
 
-                  <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
-                    {booking.city ?? meta.city ?? "-"}
-                  </td>
+    <td className="px-2 py-2 align-top">
+      <div className="w-[110px]">
+        <AdminStatusSelect
+          bookingId={booking.id}
+          value={normalizeStatus(booking.status)}
+        />
+      </div>
+    </td>
 
-                  <td className="px-2 py-2 align-top text-[12px]">
-                    {meta.bags || "-"}
-                  </td>
-                  <td className="px-2 py-2 align-top text-[12px]">
-                    {meta.showers || "-"}
-                  </td>
-                  <td className="px-2 py-2 align-top text-[12px]">
-                    {meta.combo || "-"}
-                  </td>
+    <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
+      {formatServiceDate(meta.date)}
+    </td>
 
-                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-                    {meta.time_in ?? "-"}
-                  </td>
+    <td className="px-2 py-2 align-top">
+      <div className="max-w-[170px] text-[13px] leading-tight font-medium">
+        {booking.customer_name}
+      </div>
+      <div className="text-[11px] leading-tight text-gray-500">
+        {booking.customer_email}
+      </div>
+    </td>
 
-                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-                    {meta.time_out ?? meta.checkout_time ?? "-"}
-                  </td>
+    <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
+      {booking.city ?? meta.city ?? "-"}
+    </td>
 
-                  <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
-                    {formatCurrency(Number(booking.total_amount), booking.currency)}
-                  </td>
+    <td className="px-2 py-2 align-top text-[12px]">
+      {meta.bags || "-"}
+    </td>
 
-                  <td className="px-2 py-2 align-top">
-                    <span
-                      className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${getStatusClass(
-                        booking.status
-                      )}`}
-                    >
-                      {getStatusLabel(booking.status)}
-                    </span>
-                  </td>
+    <td className="px-2 py-2 align-top text-[12px]">
+      {meta.showers || "-"}
+    </td>
 
-                  <td className="px-2 py-2 align-top">
-                    {!cancelled && normalizeStatus(booking.status) === "inside" ? (
-                      <QuickFinishButton bookingId={booking.id} />
-                    ) : (
-                      <span className="text-[12px]">-</span>
-                    )}
-                  </td>
-                </tr>
-              );
+    <td className="px-2 py-2 align-top text-[12px]">
+      {meta.combo || "-"}
+    </td>
+
+    <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+      {meta.time_in ?? "-"}
+    </td>
+
+    <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+      {meta.time_out ?? meta.checkout_time ?? "-"}
+    </td>
+
+    <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
+      {formatCurrency(Number(booking.total_amount), booking.currency)}
+    </td>
+
+    <td className="px-2 py-2 align-top">
+      {!cancelled && normalizeStatus(booking.status) === "inside" ? (
+        <QuickFinishButton bookingId={booking.id} />
+      ) : (
+        <span className="text-[12px]">-</span>
+      )}
+    </td>
+  </tr>
+);
             })}
           </tbody>
         </table>
