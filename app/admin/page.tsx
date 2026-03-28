@@ -11,6 +11,8 @@ import LogoutButton from "@/components/logout-button";
 import FinishAllInsideButton from "@/components/finish-all-inside-button";
 import AdminAutoRefresh from "./AdminAutoRefresh";
 import AdminSourceSelect from "@/components/admin-source-select";
+import AdminPaymentMethodSelect from "@/components/admin-payment-method-select";
+import AdminStatusSelect from "@/components/admin-status-select";
 
 export const revalidate = 0;
 
@@ -24,6 +26,7 @@ type BookingRow = {
   currency: string;
   status: string;
   source?: string | null;
+  payment_method?: string | null;
   city?: string | null;
   service_date?: string | null;
   booking_date?: string | null;
@@ -103,18 +106,8 @@ function normalizeStatus(status: string) {
   if (status === "completed") return "completed";
   if (status === "finished") return "completed";
   if (status === "cancelled") return "cancelled";
-  return status;
-}
-
-function getStatusLabel(status: string) {
-  const normalized = normalizeStatus(status);
-
-  if (normalized === "booked") return "BOOKED";
-  if (normalized === "inside") return "INSIDE";
-  if (normalized === "completed") return "FINISHED";
-  if (normalized === "cancelled") return "CANCELLED";
-
-  return status.toUpperCase();
+  if (status === "no_show") return "no_show";
+  return "booked";
 }
 
 function getStatusClass(status: string) {
@@ -136,18 +129,43 @@ function getStatusClass(status: string) {
     return "bg-red-100 text-red-700 border-red-200";
   }
 
+  if (normalized === "no_show") {
+    return "bg-orange-100 text-orange-800 border-orange-200";
+  }
+
   return "bg-gray-100 text-gray-700 border-gray-200";
 }
 
-function getSourceRowClass(source: string | null) {
-  const current = source ?? "na";
+function getStatusLabel(status: string) {
+  const normalized = normalizeStatus(status);
 
+  if (normalized === "booked") return "BOOKED";
+  if (normalized === "inside") return "INSIDE";
+  if (normalized === "completed") return "COMPLETED";
+  if (normalized === "cancelled") return "CANCELLED";
+  if (normalized === "no_show") return "NO SHOW";
+
+  return normalized.toUpperCase();
+}
+
+function getSourceRowClass(source: string | null) {
+  const current = source ?? "choose";
+
+  if (current === "choose") return "bg-zinc-50";
   if (current === "site") return "bg-pink-50";
   if (current === "viator") return "bg-green-50";
-  if (current === "booking") return "bg-blue-50";
-  if (current === "hector") return "bg-gray-50";
-  if (current === "porta") return "bg-orange-50";
-  if (current === "turismo") return "bg-yellow-50";
+  if (current === "walkin") return "bg-orange-50";
+  if (current === "turismo") return "bg-sky-50";
+  if (
+    current === "hector" ||
+    current === "pilar" ||
+    current === "melia" ||
+    current === "other_host"
+  ) {
+    return "bg-yellow-50";
+  }
+  if (current === "other") return "bg-purple-50";
+
   return "";
 }
 
@@ -261,19 +279,19 @@ function renderSectionTable({
         <table className="w-full text-sm">
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
             <tr className="border-b text-left text-[13px]">
-              <th className="px-3 py-2">Código</th>
               <th className="px-2 py-2">Source</th>
-              <th className="px-2 py-2">Date</th>
-              <th className="px-2 py-2">Cliente</th>
-              <th className="px-2 py-2">City</th>
-              <th className="px-2 py-2">Bags</th>
-              <th className="px-2 py-2">Shws</th>
-              <th className="px-2 py-2">Lug+Shw</th>
-              <th className="px-2 py-2">In</th>
-              <th className="px-2 py-2">Out</th>
-              <th className="px-2 py-2">Total</th>
-              <th className="px-2 py-2">Estado</th>
-              <th className="px-2 py-2">Ação</th>
+<th className="px-2 py-2">Payment</th>
+<th className="px-2 py-2">Status</th>
+<th className="px-2 py-2">Date</th>
+<th className="px-2 py-2">Cliente</th>
+<th className="px-2 py-2">City</th>
+<th className="px-2 py-2">Bags</th>
+<th className="px-2 py-2">Shws</th>
+<th className="px-2 py-2">Lug+Shw</th>
+<th className="px-2 py-2">In</th>
+<th className="px-2 py-2">Out</th>
+<th className="px-2 py-2">Total</th>
+<th className="px-2 py-2">Ação</th>
             </tr>
           </thead>
 
@@ -307,24 +325,27 @@ function renderSectionTable({
                   <td className="px-2 py-2 align-top">
                     <div className="w-[92px]">
                       <AdminSourceSelect
-                        bookingId={booking.id}
-                        value={booking.source ?? "na"}
-                      />
+  bookingId={booking.id}
+  value={booking.source ?? "choose"}
+/>
                     </div>
-                  </td>
-
-                  <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
-                    {formatServiceDate(meta.date)}
-                  </td>
-
                   <td className="px-2 py-2 align-top">
-                    <div className="max-w-[170px] text-[13px] leading-tight font-medium">
-                      {booking.customer_name}
-                    </div>
-                    <div className="text-[11px] leading-tight text-gray-500">
-                      {booking.customer_email}
-                    </div>
-                  </td>
+  <div className="w-[110px]">
+    <AdminPaymentMethodSelect
+      bookingId={booking.id}
+      value={booking.payment_method ?? "unpaid"}
+    />
+  </div>
+</td>
+
+<td className="px-2 py-2 align-top">
+  <div className="w-[110px]">
+    <AdminStatusSelect
+      bookingId={booking.id}
+      value={normalizeStatus(booking.status)}
+    />
+  </div>
+</td>
 
                   <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
                     {booking.city ?? meta.city ?? "-"}
@@ -510,23 +531,46 @@ if (!profile || profile.role !== "admin") {
   let bagsInside = 0;
   let showersInside = 0;
 
-  const sourceTodayCounts = {
-    site: 0,
-    viator: 0,
-    booking: 0,
-    hector: 0,
-    porta: 0,
-    turismo: 0,
-  };
+  const sourceKeys = [
+  "choose",
+  "site",
+  "viator",
+  "walkin",
+  "turismo",
+  "hector",
+  "pilar",
+  "melia",
+  "other_host",
+  "other",
+] as const;
 
-  const sourceTodayRevenue = {
-    site: 0,
-    viator: 0,
-    booking: 0,
-    hector: 0,
-    porta: 0,
-    turismo: 0,
-  };
+type SourceKey = (typeof sourceKeys)[number];
+
+const sourceTodayCounts: Record<SourceKey, number> = {
+  choose: 0,
+  site: 0,
+  viator: 0,
+  walkin: 0,
+  turismo: 0,
+  hector: 0,
+  pilar: 0,
+  melia: 0,
+  other_host: 0,
+  other: 0,
+};
+
+const sourceTodayRevenue: Record<SourceKey, number> = {
+  choose: 0,
+  site: 0,
+  viator: 0,
+  walkin: 0,
+  turismo: 0,
+  hector: 0,
+  pilar: 0,
+  melia: 0,
+  other_host: 0,
+  other: 0,
+};
 
   const citiesTodayCounts: Record<string, number> = {};
 
@@ -539,7 +583,7 @@ if (!profile || profile.role !== "admin") {
       (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
 
     if (isToday(bookingDate) && normalizedStatus !== "cancelled") {
-      const currentSource = (booking.source ?? "na") as keyof typeof sourceTodayCounts;
+      const currentSource = (booking.source ?? "choose") as SourceKey;
 
       const computedRevenue = itemsForBooking.reduce(
         (sum, item) => sum + Number(item.line_total ?? 0),
@@ -554,8 +598,6 @@ if (!profile || profile.role !== "admin") {
       if (currentSource in sourceTodayCounts) {
         sourceTodayCounts[currentSource]++;
         sourceTodayRevenue[currentSource] += bookingRevenue;
-      } else {
-        sourceTodayRevenue.turismo += bookingRevenue;
       }
 
       for (const item of itemsForBooking) {
