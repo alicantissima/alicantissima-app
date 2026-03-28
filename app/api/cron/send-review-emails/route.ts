@@ -295,18 +295,6 @@ function buildReviewEmailHtml(params: {
   `;
 }
 
-export async function GET(request: NextRequest) {
-  const isVercelCron = request.headers.get("x-vercel-cron") === "1";
-  const manualSecret = request.nextUrl.searchParams.get("secret");
-  const cronSecret = process.env.CRON_SECRET;
-
-  const isManualAuthorized =
-    !!cronSecret && !!manualSecret && manualSecret === cronSecret;
-
-  if (!isVercelCron && !isManualAuthorized) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
-
 function buildTrackedReviewUrl(params: {
   bookingCode: string;
   language?: string | null;
@@ -321,6 +309,18 @@ function buildTrackedReviewUrl(params: {
 
   return url.toString();
 }
+
+export async function GET(request: NextRequest) {
+  const isVercelCron = request.headers.get("x-vercel-cron") === "1";
+  const manualSecret = request.nextUrl.searchParams.get("secret");
+  const cronSecret = process.env.CRON_SECRET;
+
+  const isManualAuthorized =
+    !!cronSecret && !!manualSecret && manualSecret === cronSecret;
+
+  if (!isVercelCron && !isManualAuthorized) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
 
   const supabase = createAdminClient();
   const now = new Date();
@@ -348,7 +348,7 @@ function buildTrackedReviewUrl(params: {
   let sent = 0;
   let skipped = 0;
   const errors: Array<{ booking_code: string; error: string }> = [];
-  const MAX_SENDS_PER_RUN = 20;
+  const MAX_SENDS_PER_RUN = 50;
 
   for (const booking of bookings || []) {
     if (sent >= MAX_SENDS_PER_RUN) {
