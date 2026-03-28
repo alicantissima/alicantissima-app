@@ -89,25 +89,25 @@ export default function AdminSourceSelect({
   }
 
   return (
-    <div className="relative inline-block w-[118px] min-w-[118px] shrink-0">
-      <select
-        value={currentValue}
-        onChange={(e) => handleChange(e.target.value)}
-        disabled={isPending}
-        className={`h-8 w-full appearance-none truncate rounded-xl border px-3 pr-8 text-[12px] font-medium leading-none outline-none transition ${getSelectTone(
-  currentValue
-)} ${isPending ? "opacity-60" : ""}`}
-      >
-        {OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+  <div className="relative inline-block w-[118px] min-w-[118px] shrink-0">
+    <select
+      value={currentValue}
+      onChange={(e) => handleChange(e.target.value)}
+      disabled={isPending}
+      className={`h-8 w-full appearance-none truncate rounded-xl border px-3 pr-8 text-[12px] font-medium leading-none outline-none transition ${getSelectTone(
+        currentValue
+      )} ${isPending ? "opacity-60" : ""}`}
+    >
+      {OPTIONS.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
 
-      <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] opacity-60">
-        ▾
-      </div>
+    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] opacity-60">
+      ▾
     </div>
-  );
+  </div>
+);
 }

@@ -54,17 +54,23 @@ export default function AdminStatusSelect({
   }
 
   return (
-    <select
-      value={currentValue}
-      onChange={(e) => handleChange(e.target.value)}
-      disabled={isPending}
-      className="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-[12px] outline-none focus:border-gray-400"
-    >
-      {OPTIONS.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <div className="relative inline-block w-[118px] min-w-[118px] shrink-0">
+      <select
+        value={currentValue}
+        onChange={(e) => handleChange(e.target.value)}
+        disabled={isPending}
+        className="h-8 w-full appearance-none truncate rounded-xl border border-gray-300 bg-white px-3 pr-8 text-[12px] font-medium leading-none outline-none transition focus:border-gray-400"
+      >
+        {OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+
+      <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] opacity-60">
+        ▾
+      </div>
+    </div>
   );
 }
