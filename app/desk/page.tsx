@@ -236,26 +236,6 @@ export default async function DeskPage() {
       .order("created_at", { ascending: true }),
   ]);
 
-      supabase
-        .from("bookings")
-        .select(
-          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
-        )
-        .eq("service_date", todayMadrid)
-.eq("status", "completed")
-.order("check_out_time", { ascending: false })
-.limit(20),
-
-      supabase
-        .from("bookings")
-        .select(
-          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
-        )
-        .eq("service_date", tomorrowMadrid)
-.in("status", ["booked", "inside"])
-.order("created_at", { ascending: true })
-    ]);
-
   const inside = (insideQuery.data ?? []) as BookingRow[];
   const today = (todayQuery.data ?? []) as BookingRow[];
   const finished = (finishedQuery.data ?? []) as BookingRow[];
