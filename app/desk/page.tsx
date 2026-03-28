@@ -197,24 +197,44 @@ export default async function DeskPage() {
   const highlightTomorrow = madridHour >= 18;
 
   const [insideQuery, todayQuery, finishedQuery, tomorrowQuery] =
-    await Promise.all([
-      supabase
-        .from("bookings")
-        .select(
-          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
-        )
-        .eq("service_date", todayMadrid)
-        .eq("status", "inside")
-        .order("check_in_time", { ascending: true }),
+  await Promise.all([
+    supabase
+      .from("bookings")
+      .select(
+        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+      )
+      .eq("service_date", todayMadrid)
+      .eq("status", "inside")
+      .order("check_in_time", { ascending: true }),
 
-      supabase
-        .from("bookings")
-        .select(
-          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
-        )
-        .eq("service_date", todayMadrid)
-.eq("status", "booked")
-.order("created_at", { ascending: true })
+    supabase
+      .from("bookings")
+      .select(
+        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+      )
+      .eq("service_date", todayMadrid)
+      .eq("status", "booked")
+      .order("created_at", { ascending: true }),
+
+    supabase
+      .from("bookings")
+      .select(
+        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+      )
+      .eq("service_date", todayMadrid)
+      .eq("status", "completed")
+      .order("check_out_time", { ascending: false })
+      .limit(20),
+
+    supabase
+      .from("bookings")
+      .select(
+        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+      )
+      .eq("service_date", tomorrowMadrid)
+      .in("status", ["booked", "inside"])
+      .order("created_at", { ascending: true }),
+  ]);
 
       supabase
         .from("bookings")
