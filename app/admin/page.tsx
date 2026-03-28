@@ -781,58 +781,76 @@ const sourceTodayRevenue: Record<SourceKey, number> = {
       </section>
 
       <section className="rounded-xl border p-4">
-        <div className="mb-3 text-sm font-semibold text-gray-700">
-          Sources today
-        </div>
+  <div className="mb-3 text-sm font-semibold text-gray-700">
+    Sources today
+  </div>
 
-        <div className="flex flex-wrap gap-2 text-sm">
-          <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
-            site: {sourceTodayCounts.site}
+  <div className="flex flex-wrap gap-2 text-sm">
+    {sourceKeys
+      .filter((key) => sourceTodayCounts[key] > 0)
+      .map((key) => {
+        const colorClass =
+          key === "choose"
+            ? "bg-zinc-100 text-zinc-800"
+            : key === "site"
+            ? "bg-pink-100 text-pink-800"
+            : key === "viator"
+            ? "bg-green-100 text-green-800"
+            : key === "walkin"
+            ? "bg-orange-100 text-orange-800"
+            : key === "turismo"
+            ? "bg-sky-100 text-sky-800"
+            : key === "hector" ||
+              key === "pilar" ||
+              key === "melia" ||
+              key === "other_host"
+            ? "bg-yellow-100 text-yellow-800"
+            : "bg-purple-100 text-purple-800";
+
+        return (
+          <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+            {key}: {sourceTodayCounts[key]}
           </span>
-          <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-            viator: {sourceTodayCounts.viator}
-          </span>
-          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
-            booking: {sourceTodayCounts.booking}
-          </span>
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-800">
-            hector: {sourceTodayCounts.hector}
-          </span>
-          <span className="rounded-full bg-orange-200 px-3 py-1 text-orange-800">
-            porta: {sourceTodayCounts.porta}
-          </span>
-          <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-500">
-            turismo: {sourceTodayCounts.turismo}
-          </span>
-        </div>
-      </section>
+        );
+      })}
+  </div>
+</section>
 
       <section className="rounded-xl border p-4">
-        <div className="mb-3 text-sm font-semibold text-gray-700">
-          Revenue by source today
-        </div>
+  <div className="mb-3 text-sm font-semibold text-gray-700">
+    Revenue by source today
+  </div>
 
-        <div className="flex flex-wrap gap-2 text-sm">
-          <span className="rounded-full bg-pink-100 px-3 py-1 text-pink-800">
-            site: {formatCurrency(sourceTodayRevenue.site, "EUR")}
+  <div className="flex flex-wrap gap-2 text-sm">
+    {sourceKeys
+      .filter((key) => sourceTodayRevenue[key] > 0)
+      .map((key) => {
+        const colorClass =
+          key === "choose"
+            ? "bg-zinc-100 text-zinc-800"
+            : key === "site"
+            ? "bg-pink-100 text-pink-800"
+            : key === "viator"
+            ? "bg-green-100 text-green-800"
+            : key === "walkin"
+            ? "bg-orange-100 text-orange-800"
+            : key === "turismo"
+            ? "bg-sky-100 text-sky-800"
+            : key === "hector" ||
+              key === "pilar" ||
+              key === "melia" ||
+              key === "other_host"
+            ? "bg-yellow-100 text-yellow-800"
+            : "bg-purple-100 text-purple-800";
+
+        return (
+          <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+            {key}: {formatCurrency(sourceTodayRevenue[key], "EUR")}
           </span>
-          <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-            viator: {formatCurrency(sourceTodayRevenue.viator, "EUR")}
-          </span>
-          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
-            booking: {formatCurrency(sourceTodayRevenue.booking, "EUR")}
-          </span>
-          <span className="rounded-full bg-yellow-100 px-3 py-1 text-yellow-800">
-            hector: {formatCurrency(sourceTodayRevenue.hector, "EUR")}
-          </span>
-          <span className="rounded-full bg-gray-200 px-3 py-1 text-gray-800">
-            porta: {formatCurrency(sourceTodayRevenue.porta, "EUR")}
-          </span>
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-500">
-            turismo: {formatCurrency(sourceTodayRevenue.turismo, "EUR")}
-          </span>
-        </div>
-      </section>
+        );
+      })}
+  </div>
+</section>
 
       <section className="rounded-xl border p-4">
         <div className="mb-3 text-sm font-semibold text-gray-700">
