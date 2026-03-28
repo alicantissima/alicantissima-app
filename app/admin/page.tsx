@@ -139,13 +139,20 @@ function getStatusClass(status: string) {
 function getStatusLabel(status: string) {
   const normalized = normalizeStatus(status);
 
-  if (normalized === "booked") return "BOOKED";
-  if (normalized === "inside") return "INSIDE";
-  if (normalized === "completed") return "COMPLETED";
-  if (normalized === "cancelled") return "CANCELLED";
-  if (normalized === "no_show") return "NO SHOW";
-
-  return normalized.toUpperCase();
+  switch (normalized) {
+    case "booked":
+      return "BOOKED";
+    case "inside":
+      return "INSIDE";
+    case "completed":
+      return "COMPLETED";
+    case "cancelled":
+      return "CANCELLED";
+    case "no_show":
+      return "NO SHOW";
+    default:
+      return "BOOKED";
+  }
 }
 
 function getSourceRowClass(source: string | null) {
