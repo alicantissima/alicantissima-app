@@ -36,7 +36,7 @@ export default function CheckInBookingButton({
   async function handleCheckIn() {
     if (loading) return;
 
-    if (currentStatus !== "pending") {
+    if (currentStatus !== "booked") {
       alert("Esta reserva não está em estado válido para check-in.");
       return;
     }
