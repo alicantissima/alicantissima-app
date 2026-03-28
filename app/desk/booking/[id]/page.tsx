@@ -60,14 +60,16 @@ function formatDateTime(value?: string | null) {
 
 function getStatusClasses(status?: string | null) {
   switch (status) {
-    case "pending":
+    case "booked":
       return "border-amber-200 bg-amber-50 text-amber-800";
     case "inside":
       return "border-blue-200 bg-blue-50 text-blue-800";
-    case "finished":
+    case "completed":
       return "border-emerald-200 bg-emerald-50 text-emerald-800";
     case "cancelled":
       return "border-red-200 bg-red-50 text-red-800";
+    case "no_show":
+      return "border-orange-200 bg-orange-50 text-orange-800";
     default:
       return "border-gray-200 bg-gray-50 text-gray-700";
   }
@@ -163,25 +165,25 @@ export default async function DeskBookingPage({ params }: PageProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {booking.status === "pending" && (
-              <>
-                <CheckInBookingButton
-                  bookingId={booking.id}
-                  currentStatus={booking.status}
-                  serviceDate={booking.service_date}
-                  checkInTime={booking.check_in_time}
-                />
-                <CancelBookingButton bookingId={booking.id} />
-              </>
-            )}
+{booking.status === "booked" && (
+  <>
+    <CheckInBookingButton
+      bookingId={booking.id}
+      currentStatus={booking.status}
+      serviceDate={booking.service_date}
+      checkInTime={booking.check_in_time}
+    />
+    <CancelBookingButton bookingId={booking.id} />
+  </>
+)}
 
-            {booking.status === "inside" && (
-              <FinishBookingButton
-                bookingId={booking.id}
-                currentStatus={booking.status}
-                checkOutTime={booking.check_out_time}
-              />
-            )}
+{booking.status === "inside" && (
+  <FinishBookingButton
+    bookingId={booking.id}
+    currentStatus={booking.status}
+    checkOutTime={booking.check_out_time}
+  />
+)}
           </div>
         </div>
       </section>

@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import AdminQrScanner from "@/components/admin-qr-scanner";
+import DeskQrScanner from "@/components/desk-qr-scanner";
 import LogoutButton from "@/components/logout-button";
 
 type BookingRow = {
@@ -213,8 +213,8 @@ export default async function DeskPage() {
           "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
         )
         .eq("service_date", todayMadrid)
-        .in("status", ["pending", "confirmed"])
-        .order("created_at", { ascending: true }),
+.eq("status", "booked")
+.order("created_at", { ascending: true })
 
       supabase
         .from("bookings")
@@ -222,9 +222,9 @@ export default async function DeskPage() {
           "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
         )
         .eq("service_date", todayMadrid)
-        .eq("status", "finished")
-        .order("check_out_time", { ascending: false })
-        .limit(20),
+.eq("status", "completed")
+.order("check_out_time", { ascending: false })
+.limit(20),
 
       supabase
         .from("bookings")
@@ -232,8 +232,8 @@ export default async function DeskPage() {
           "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
         )
         .eq("service_date", tomorrowMadrid)
-        .in("status", ["pending", "confirmed", "inside"])
-        .order("created_at", { ascending: true }),
+.in("status", ["booked", "inside"])
+.order("created_at", { ascending: true })
     ]);
 
   const inside = (insideQuery.data ?? []) as BookingRow[];
@@ -286,7 +286,7 @@ return (
       </div>
 
       <div className="flex justify-center">
-        <AdminQrScanner />
+        <DeskQrScanner />
       </div>
     </section>
 
