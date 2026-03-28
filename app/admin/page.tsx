@@ -677,12 +677,12 @@ const sourceTodayRevenue: Record<SourceKey, number> = {
       continue;
     }
 
-    if (status === "finished" || status === "completed") {
-      if (isToday(date)) {
-        finishedBookings.push(booking);
-      }
-      continue;
-    }
+    if (status === "completed") {
+  if (isToday(date)) {
+    finishedBookings.push(booking);
+  }
+  continue;
+}
 
     if (isToday(date)) {
       todayBookings.push(booking);
