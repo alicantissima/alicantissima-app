@@ -26,7 +26,7 @@ export default function FinishBookingButton({
     if (loading) return;
 
     if (currentStatus !== "inside") {
-      alert("Esta reserva não está em estado válido para check-out.");
+      alert("Esta reserva não está em estado válido para finalizar.");
       return;
     }
 
@@ -37,7 +37,7 @@ export default function FinishBookingButton({
       updated_at: string;
       check_out_time?: string;
     } = {
-      status: "finished",
+      status: "completed",
       updated_at: new Date().toISOString(),
     };
 
@@ -48,7 +48,8 @@ export default function FinishBookingButton({
     const { error } = await supabase
       .from("bookings")
       .update(updateData)
-      .eq("id", bookingId);
+      .eq("id", bookingId)
+      .eq("status", "inside");
 
     setLoading(false);
 
@@ -67,7 +68,7 @@ export default function FinishBookingButton({
       disabled={loading}
       className="rounded-xl border border-blue-700 bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
     >
-      {loading ? "A finalizar..." : "Check-out"}
+      {loading ? "A finalizar..." : "Finalizar"}
     </button>
   );
 }
