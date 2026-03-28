@@ -1,21 +1,21 @@
 
 
 
-
-
-
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type BookingStatus =
-  | "booked"
-  | "inside"
-  | "completed"
+type PaymentMethod =
+  | "unpaid"
+  | "viator"
+  | "card"
+  | "cash"
+  | "online"
+  | "refunded"
   | "cancelled"
-  | "no_show";
+  | "missed_payment";
 
 const OPTIONS: Array<{ value: PaymentMethod; label: string }> = [
   { value: "unpaid", label: "Unpaid" },
@@ -28,7 +28,7 @@ const OPTIONS: Array<{ value: PaymentMethod; label: string }> = [
   { value: "missed_payment", label: "Missed payment" },
 ];
 
-export default function AdminStatusSelect({
+export default function AdminPaymentMethodSelect({
   bookingId,
   value,
 }: {
@@ -45,12 +45,12 @@ export default function AdminStatusSelect({
 
     const { error } = await supabase
       .from("bookings")
-      .update({ status: nextValue })
+      .update({ payment_method: nextValue })
       .eq("id", bookingId);
 
     if (error) {
       setCurrentValue(value);
-      alert("Não foi possível atualizar o status.");
+      alert("Não foi possível atualizar o payment method.");
       return;
     }
 
@@ -60,23 +60,23 @@ export default function AdminStatusSelect({
   }
 
   return (
-  <div className="relative inline-block w-[118px] min-w-[118px] shrink-0">
-    <select
-      value={currentValue}
-      onChange={(e) => handleChange(e.target.value)}
-      disabled={isPending}
-      className="h-8 w-full appearance-none truncate rounded-xl border border-gray-300 bg-white px-3 pr-8 text-[12px] font-medium leading-none outline-none transition focus:border-gray-400"
-    >
-      {OPTIONS.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <div className="relative inline-block w-[132px] min-w-[132px] shrink-0">
+      <select
+        value={currentValue}
+        onChange={(e) => handleChange(e.target.value)}
+        disabled={isPending}
+        className="h-8 w-full appearance-none truncate rounded-xl border border-gray-300 bg-white px-3 pr-8 text-[12px] font-medium leading-none outline-none transition focus:border-gray-400"
+      >
+        {OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
 
-    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] opacity-60">
-      ▾
+      <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] opacity-60">
+        ▾
+      </div>
     </div>
-  </div>
-);
+  );
 }
