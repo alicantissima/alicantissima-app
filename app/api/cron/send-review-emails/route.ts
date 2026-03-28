@@ -356,10 +356,12 @@ function buildTrackedReviewUrl(params: {
       continue;
     }
 
-    if (!booking.customer_email?.trim()) {
-      skipped += 1;
-      continue;
-    }
+    const email = booking.customer_email?.trim();
+
+if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  skipped += 1;
+  continue;
+}
 
     const sendAt = getReviewSendAt(booking.check_out_time);
 
@@ -392,7 +394,7 @@ function buildTrackedReviewUrl(params: {
   });
 
   await sendEmail({
-    to: booking.customer_email,
+    to: email,
     subject: subjectByLanguage[language] || subjectByLanguage.en,
     text: buildReviewEmailText({
       reviewUrl: trackedReviewUrl,
