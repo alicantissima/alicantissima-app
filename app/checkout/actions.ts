@@ -689,23 +689,24 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const serviceDate = getServiceDateFromItems(items);
 
     const { data: booking, error: bookingError } = await supabase
-      .from("bookings")
-      .insert({
-  booking_code: bookingCode,
-  customer_name: customerName,
-  city: customerCity,
-  customer_email: customerEmail,
-  customer_phone: customerPhone,
-  notes,
-  total_amount: totalAmount,
-  currency: "EUR",
-  source: "na",
-  status: "pending",
-  service_date: serviceDate,
-  language,
-})
-      .select("id, booking_code")
-      .single();
+  .from("bookings")
+  .insert({
+    booking_code: bookingCode,
+    customer_name: customerName,
+    city: customerCity,
+    customer_email: customerEmail,
+    customer_phone: customerPhone,
+    notes,
+    total_amount: totalAmount,
+    currency: "EUR",
+    source: "site",
+    payment_method: "unpaid",
+    status: "booked",
+    service_date: serviceDate,
+    language,
+  })
+  .select("id, booking_code")
+  .single();
 
     if (bookingError || !booking) {
       console.error("bookingError:", bookingError);
