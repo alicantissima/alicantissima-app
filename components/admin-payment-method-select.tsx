@@ -17,12 +17,15 @@ type BookingStatus =
   | "cancelled"
   | "no_show";
 
-const OPTIONS: Array<{ value: BookingStatus; label: string }> = [
-  { value: "booked", label: "Booked" },
-  { value: "inside", label: "Inside" },
-  { value: "completed", label: "Completed" },
+const OPTIONS: Array<{ value: PaymentMethod; label: string }> = [
+  { value: "unpaid", label: "Unpaid" },
+  { value: "viator", label: "Viator" },
+  { value: "card", label: "Card" },
+  { value: "cash", label: "Cash" },
+  { value: "online", label: "Online" },
+  { value: "refunded", label: "Refunded" },
   { value: "cancelled", label: "Cancelled" },
-  { value: "no_show", label: "No show" },
+  { value: "missed_payment", label: "Missed payment" },
 ];
 
 export default function AdminStatusSelect({
