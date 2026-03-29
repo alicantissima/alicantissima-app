@@ -694,33 +694,31 @@ export default async function AdminPage({
           <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
         </div>
 
-        <div className="mt-1 flex items-center gap-3">
-          <Link
-            href="/desk"
-            className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
-          >
-            Abrir Desk
-          </Link>
-          <LogoutButton className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50" />
-        </div>
-      </div>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+  <Link
+    href="/desk"
+    className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+  >
+    Abrir Desk
+  </Link>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        <AdminQrScanner />
-        <AdminFinishQrScanner />
-        <FinishAllInsideButton count={bagsInside + showersInside} />
+  <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+</div>
 
-        <Link
-          href="/admin/history"
-          className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-medium hover:bg-gray-50"
-        >
-          Histórico
-        </Link>
+<div className="flex flex-wrap items-center gap-2">
+  <AdminQrScanner className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
 
-        <div className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm">
-          Total visíveis: <strong className="ml-1">{visibleBookingsCount}</strong>
-        </div>
-      </div>
+  <Link
+    href="/admin/history"
+    className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+  >
+    Histórico
+  </Link>
+
+  <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
+    Total visíveis: <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
+  </div>
+</div>
 
       {codeFilter && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
