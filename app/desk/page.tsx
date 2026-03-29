@@ -16,6 +16,7 @@ type BookingRow = {
   check_out_time: string | null;
   created_at: string;
   service_date?: string | null;
+  source?: string | null;
 };
 
 function getMadridDatePlusDays(days = 0) {
@@ -70,6 +71,32 @@ function formatTime(value?: string | null) {
   }).format(new Date(value));
 }
 
+function getSourceBadge(source?: string | null) {
+  const s = source?.toLowerCase().trim() ?? "";
+
+  if (s === "viator") {
+    return (
+      <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-900">
+        Viator
+      </span>
+    );
+  }
+
+  if (!s || s === "choose") {
+    return (
+      <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+        -
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-700">
+      {s}
+    </span>
+  );
+}
+
 function DeskTable({
   title,
   rows,
@@ -116,53 +143,63 @@ function DeskTable({
         <div className="overflow-x-auto">
           <table className="w-full table-fixed text-sm">
             <thead>
-              <tr className="border-b text-left text-gray-500">
-                <th className="w-[96px] px-2 py-2 font-medium">Code</th>
-                <th className="px-2 py-2 font-medium">Cliente</th>
-                <th className="w-[80px] px-0 py-2 font-medium">Hora</th>
-              </tr>
-            </thead>
+  <tr className="border-b text-left text-gray-500">
+    <th className="w-[96px] px-2 py-2 font-medium">Code</th>
+    <th className="px-2 py-2 font-medium">Cliente</th>
+    <th className="w-[92px] px-2 py-2 font-medium">Source</th>
+    <th className="w-[80px] px-0 py-2 font-medium">Hora</th>
+  </tr>
+</thead>
             <tbody>
-              {rows.map((booking) => (
-                <tr
-                  key={booking.id}
-                  className="border-b last:border-b-0 hover:bg-gray-50"
-                >
-                  <td className="p-0 align-top">
-  <Link
-    href={`/desk/booking/${booking.id}`}
-    className="block h-full w-full break-all px-2 py-2 text-xs font-semibold leading-tight underline hover:opacity-80"
-    title={booking.booking_code}
-  >
-    {booking.booking_code}
-  </Link>
-</td>
+  {rows.map((booking) => (
+    <tr
+      key={booking.id}
+      className="border-b last:border-b-0 hover:bg-gray-50"
+    >
+      <td className="p-0 align-top">
+        <Link
+          href={`/desk/booking/${booking.id}`}
+          className="block h-full w-full break-all px-2 py-2 text-xs font-semibold leading-tight underline hover:opacity-80"
+          title={booking.booking_code}
+        >
+          {booking.booking_code}
+        </Link>
+      </td>
 
-<td className="p-0 align-top">
-  <Link
-    href={`/desk/booking/${booking.id}`}
-    className="block h-full w-full break-words px-2 py-2 text-sm leading-tight hover:opacity-80"
-    title={booking.customer_name}
-  >
-    {booking.customer_name}
-  </Link>
-</td>
+      <td className="p-0 align-top">
+        <Link
+          href={`/desk/booking/${booking.id}`}
+          className="block h-full w-full break-words px-2 py-2 text-sm leading-tight hover:opacity-80"
+          title={booking.customer_name}
+        >
+          {booking.customer_name}
+        </Link>
+      </td>
 
-<td className="p-0 align-top">
-  <Link
-    href={`/desk/booking/${booking.id}`}
-    className="block h-full w-full px-0 py-2 text-sm hover:opacity-80"
-  >
-    {formatTime(
-      timeField === "check_out_time"
-        ? booking.check_out_time
-        : booking.check_in_time
-    )}
-  </Link>
-</td>
-                </tr>
-              ))}
-            </tbody>
+      <td className="p-0 align-top">
+        <Link
+          href={`/desk/booking/${booking.id}`}
+          className="block h-full w-full px-2 py-2 hover:opacity-80"
+        >
+          {getSourceBadge(booking.source)}
+        </Link>
+      </td>
+
+      <td className="p-0 align-top">
+        <Link
+          href={`/desk/booking/${booking.id}`}
+          className="block h-full w-full px-0 py-2 text-sm hover:opacity-80"
+        >
+          {formatTime(
+            timeField === "check_out_time"
+              ? booking.check_out_time
+              : booking.check_in_time
+          )}
+        </Link>
+      </td>
+    </tr>
+  ))}
+</tbody>
           </table>
         </div>
       )}
@@ -201,7 +238,7 @@ export default async function DeskPage() {
     supabase
       .from("bookings")
       .select(
-        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date, source"
       )
       .eq("service_date", todayMadrid)
       .eq("status", "inside")
@@ -210,7 +247,7 @@ export default async function DeskPage() {
     supabase
       .from("bookings")
       .select(
-        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date, source"
       )
       .eq("service_date", todayMadrid)
       .eq("status", "booked")
@@ -219,7 +256,7 @@ export default async function DeskPage() {
     supabase
       .from("bookings")
       .select(
-        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date, source"
       )
       .eq("service_date", todayMadrid)
       .eq("status", "completed")
@@ -229,7 +266,7 @@ export default async function DeskPage() {
     supabase
       .from("bookings")
       .select(
-        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date"
+        "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date, source"
       )
       .eq("service_date", tomorrowMadrid)
       .in("status", ["booked", "inside"])
