@@ -689,12 +689,14 @@ export default async function AdminPage({
       <AdminAutoRefresh intervalMs={60000} />
 
       <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Admin · Reservas</h1>
-          <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
-        </div>
+  <div>
+    <h1 className="text-2xl font-bold">Admin · Reservas</h1>
+    <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
+  </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-2">
+  <div className="flex flex-col items-end gap-2">
+    <div className="mt-1 flex flex-wrap items-center gap-2">
+
   <Link
     href="/desk"
     className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
@@ -718,6 +720,7 @@ export default async function AdminPage({
   <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
     Total visíveis: <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
   </div>
+</div>
 </div>
 
       {codeFilter && (
