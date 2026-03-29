@@ -77,13 +77,8 @@ function formatServiceDate(value?: string | null) {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return "—";
 
-  const weekday = new Intl.DateTimeFormat("pt-PT", {
-    timeZone: "Europe/Madrid",
-    weekday: "short",
-  })
-    .format(date)
-    .replace(".", "")
-    .toLowerCase();
+  const weekdayMap = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  const weekday = weekdayMap[date.getDay()];
 
   const dayMonth = new Intl.DateTimeFormat("pt-PT", {
     timeZone: "Europe/Madrid",
