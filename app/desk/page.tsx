@@ -146,8 +146,6 @@ function DeskTable({
   <tr className="border-b text-left text-gray-500">
     <th className="w-[96px] px-2 py-2 font-medium">Code</th>
     <th className="px-2 py-2 font-medium">Cliente</th>
-    <th className="w-[92px] px-2 py-2 font-medium">Source</th>
-    <th className="w-[80px] px-0 py-2 font-medium">Hora</th>
   </tr>
 </thead>
             <tbody>
@@ -169,32 +167,18 @@ function DeskTable({
       <td className="p-0 align-top">
         <Link
           href={`/desk/booking/${booking.id}`}
-          className="block h-full w-full break-words px-2 py-2 text-sm leading-tight hover:opacity-80"
+          className="block h-full w-full px-2 py-2 hover:opacity-80"
           title={booking.customer_name}
         >
-          {booking.customer_name}
-        </Link>
-      </td>
+          <div className="min-w-0">
+            <div className="truncate text-sm leading-tight">
+              {booking.customer_name}
+            </div>
 
-      <td className="p-0 align-top">
-        <Link
-          href={`/desk/booking/${booking.id}`}
-          className="block h-full w-full px-2 py-2 hover:opacity-80"
-        >
-          {getSourceBadge(booking.source)}
-        </Link>
-      </td>
-
-      <td className="p-0 align-top">
-        <Link
-          href={`/desk/booking/${booking.id}`}
-          className="block h-full w-full px-0 py-2 text-sm hover:opacity-80"
-        >
-          {formatTime(
-            timeField === "check_out_time"
-              ? booking.check_out_time
-              : booking.check_in_time
-          )}
+            <div className="mt-1">
+              {getSourceBadge(booking.source)}
+            </div>
+          </div>
         </Link>
       </td>
     </tr>
