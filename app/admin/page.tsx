@@ -5,9 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminQrScanner from "@/components/admin-qr-scanner";
-import AdminFinishQrScanner from "@/components/admin-finish-qr-scanner";
 import LogoutButton from "@/components/logout-button";
-import FinishAllInsideButton from "@/components/finish-all-inside-button";
 import AdminAutoRefresh from "./AdminAutoRefresh";
 import AdminSourceSelect from "@/components/admin-source-select";
 import AdminPaymentMethodSelect from "@/components/admin-payment-method-select";
@@ -688,42 +686,41 @@ export default async function AdminPage({
     <main className="mx-auto max-w-7xl space-y-6 p-6">
       <AdminAutoRefresh intervalMs={60000} />
 
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
   <div>
     <h1 className="text-2xl font-bold">Admin · Reservas</h1>
     <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
   </div>
 
-  <div className="flex flex-col items-end gap-2">
+  <div className="flex flex-col items-start gap-2 lg:items-end">
     <div className="mt-1 flex flex-wrap items-center gap-2">
+      <Link
+        href="/desk"
+        className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+      >
+        Abrir Desk
+      </Link>
 
-  <Link
-    href="/desk"
-    className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-  >
-    Abrir Desk
-  </Link>
+      <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+    </div>
 
-  <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
-</div>
+    <div className="flex flex-wrap items-center gap-2">
+      <AdminQrScanner className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
 
-<div className="flex flex-wrap items-center gap-2">
-  <AdminQrScanner className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+      <Link
+        href="/admin/history"
+        className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+      >
+        Histórico
+      </Link>
 
-  <Link
-    href="/admin/history"
-    className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-  >
-    Histórico
-  </Link>
-
-  <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
-    Total visíveis: <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
+      <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
+        Total visíveis:
+        <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
+      </div>
+    </div>
   </div>
 </div>
-</div>
-
-      {codeFilter && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
           Showing booking: <strong>{codeFilter}</strong>
           <Link href="/admin" className="ml-3 underline">
