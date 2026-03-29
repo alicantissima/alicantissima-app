@@ -133,6 +133,11 @@ function getStatusClass(status: string) {
   return "bg-gray-100 text-gray-700 border-gray-200";
 }
 
+function getFirstTimeSlot(value?: string | null) {
+  if (!value) return "-";
+  return value.split("-")[0]?.trim() || "-";
+}
+
 function getStatusLabel(status: string) {
   const normalized = normalizeStatus(status);
 
@@ -371,12 +376,12 @@ function renderSectionTable({
                   </td>
 
                   <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-                    {meta.time_in ?? "-"}
-                  </td>
+  {getFirstTimeSlot(meta.time_in)}
+</td>
 
-                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-                    {meta.time_out ?? meta.checkout_time ?? "-"}
-                  </td>
+<td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+  {getFirstTimeSlot(meta.time_out ?? meta.checkout_time)}
+</td>
 
                   <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
                     {formatCurrency(Number(booking.total_amount), booking.currency)}
