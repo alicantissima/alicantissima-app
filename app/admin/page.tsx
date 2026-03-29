@@ -771,76 +771,43 @@ export default async function AdminPage({
       </section>
 
       <section className="rounded-xl border p-4">
-        <div className="mb-3 text-sm font-semibold text-gray-700">
-          Sources today
-        </div>
+  <div className="mb-3 text-sm font-semibold text-gray-700">
+    Results by source today
+  </div>
 
-        <div className="flex flex-wrap gap-2 text-sm">
-          {sourceKeys
-            .filter((key) => sourceTodayCounts[key] > 0)
-            .map((key) => {
-              const colorClass =
-                key === "choose"
-                  ? "bg-zinc-100 text-zinc-800"
-                  : key === "site"
-                  ? "bg-pink-100 text-pink-800"
-                  : key === "viator"
-                  ? "bg-green-100 text-green-800"
-                  : key === "walkin"
-                  ? "bg-orange-100 text-orange-800"
-                  : key === "turismo"
-                  ? "bg-sky-100 text-sky-800"
-                  : key === "hector" ||
-                    key === "pilar" ||
-                    key === "melia" ||
-                    key === "other_host"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-purple-100 text-purple-800";
+  <div className="flex flex-wrap gap-2 text-sm">
+    {sourceKeys
+      .filter(
+        (key) => sourceTodayCounts[key] > 0 || sourceTodayRevenue[key] > 0
+      )
+      .map((key) => {
+        const colorClass =
+          key === "choose"
+            ? "bg-zinc-100 text-zinc-800"
+            : key === "site"
+            ? "bg-pink-100 text-pink-800"
+            : key === "viator"
+            ? "bg-green-100 text-green-800"
+            : key === "walkin"
+            ? "bg-orange-100 text-orange-800"
+            : key === "turismo"
+            ? "bg-sky-100 text-sky-800"
+            : key === "hector" ||
+              key === "pilar" ||
+              key === "melia" ||
+              key === "other_host"
+            ? "bg-yellow-100 text-yellow-800"
+            : "bg-purple-100 text-purple-800";
 
-              return (
-                <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-                  {key}: {sourceTodayCounts[key]}
-                </span>
-              );
-            })}
-        </div>
-      </section>
-
-      <section className="rounded-xl border p-4">
-        <div className="mb-3 text-sm font-semibold text-gray-700">
-          Revenue by source today
-        </div>
-
-        <div className="flex flex-wrap gap-2 text-sm">
-          {sourceKeys
-            .filter((key) => sourceTodayRevenue[key] > 0)
-            .map((key) => {
-              const colorClass =
-                key === "choose"
-                  ? "bg-zinc-100 text-zinc-800"
-                  : key === "site"
-                  ? "bg-pink-100 text-pink-800"
-                  : key === "viator"
-                  ? "bg-green-100 text-green-800"
-                  : key === "walkin"
-                  ? "bg-orange-100 text-orange-800"
-                  : key === "turismo"
-                  ? "bg-sky-100 text-sky-800"
-                  : key === "hector" ||
-                    key === "pilar" ||
-                    key === "melia" ||
-                    key === "other_host"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-purple-100 text-purple-800";
-
-              return (
-                <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-                  {key}: {formatCurrency(sourceTodayRevenue[key], "EUR")}
-                </span>
-              );
-            })}
-        </div>
-      </section>
+        return (
+          <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+            {key}: {sourceTodayCounts[key]} ·{" "}
+            {formatCurrency(sourceTodayRevenue[key], "EUR")}
+          </span>
+        );
+      })}
+  </div>
+</section>
 
       <section className="rounded-xl border p-4">
         <div className="mb-3 text-sm font-semibold text-gray-700">
