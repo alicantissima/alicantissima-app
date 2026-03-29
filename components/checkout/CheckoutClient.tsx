@@ -44,14 +44,14 @@ export default function CheckoutClient() {
     const city = String(formData.get("city") || "");
 
     const payload = {
-      customerName: String(formData.get("customerName") || ""),
-      customerCity: city,
-      customerEmail: String(formData.get("customerEmail") || ""),
-      customerPhone: String(formData.get("customerPhone") || ""),
-      notes: "",
-      language,
-      source,
-      items: items.map((item) => ({
+  customerName: String(formData.get("customerName") || ""),
+  customerCity: city,
+  customerEmail: String(formData.get("customerEmail") || ""),
+  customerPhone: String(formData.get("customerPhone") || ""),
+  notes: "",
+  language,
+  source,
+  items: items.map((item) => ({
         id: item.productCode,
         title: item.productName,
         quantity: Number(item.quantity || 1),

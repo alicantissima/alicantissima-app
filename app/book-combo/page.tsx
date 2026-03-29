@@ -133,7 +133,14 @@ if (source === "walkin") {
   checkoutParams.set("source", "walkin");
 }
 
-router.push(`/checkout?${checkoutParams.toString()}`);
+const params = new URLSearchParams();
+params.set("lang", language);
+
+if (searchParams.get("source") === "walkin") {
+  params.set("source", "walkin");
+}
+
+router.push(`/checkout?${params.toString()}`);
   }
 
   function decrease(
