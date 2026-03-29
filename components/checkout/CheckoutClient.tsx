@@ -26,6 +26,10 @@ export default function CheckoutClient() {
     return normalizeLanguage(searchParams.get("lang"));
   }, [searchParams]);
 
+  const source = useMemo(() => {
+    return searchParams.get("source") === "walkin" ? "walkin" : "site";
+  }, [searchParams]);
+
   const t = getMessages(language);
 
   const total = useMemo(() => {
@@ -46,6 +50,7 @@ export default function CheckoutClient() {
       customerPhone: String(formData.get("customerPhone") || ""),
       notes: "",
       language,
+      source,
       items: items.map((item) => ({
         id: item.productCode,
         title: item.productName,
@@ -76,7 +81,16 @@ export default function CheckoutClient() {
       }
 
       clearItems();
-      router.push(`/checkout/success?code=${result.bookingCode}&lang=${language}`);
+
+      const successParams = new URLSearchParams();
+      successParams.set("code", result.bookingCode);
+      successParams.set("lang", language);
+
+      if (source === "walkin") {
+        successParams.set("source", "walkin");
+      }
+
+      router.push(`/checkout/success?${successParams.toString()}`);
     });
   }
 

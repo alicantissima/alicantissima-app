@@ -23,6 +23,7 @@ type CheckoutPayload = {
   customerPhone?: string;
   notes?: string;
   language?: string;
+  source?: string;
   items: CheckoutItem[];
 };
 
@@ -623,6 +624,17 @@ async function sendInternalBookingNotification(params: {
   });
 }
 
+function normalizeSource(value?: string) {
+  const source = (value || "").trim().toLowerCase();
+
+  if (source === "walkin") return "walkin";
+  if (source === "viator") return "viator";
+  if (source === "booking") return "booking";
+  if (source === "site") return "site";
+
+  return "site";
+}
+
 export async function submitCheckout(payload: CheckoutPayload) {
   try {
     const customerName = payload.customerName?.trim();
@@ -631,6 +643,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const customerPhone = payload.customerPhone?.trim();
     const notes = payload.notes?.trim() || null;
     const language = normalizeLanguage(payload.language);
+    const source = normalizeSource(payload.source);
 
     if (!customerName) {
       return { ok: false, error: "Missing name." };
@@ -699,7 +712,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
     notes,
     total_amount: totalAmount,
     currency: "EUR",
-    source: "site",
+    source:,
     payment_method: "unpaid",
     status: "booked",
     service_date: serviceDate,

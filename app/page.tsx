@@ -6,29 +6,6 @@
 import Link from "next/link";
 import RecoveryRedirect from "@/components/recovery-redirect";
 
-const products = [
-  {
-    title: "Store luggage",
-    price: "€8",
-    subtitle: "Safe luggage storage",
-    href: "/book-luggage",
-    image: "/images/products/luggage.jpg",
-  },
-  {
-    title: "Take a shower",
-    price: "€12",
-    subtitle: "Freshen up anytime",
-    href: "/book-shower",
-    image: "/images/products/shower.jpg",
-  },
-  {
-    title: "Luggage + shower",
-    price: "€18",
-    subtitle: "Comfort and convenience",
-    href: "/book-combo",
-    image: "/images/products/combo.jpg",
-  },
-];
 
 const extrasRows = [
   "Wi-Fi • Phone charging • WC • Sofa area",
@@ -38,7 +15,37 @@ const extrasRows = [
   "Air conditioning everywhere",
 ];
 
-export default function HomeClient() {
+type HomeClientProps = {
+  forcedSource?: string;
+};
+
+export default function HomeClient({ forcedSource }: HomeClientProps) {
+  const sourceSuffix = forcedSource ? `?source=${forcedSource}` : "";
+
+  const products = [
+    {
+      title: "Store luggage",
+      price: "€8",
+      subtitle: "Safe luggage storage",
+      href: `/book-luggage${sourceSuffix}`,
+      image: "/images/products/luggage.jpg",
+    },
+    {
+      title: "Take a shower",
+      price: "€12",
+      subtitle: "Freshen up anytime",
+      href: `/book-shower${sourceSuffix}`,
+      image: "/images/products/shower.jpg",
+    },
+    {
+      title: "Luggage + shower",
+      price: "€18",
+      subtitle: "Comfort and convenience",
+      href: `/book-combo${sourceSuffix}`,
+      image: "/images/products/combo.jpg",
+    },
+  ];
+
   return (
 <>
   <RecoveryRedirect />

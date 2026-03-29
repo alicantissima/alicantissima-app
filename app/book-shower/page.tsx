@@ -52,6 +52,7 @@ function BookShowerContent() {
   const addItem = useBookingStore((state) => state.addItem);
 
   const language = normalizeLanguage(searchParams.get("lang"));
+  const source = searchParams.get("source") === "walkin" ? "walkin" : "";
   const t = getMessages(language);
 
   const showerSlots = useMemo(() => generateTimeSlots(10, 20), []);
@@ -87,7 +88,14 @@ function BookShowerContent() {
     });
 
     window.scrollTo({ top: 0, behavior: "auto" });
-    router.push(`/checkout?lang=${language}`);
+    const checkoutParams = new URLSearchParams();
+checkoutParams.set("lang", language);
+
+if (source === "walkin") {
+  checkoutParams.set("source", "walkin");
+}
+
+router.push(`/checkout?${checkoutParams.toString()}`);
   }
 
   return (
