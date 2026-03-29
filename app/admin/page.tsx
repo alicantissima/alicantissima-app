@@ -653,12 +653,12 @@ export default async function AdminPage({
       continue;
     }
 
-    if (status === "completed") {
-      if (isToday(date)) {
-        finishedBookings.push(booking);
-      }
-      continue;
-    }
+    if (status === "completed" || status === "no_show") {
+  if (isToday(date)) {
+    finishedBookings.push(booking);
+  }
+  continue;
+}
 
     if (isToday(date)) {
       todayBookings.push(booking);
