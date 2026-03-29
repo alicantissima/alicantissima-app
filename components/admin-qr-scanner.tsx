@@ -8,15 +8,6 @@ import { Scanner } from "@yudiel/react-qr-scanner";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-function getTodayMadridDate() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Madrid",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
-
 function playBeep() {
   const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
   const oscillator = ctx.createOscillator();
@@ -55,15 +46,6 @@ function playErrorBeep() {
   }, 300);
 }
 
-function formatServiceDate(value?: string | null) {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/Madrid",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(`${value}T00:00:00`));
-}
 
 function extractBookingCodeFromScan(raw: string) {
   const value = raw.trim();
@@ -97,7 +79,11 @@ function extractBookingCodeFromScan(raw: string) {
   return null;
 }
 
-export default function AdminQrScanner() {
+type AdminQrScannerProps = {
+  className?: string;
+};
+
+export default function AdminQrScanner({ className }: AdminQrScannerProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -168,16 +154,15 @@ router.push(`/admin/booking/${booking.id}`);
   return (
     <div className="space-y-3">
       <button
-        onClick={() => {
-          setError("");
-          lastScanRef.current = "";
-          lastScanAtRef.current = 0;
-          setOpen((prev) => !prev);
-        }}
-        className="rounded-xl border px-4 py-2 font-medium"
-      >
-        {open ? "Close scanner" : "Scan QR"}
-      </button>
+  type="button"
+  onClick={() => setOpen(true)}
+  className={
+    className ??
+    "inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+  }
+>
+  Scan QR
+</button>
 
       {open && (
         <div className="space-y-3 rounded-2xl border p-4">
