@@ -159,36 +159,47 @@ function getSourceRowClass(source?: string | null) {
 }
 
 function getItemCode(item: BookingItemRow) {
-  const productCode = item.meta?.product_code?.toLowerCase();
+  const productCode = item.meta?.product_code?.toLowerCase().trim();
+  const productType = item.product_type?.toLowerCase().trim() ?? "";
+  const title = item.title?.toLowerCase().trim() ?? "";
+
+  const candidates = [productCode, productType, title].filter(Boolean).join(" ");
 
   if (
-    productCode === "luggage" ||
-    productCode === "shower" ||
-    productCode === "combo"
-  ) {
-    return productCode;
-  }
-
-  const title = item.title?.toLowerCase() ?? "";
-  const productType = item.product_type?.toLowerCase() ?? "";
-
-  if (
-    title.includes("combo") ||
-    (title.includes("luggage") && title.includes("shower")) ||
-    productType.includes("combo")
+    productCode === "combo" ||
+    productType === "combo" ||
+    candidates.includes("combo") ||
+    ((candidates.includes("luggage") ||
+      candidates.includes("bag") ||
+      candidates.includes("bags") ||
+      candidates.includes("bagagem") ||
+      candidates.includes("maleta")) &&
+      (candidates.includes("shower") ||
+        candidates.includes("ducha") ||
+        candidates.includes("duche")))
   ) {
     return "combo";
   }
 
   if (
-    title.includes("luggage") ||
-    title.includes("bag") ||
-    productType.includes("luggage")
+    productCode === "luggage" ||
+    productType === "luggage" ||
+    candidates.includes("luggage") ||
+    candidates.includes("bag") ||
+    candidates.includes("bags") ||
+    candidates.includes("bagagem") ||
+    candidates.includes("maleta")
   ) {
     return "luggage";
   }
 
-  if (title.includes("shower") || productType.includes("shower")) {
+  if (
+    productCode === "shower" ||
+    productType === "shower" ||
+    candidates.includes("shower") ||
+    candidates.includes("ducha") ||
+    candidates.includes("duche")
+  ) {
     return "shower";
   }
 
@@ -267,22 +278,22 @@ function renderSectionTable({
       >
         <table className="w-full min-w-[1200px] text-sm">
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
-  <tr className="border-b text-left text-[13px]">
-    <th className="px-3 py-2">Código</th>
-    <th className="w-[130px] px-2 py-2">Source</th>
-    <th className="w-[144px] px-2 py-2">Payment</th>
-    <th className="w-[128px] px-2 py-2">Status</th>
-    <th className="px-2 py-2">Date</th>
-    <th className="px-2 py-2">Cliente</th>
-    <th className="px-2 py-2">City</th>
-    <th className="px-2 py-2">Bags</th>
-    <th className="px-2 py-2">Shws</th>
-    <th className="px-2 py-2">Lug+Shw</th>
-    <th className="px-2 py-2">In</th>
-    <th className="px-2 py-2">Out</th>
-    <th className="px-2 py-2">Total</th>
-  </tr>
-</thead>
+            <tr className="border-b text-left text-[13px]">
+              <th className="px-3 py-2">Código</th>
+              <th className="w-[130px] px-2 py-2">Source</th>
+              <th className="w-[144px] px-2 py-2">Payment</th>
+              <th className="w-[128px] px-2 py-2">Status</th>
+              <th className="px-2 py-2">Date</th>
+              <th className="px-2 py-2">Cliente</th>
+              <th className="px-2 py-2">City</th>
+              <th className="px-2 py-2">Bags</th>
+              <th className="px-2 py-2">Shws</th>
+              <th className="px-2 py-2">Lug+Shw</th>
+              <th className="px-2 py-2">In</th>
+              <th className="px-2 py-2">Out</th>
+              <th className="px-2 py-2">Total</th>
+            </tr>
+          </thead>
 
           <tbody>
             {bookings.map((booking) => {
@@ -301,80 +312,79 @@ function renderSectionTable({
                 : sourceRowClass;
 
               return (
-  <tr key={booking.id} className={`border-b ${rowClass}`}>
-    <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
-      <Link
-        href={`/admin/booking/${booking.id}`}
-        className="underline hover:text-blue-600"
-      >
-        {booking.booking_code}
-      </Link>
-    </td>
+                <tr key={booking.id} className={`border-b ${rowClass}`}>
+                  <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
+                    <Link
+                      href={`/admin/booking/${booking.id}`}
+                      className="underline hover:text-blue-600"
+                    >
+                      {booking.booking_code}
+                    </Link>
+                  </td>
 
-    <td className="w-[130px] px-2 py-2 align-top">
-  <AdminSourceSelect
-    bookingId={booking.id}
-    value={booking.source ?? "choose"}
-  />
-</td>
+                  <td className="w-[130px] px-2 py-2 align-top">
+                    <AdminSourceSelect
+                      bookingId={booking.id}
+                      value={booking.source ?? "choose"}
+                    />
+                  </td>
 
-    <td className="w-[144px] px-2 py-2 align-top">
-  <AdminPaymentMethodSelect
-    bookingId={booking.id}
-    value={booking.payment_method ?? "unpaid"}
-  />
-</td>
+                  <td className="w-[144px] px-2 py-2 align-top">
+                    <AdminPaymentMethodSelect
+                      bookingId={booking.id}
+                      value={booking.payment_method ?? "unpaid"}
+                    />
+                  </td>
 
-    <td className="w-[128px] px-2 py-2 align-top">
-  <AdminStatusSelect
-    bookingId={booking.id}
-    value={normalizeStatus(booking.status)}
-  />
-</td>
+                  <td className="w-[128px] px-2 py-2 align-top">
+                    <AdminStatusSelect
+                      bookingId={booking.id}
+                      value={normalizeStatus(booking.status)}
+                    />
+                  </td>
 
-    <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
-      {formatServiceDate(meta.date)}
-    </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
+                    {formatServiceDate(meta.date)}
+                  </td>
 
-    <td className="px-2 py-2 align-top">
-      <div className="max-w-[170px] text-[13px] leading-tight font-medium">
-        {booking.customer_name}
-      </div>
-      <div className="text-[11px] leading-tight text-gray-500">
-        {booking.customer_email}
-      </div>
-    </td>
+                  <td className="px-2 py-2 align-top">
+                    <div className="max-w-[170px] text-[13px] leading-tight font-medium">
+                      {booking.customer_name}
+                    </div>
+                    <div className="text-[11px] leading-tight text-gray-500">
+                      {booking.customer_email}
+                    </div>
+                  </td>
 
-    <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
-      {booking.city ?? meta.city ?? "-"}
-    </td>
+                  <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
+                    {booking.city ?? meta.city ?? "-"}
+                  </td>
 
-    <td className="px-2 py-2 align-top text-[12px]">
-      {meta.bags || "-"}
-    </td>
+                  <td className="px-2 py-2 align-top text-[12px]">
+                    {meta.bags || "-"}
+                  </td>
 
-    <td className="px-2 py-2 align-top text-[12px]">
-      {meta.showers || "-"}
-    </td>
+                  <td className="px-2 py-2 align-top text-[12px]">
+                    {meta.showers || "-"}
+                  </td>
 
-    <td className="px-2 py-2 align-top text-[12px]">
-      {meta.combo || "-"}
-    </td>
+                  <td className="px-2 py-2 align-top text-[12px]">
+                    {meta.combo || "-"}
+                  </td>
 
-    <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-      {meta.time_in ?? "-"}
-    </td>
+                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+                    {meta.time_in ?? "-"}
+                  </td>
 
-    <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-      {meta.time_out ?? meta.checkout_time ?? "-"}
-    </td>
+                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+                    {meta.time_out ?? meta.checkout_time ?? "-"}
+                  </td>
 
-    <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
-      {formatCurrency(Number(booking.total_amount), booking.currency)}
-    </td>
-
-  </tr>
-);
+                  <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
+                    {formatCurrency(Number(booking.total_amount), booking.currency)}
+                  </td>
+                </tr>
+              );
             })}
           </tbody>
         </table>
@@ -393,22 +403,22 @@ export default async function AdminPage({
   const supabase = await createClient();
 
   const {
-  data: { user },
-} = await supabase.auth.getUser();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-if (!user) {
-  redirect("/login");
-}
+  if (!user) {
+    redirect("/login");
+  }
 
-const { data: profile } = await supabase
-  .from("profiles")
-  .select("id, email, role")
-  .eq("id", user.id)
-  .single();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, email, role")
+    .eq("id", user.id)
+    .single();
 
-if (!profile || profile.role !== "admin") {
-  redirect("/desk");
-}
+  if (!profile || profile.role !== "admin") {
+    redirect("/desk");
+  }
 
   let bookingsQuery = supabase
     .from("bookings")
@@ -515,45 +525,45 @@ if (!profile || profile.role !== "admin") {
   let showersInside = 0;
 
   const sourceKeys = [
-  "choose",
-  "site",
-  "viator",
-  "walkin",
-  "turismo",
-  "hector",
-  "pilar",
-  "melia",
-  "other_host",
-  "other",
-] as const;
+    "choose",
+    "site",
+    "viator",
+    "walkin",
+    "turismo",
+    "hector",
+    "pilar",
+    "melia",
+    "other_host",
+    "other",
+  ] as const;
 
-type SourceKey = (typeof sourceKeys)[number];
+  type SourceKey = (typeof sourceKeys)[number];
 
-const sourceTodayCounts: Record<SourceKey, number> = {
-  choose: 0,
-  site: 0,
-  viator: 0,
-  walkin: 0,
-  turismo: 0,
-  hector: 0,
-  pilar: 0,
-  melia: 0,
-  other_host: 0,
-  other: 0,
-};
+  const sourceTodayCounts: Record<SourceKey, number> = {
+    choose: 0,
+    site: 0,
+    viator: 0,
+    walkin: 0,
+    turismo: 0,
+    hector: 0,
+    pilar: 0,
+    melia: 0,
+    other_host: 0,
+    other: 0,
+  };
 
-const sourceTodayRevenue: Record<SourceKey, number> = {
-  choose: 0,
-  site: 0,
-  viator: 0,
-  walkin: 0,
-  turismo: 0,
-  hector: 0,
-  pilar: 0,
-  melia: 0,
-  other_host: 0,
-  other: 0,
-};
+  const sourceTodayRevenue: Record<SourceKey, number> = {
+    choose: 0,
+    site: 0,
+    viator: 0,
+    walkin: 0,
+    turismo: 0,
+    hector: 0,
+    pilar: 0,
+    melia: 0,
+    other_host: 0,
+    other: 0,
+  };
 
   const citiesTodayCounts: Record<string, number> = {};
 
@@ -646,11 +656,11 @@ const sourceTodayRevenue: Record<SourceKey, number> = {
     }
 
     if (status === "completed") {
-  if (isToday(date)) {
-    finishedBookings.push(booking);
-  }
-  continue;
-}
+      if (isToday(date)) {
+        finishedBookings.push(booking);
+      }
+      continue;
+    }
 
     if (isToday(date)) {
       todayBookings.push(booking);
@@ -756,76 +766,76 @@ const sourceTodayRevenue: Record<SourceKey, number> = {
       </section>
 
       <section className="rounded-xl border p-4">
-  <div className="mb-3 text-sm font-semibold text-gray-700">
-    Sources today
-  </div>
+        <div className="mb-3 text-sm font-semibold text-gray-700">
+          Sources today
+        </div>
 
-  <div className="flex flex-wrap gap-2 text-sm">
-    {sourceKeys
-      .filter((key) => sourceTodayCounts[key] > 0)
-      .map((key) => {
-        const colorClass =
-          key === "choose"
-            ? "bg-zinc-100 text-zinc-800"
-            : key === "site"
-            ? "bg-pink-100 text-pink-800"
-            : key === "viator"
-            ? "bg-green-100 text-green-800"
-            : key === "walkin"
-            ? "bg-orange-100 text-orange-800"
-            : key === "turismo"
-            ? "bg-sky-100 text-sky-800"
-            : key === "hector" ||
-              key === "pilar" ||
-              key === "melia" ||
-              key === "other_host"
-            ? "bg-yellow-100 text-yellow-800"
-            : "bg-purple-100 text-purple-800";
+        <div className="flex flex-wrap gap-2 text-sm">
+          {sourceKeys
+            .filter((key) => sourceTodayCounts[key] > 0)
+            .map((key) => {
+              const colorClass =
+                key === "choose"
+                  ? "bg-zinc-100 text-zinc-800"
+                  : key === "site"
+                  ? "bg-pink-100 text-pink-800"
+                  : key === "viator"
+                  ? "bg-green-100 text-green-800"
+                  : key === "walkin"
+                  ? "bg-orange-100 text-orange-800"
+                  : key === "turismo"
+                  ? "bg-sky-100 text-sky-800"
+                  : key === "hector" ||
+                    key === "pilar" ||
+                    key === "melia" ||
+                    key === "other_host"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-purple-100 text-purple-800";
 
-        return (
-          <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-            {key}: {sourceTodayCounts[key]}
-          </span>
-        );
-      })}
-  </div>
-</section>
+              return (
+                <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+                  {key}: {sourceTodayCounts[key]}
+                </span>
+              );
+            })}
+        </div>
+      </section>
 
       <section className="rounded-xl border p-4">
-  <div className="mb-3 text-sm font-semibold text-gray-700">
-    Revenue by source today
-  </div>
+        <div className="mb-3 text-sm font-semibold text-gray-700">
+          Revenue by source today
+        </div>
 
-  <div className="flex flex-wrap gap-2 text-sm">
-    {sourceKeys
-      .filter((key) => sourceTodayRevenue[key] > 0)
-      .map((key) => {
-        const colorClass =
-          key === "choose"
-            ? "bg-zinc-100 text-zinc-800"
-            : key === "site"
-            ? "bg-pink-100 text-pink-800"
-            : key === "viator"
-            ? "bg-green-100 text-green-800"
-            : key === "walkin"
-            ? "bg-orange-100 text-orange-800"
-            : key === "turismo"
-            ? "bg-sky-100 text-sky-800"
-            : key === "hector" ||
-              key === "pilar" ||
-              key === "melia" ||
-              key === "other_host"
-            ? "bg-yellow-100 text-yellow-800"
-            : "bg-purple-100 text-purple-800";
+        <div className="flex flex-wrap gap-2 text-sm">
+          {sourceKeys
+            .filter((key) => sourceTodayRevenue[key] > 0)
+            .map((key) => {
+              const colorClass =
+                key === "choose"
+                  ? "bg-zinc-100 text-zinc-800"
+                  : key === "site"
+                  ? "bg-pink-100 text-pink-800"
+                  : key === "viator"
+                  ? "bg-green-100 text-green-800"
+                  : key === "walkin"
+                  ? "bg-orange-100 text-orange-800"
+                  : key === "turismo"
+                  ? "bg-sky-100 text-sky-800"
+                  : key === "hector" ||
+                    key === "pilar" ||
+                    key === "melia" ||
+                    key === "other_host"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-purple-100 text-purple-800";
 
-        return (
-          <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-            {key}: {formatCurrency(sourceTodayRevenue[key], "EUR")}
-          </span>
-        );
-      })}
-  </div>
-</section>
+              return (
+                <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+                  {key}: {formatCurrency(sourceTodayRevenue[key], "EUR")}
+                </span>
+              );
+            })}
+        </div>
+      </section>
 
       <section className="rounded-xl border p-4">
         <div className="mb-3 text-sm font-semibold text-gray-700">
