@@ -278,9 +278,9 @@ function renderSectionTable({
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
             <tr className="border-b text-left text-[13px]">
               <th className="px-3 py-2">Código</th>
-              <th className="w-[130px] px-2 py-2">Source</th>
-              <th className="w-[144px] px-2 py-2">Payment</th>
-              <th className="w-[128px] px-2 py-2">Status</th>
+              <th className="w-[108px] px-2 py-2">Source</th>
+              <th className="w-[116px] px-2 py-2">Payment</th>
+              <th className="w-[118px] px-2 py-2">Status</th>
               <th className="px-2 py-2">Date</th>
               <th className="px-2 py-2">Cliente</th>
               <th className="px-2 py-2">City</th>
@@ -320,21 +320,21 @@ function renderSectionTable({
                     </Link>
                   </td>
 
-                  <td className="w-[130px] px-2 py-2 align-top">
+                  <td className="w-[108px] px-2 py-2 align-top">
                     <AdminSourceSelect
                       bookingId={booking.id}
                       value={booking.source ?? "choose"}
                     />
                   </td>
 
-                  <td className="w-[144px] px-2 py-2 align-top">
+                  <td className="w-[116px] px-2 py-2 align-top">
                     <AdminPaymentMethodSelect
                       bookingId={booking.id}
                       value={booking.payment_method ?? "unpaid"}
                     />
                   </td>
 
-                  <td className="w-[128px] px-2 py-2 align-top">
+                  <td className="w-[118px] px-2 py-2 align-top">
                     <AdminStatusSelect
                       bookingId={booking.id}
                       value={normalizeStatus(booking.status)}
