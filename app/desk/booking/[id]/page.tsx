@@ -75,6 +75,10 @@ function getStatusClasses(status?: string | null) {
   }
 }
 
+function isPaidPartner(source?: string | null) {
+  return source?.toLowerCase().trim() === "viator";
+}
+
 function InfoCard({
   label,
   value,
@@ -141,27 +145,33 @@ export default async function DeskBookingPage({ params }: PageProps) {
             </Link>
 
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-bold leading-tight md:text-3xl">
-                  {booking.customer_name || "Cliente"}
-                </h1>
+  <div className="flex flex-wrap items-center gap-3">
+    <h1 className="text-2xl font-bold leading-tight md:text-3xl">
+      {booking.customer_name || "Cliente"}
+    </h1>
 
-                <span
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase ${getStatusClasses(
-                    booking.status
-                  )}`}
-                >
-                  {booking.status || "-"}
-                </span>
-              </div>
+    <span
+      className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase ${getStatusClasses(
+        booking.status
+      )}`}
+    >
+      {booking.status || "-"}
+    </span>
+  </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
-                <span>Serviço: {formatDate(booking.service_date)}</span>
-                <span className="rounded-full border px-2 py-0.5 text-xs">
-                  {booking.booking_code}
-                </span>
-              </div>
-            </div>
+  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+    <span>Serviço: {formatDate(booking.service_date)}</span>
+    <span className="rounded-full border px-2 py-0.5 text-xs">
+      {booking.booking_code}
+    </span>
+  </div>
+
+  {isPaidPartner(booking.source) && (
+    <div className="rounded-2xl border border-green-300 bg-green-100 px-4 py-3 text-sm font-bold uppercase tracking-wide text-green-900">
+      Paid partner online · do not charge customer
+    </div>
+  )}
+</div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -305,7 +315,10 @@ export default async function DeskBookingPage({ params }: PageProps) {
               <InfoCard label="Criada em" value={formatDateTime(booking.created_at)} />
               <InfoCard label="Check-in real" value={formatDateTime(booking.check_in_time)} />
               <InfoCard label="Check-out real" value={formatDateTime(booking.check_out_time)} />
-              <InfoCard label="Origem" value={booking.source || "-"} />
+              <InfoCard
+  label="Origem"
+  value={isPaidPartner(booking.source) ? "viator · paid online" : booking.source || "-"}
+/>
             </div>
           </section>
         </section>
