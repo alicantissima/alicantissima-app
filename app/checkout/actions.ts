@@ -712,7 +712,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
     notes,
     total_amount: totalAmount,
     currency: "EUR",
-    source:,
+    source,
     payment_method: "unpaid",
     status: "booked",
     service_date: serviceDate,
