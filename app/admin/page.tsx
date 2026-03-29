@@ -99,11 +99,6 @@ function getFirstTimeSlot(value?: string | null) {
   return value.split("-")[0]?.trim() || "-";
 }
 
-function getFirstTimeSlot(value?: string | null) {
-  if (!value) return "-";
-  return value.split("-")[0]?.trim() || "-";
-}
-
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("pt-PT", {
     style: "currency",
