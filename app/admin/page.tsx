@@ -74,19 +74,29 @@ type BookingMetaSummary = {
 function formatServiceDate(value?: string | null) {
   if (!value) return "—";
 
-  const date = new Date(value);
+  const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return "—";
 
-  return new Intl.DateTimeFormat("pt-PT", {
+  const weekday = new Intl.DateTimeFormat("pt-PT", {
     timeZone: "Europe/Madrid",
     weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "2-digit",
   })
     .format(date)
-    .replace(",", "")
-    .replace(/\s+/g, ".");
+    .replace(".", "")
+    .toLowerCase();
+
+  const dayMonth = new Intl.DateTimeFormat("pt-PT", {
+    timeZone: "Europe/Madrid",
+    day: "2-digit",
+    month: "2-digit",
+  }).format(date);
+
+  return `${weekday}.${dayMonth}`;
+}
+
+function getFirstTimeSlot(value?: string | null) {
+  if (!value) return "-";
+  return value.split("-")[0]?.trim() || "-";
 }
 
 function formatCurrency(amount: number, currency: string) {
