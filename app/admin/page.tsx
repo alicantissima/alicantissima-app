@@ -155,20 +155,6 @@ function getStatusLabel(status: string) {
 }
 
 function getSourceRowClass(source?: string | null) {
-  const s = source?.toLowerCase().trim() ?? "";
-
-  if (s === "viator") {
-    return "bg-green-600 text-white border-l-4 border-green-900";
-  }
-
-  if (s === "booking") {
-    return "bg-sky-50 border-l-4 border-sky-400";
-  }
-
-  if (s === "site") {
-    return "bg-white";
-  }
-
   return "";
 }
 
@@ -326,18 +312,10 @@ function renderSectionTable({
     </td>
 
     <td className="w-[130px] px-2 py-2 align-top">
-  <div className="flex flex-col gap-1">
-    <AdminSourceSelect
-      bookingId={booking.id}
-      value={booking.source ?? "choose"}
-    />
-
-    {booking.source?.toLowerCase() === "viator" && (
-      <span className="inline-flex w-fit rounded-full bg-green-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-        Paid Partner Online
-      </span>
-    )}
-  </div>
+  <AdminSourceSelect
+    bookingId={booking.id}
+    value={booking.source ?? "choose"}
+  />
 </td>
 
     <td className="w-[144px] px-2 py-2 align-top">
