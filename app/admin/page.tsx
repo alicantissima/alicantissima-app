@@ -736,33 +736,33 @@ export default async function AdminPage({
     </div>
   )}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Bags today</div>
-          <div className="text-2xl font-bold">{bagsToday}</div>
+      <section className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Bags</div>
+<div className="text-xl font-bold">{bagsToday}</div>
         </div>
 
-        <div className="rounded-xl border p-4">
+        <div className="rounded-xl border px-4 py-3">
           <div className="text-sm text-gray-500">Showers today</div>
           <div className="text-2xl font-bold">{showersToday}</div>
         </div>
 
-        <div className="rounded-xl border p-4">
+        <div className="rounded-xl border px-4 py-3">
           <div className="text-sm text-gray-500">Combos today</div>
           <div className="text-2xl font-bold">{combosToday}</div>
         </div>
 
-        <div className="rounded-xl border p-4">
+        <div className="rounded-xl border px-4 py-3">
           <div className="text-sm text-gray-500">Bags inside</div>
           <div className="text-2xl font-bold">{bagsInside}</div>
         </div>
 
-        <div className="rounded-xl border p-4">
+        <div className="rounded-xl border px-4 py-3">
           <div className="text-sm text-gray-500">Showers inside</div>
           <div className="text-2xl font-bold">{showersInside}</div>
         </div>
 
-        <div className="rounded-xl border p-4">
+        <div className="rounded-xl border px-4 py-3">
           <div className="text-sm text-gray-500">Revenue today</div>
           <div className="text-2xl font-bold">
             {formatCurrency(revenueToday, "EUR")}
