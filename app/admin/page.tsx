@@ -743,28 +743,27 @@ export default async function AdminPage({
         </div>
 
         <div className="rounded-xl border px-4 py-3">
-          <div className="text-sm text-gray-500">Showers today</div>
-          <div className="text-2xl font-bold">{showersToday}</div>
+          <div className="text-xs text-gray-500">Showers</div>
+          <div className="text-xl font-bold">{showersToday}</div>
         </div>
 
         <div className="rounded-xl border px-4 py-3">
-          <div className="text-sm text-gray-500">Combos today</div>
-          <div className="text-2xl font-bold">{combosToday}</div>
+          <div className="text-xs text-gray-500">Combos</div>
+          <div className="text-xl font-bold">{combosToday}</div>
         </div>
 
         <div className="rounded-xl border px-4 py-3">
-          <div className="text-sm text-gray-500">Bags inside</div>
-          <div className="text-2xl font-bold">{bagsInside}</div>
+          <div className="text-xs text-gray-500">Bags in</div>
+          <div className="text-xl font-bold">{bagsInside}</div>
         </div>
-
         <div className="rounded-xl border px-4 py-3">
-          <div className="text-sm text-gray-500">Showers inside</div>
-          <div className="text-2xl font-bold">{showersInside}</div>
+          <div className="text-xs text-gray-500">Showers in</div>
+          <div className="text-xl font-bold">{showersInside}</div>
         </div>
 
         <div className="rounded-xl border px-4 py-3 bg-green-50">
-          <div className="text-sm text-gray-500">Revenue today</div>
-          <div className="text-2xl font-bold">
+          <div className="text-xs text-gray-500">Revenue today</div>
+          <div className="text-xl font-bold">
             {formatCurrency(revenueToday, "EUR")}
           </div>
         </div>
