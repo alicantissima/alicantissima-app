@@ -762,7 +762,7 @@ export default async function AdminPage({
           <div className="text-2xl font-bold">{showersInside}</div>
         </div>
 
-        <div className="rounded-xl border px-4 py-3">
+        <div className="rounded-xl border px-4 py-3 bg-green-50">
           <div className="text-sm text-gray-500">Revenue today</div>
           <div className="text-2xl font-bold">
             {formatCurrency(revenueToday, "EUR")}
