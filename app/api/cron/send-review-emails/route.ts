@@ -162,117 +162,82 @@ function buildReviewEmailHtml(params: {
     pt: "Como foi a tua experiência com a Alicantissima?",
   };
 
-  const introByLanguage: Record<string, string> = {
-    es: "Esperamos que el viaje de vuelta a casa, o tu primer día en Alicante, haya ido bien.",
-    en: "We hope your journey back home, or your first day in Alicante, has gone well.",
-    fr: "Nous espérons que votre retour à la maison, ou votre première journée à Alicante, s’est bien passé.",
-    it: "Speriamo che il tuo viaggio di ritorno a casa, o il tuo primo giorno ad Alicante, sia andato bene.",
-    no: "Vi håper at reisen hjem, eller din første dag i Alicante, har gått fint.",
-    de: "Wir hoffen, dass deine Heimreise oder dein erster Tag in Alicante gut verlaufen ist.",
-    pl: "Mamy nadzieję, że podróż do domu lub Twój pierwszy dzień w Alicante minęły dobrze.",
-    sv: "Vi hoppas att din resa hem, eller din första dag i Alicante, har gått bra.",
-    fi: "Toivomme, että matkasi kotiin tai ensimmäinen päiväsi Alicantessa on sujunut hyvin.",
-    da: "Vi håber, at din rejse hjem eller din første dag i Alicante er gået godt.",
-    hu: "Reméljük, hogy a hazautad vagy az első napod Alicantéban jól telt.",
-    pt: "Esperamos que a viagem de regresso a casa, ou o teu primeiro dia em Alicante, tenha corrido bem.",
+  const subtitleByLanguage: Record<string, string> = {
+    es: "Tu opinión ayuda a otros viajeros a saber qué pueden esperar.",
+    en: "Your feedback helps other travelers know what to expect.",
+    fr: "Votre avis aide d’autres voyageurs à savoir à quoi s’attendre.",
+    it: "Il tuo feedback aiuta altri viaggiatori a sapere cosa aspettarsi.",
+    no: "Tilbakemeldingen din hjelper andre reisende å vite hva de kan forvente.",
+    de: "Dein Feedback hilft anderen Reisenden zu verstehen, was sie erwartet.",
+    pl: "Twoja opinia pomaga innym podróżnym wiedzieć, czego mogą się spodziewać.",
+    sv: "Din feedback hjälper andra resenärer att veta vad de kan förvänta sig.",
+    fi: "Palautteesi auttaa muita matkailijoita tietämään, mitä odottaa.",
+    da: "Din feedback hjælper andre rejsende med at vide, hvad de kan forvente.",
+    hu: "A visszajelzésed segít más utazóknak tudni, mire számíthatnak.",
+    pt: "O teu feedback ajuda outros viajantes a perceber melhor o que podem esperar.",
   };
 
-  const bodyByLanguage: Record<string, string> = {
-    es: "Fue un placer recibirte en Alicantissima | Luggage Storage & Shower Lounge. Gracias por elegirnos.",
-    en: "It was a pleasure to welcome you at Alicantissima | Luggage Storage & Shower Lounge. Thank you for choosing us.",
-    fr: "Ce fut un plaisir de vous accueillir à Alicantissima | Luggage Storage & Shower Lounge. Merci de nous avoir choisis.",
-    it: "È stato un piacere accoglierti da Alicantissima | Luggage Storage & Shower Lounge. Grazie per averci scelto.",
-    no: "Det var en glede å ønske deg velkommen til Alicantissima | Luggage Storage & Shower Lounge. Takk for at du valgte oss.",
-    de: "Es war uns eine Freude, dich bei Alicantissima | Luggage Storage & Shower Lounge begrüßen zu dürfen. Danke, dass du uns gewählt hast.",
-    pl: "Miło było gościć Cię w Alicantissima | Luggage Storage & Shower Lounge. Dziękujemy za wybór naszej usługi.",
-    sv: "Det var ett nöje att få välkomna dig till Alicantissima | Luggage Storage & Shower Lounge. Tack för att du valde oss.",
-    fi: "Meillä oli ilo toivottaa sinut tervetulleeksi Alicantissima | Luggage Storage & Shower Loungeen. Kiitos, että valitsit meidät.",
-    da: "Det var en fornøjelse at byde dig velkommen hos Alicantissima | Luggage Storage & Shower Lounge. Tak fordi du valgte os.",
-    hu: "Öröm volt üdvözölni téged az Alicantissima | Luggage Storage & Shower Lounge-ban. Köszönjük, hogy minket választottál.",
-    pt: "Para nós foi um prazer receber-te na Alicantissima | Luggage Storage & Shower Lounge. Obrigado por nos teres escolhido.",
+  const goodByLanguage: Record<string, string> = {
+    es: "⭐ Genial — dejar una reseña en Google",
+    en: "⭐ Great — leave a Google review",
+    fr: "⭐ Super — laisser un avis Google",
+    it: "⭐ Ottimo — lascia una recensione su Google",
+    no: "⭐ Flott — legg igjen en Google-anmeldelse",
+    de: "⭐ Super — Google-Bewertung hinterlassen",
+    pl: "⭐ Świetnie — zostaw opinię w Google",
+    sv: "⭐ Toppen — lämna en Google-recension",
+    fi: "⭐ Hienoa — jätä Google-arvostelu",
+    da: "⭐ Super — skriv en Google-anmeldelse",
+    hu: "⭐ Nagyszerű — írj Google-értékelést",
+    pt: "⭐ Excelente — deixar uma review no Google",
   };
 
-  const askByLanguage: Record<string, string> = {
-    es: "Si tu experiencia fue positiva, tu reseña en Google Maps ayuda mucho a otros viajeros a saber qué pueden esperar de nuestros servicios.",
-    en: "If your experience was positive, your Google Maps review helps other travelers understand what they can expect from our services.",
-    fr: "Si votre expérience a été positive, votre avis sur Google Maps aide beaucoup d’autres voyageurs à savoir à quoi s’attendre de nos services.",
-    it: "Se la tua esperienza è stata positiva, la tua recensione su Google Maps aiuta molto altri viaggiatori a capire cosa possono aspettarsi dai nostri servizi.",
-    no: "Hvis opplevelsen din var positiv, hjelper anmeldelsen din på Google Maps andre reisende med å forstå hva de kan forvente av tjenestene våre.",
-    de: "Wenn deine Erfahrung positiv war, hilft deine Google-Maps-Bewertung anderen Reisenden sehr dabei zu verstehen, was sie von unseren Dienstleistungen erwarten können.",
-    pl: "Jeśli Twoje doświadczenie było pozytywne, Twoja opinia w Google Maps bardzo pomaga innym podróżnym zrozumieć, czego mogą oczekiwać od naszych usług.",
-    sv: "Om din upplevelse var positiv hjälper din recension på Google Maps andra resenärer att förstå vad de kan förvänta sig av våra tjänster.",
-    fi: "Jos kokemuksesi oli positiivinen, Google Maps -arvostelusi auttaa muita matkailijoita ymmärtämään, mitä he voivat odottaa palveluiltamme.",
-    da: "Hvis din oplevelse var positiv, hjælper din anmeldelse på Google Maps andre rejsende med at forstå, hvad de kan forvente af vores tjenester.",
-    hu: "Ha pozitív volt az élményed, a Google Maps értékelésed sokat segít más utazóknak abban, hogy tudják, mire számíthatnak a szolgáltatásainktól.",
-    pt: "Se a tua experiência foi positiva, a tua review no Google Maps ajuda muito outros viajantes a perceber melhor o que podem esperar dos nossos serviços.",
-  };
-
-  const thanksByLanguage: Record<string, string> = {
-    es: "Muchas gracias.",
-    en: "Thank you very much.",
-    fr: "Merci beaucoup.",
-    it: "Grazie mille.",
-    no: "Tusen takk.",
-    de: "Vielen Dank.",
-    pl: "Bardzo dziękujemy.",
-    sv: "Stort tack.",
-    fi: "Paljon kiitoksia.",
-    da: "Mange tak.",
-    hu: "Nagyon köszönjük.",
-    pt: "Muito obrigado.",
-  };
-
-  const ctaByLanguage: Record<string, string> = {
-    es: "Dejar reseña en Google Maps",
-    en: "Leave a review on Google Maps",
-    fr: "Laisser un avis sur Google Maps",
-    it: "Lascia una recensione su Google Maps",
-    no: "Legg igjen en anmeldelse på Google Maps",
-    de: "Bewertung auf Google Maps abgeben",
-    pl: "Zostaw opinię w Google Maps",
-    sv: "Lämna en recension på Google Maps",
-    fi: "Jätä arvostelu Google Mapsiin",
-    da: "Skriv en anmeldelse på Google Maps",
-    hu: "Értékelés írása a Google Mapsen",
-    pt: "Deixar review no Google Maps",
+  const improveByLanguage: Record<string, string> = {
+    es: "😐 Podría ser mejor — dinos cómo mejorar",
+    en: "😐 Could be better — tell us how to improve",
+    fr: "😐 Cela pourrait être mieux — dites-nous comment nous améliorer",
+    it: "😐 Potrebbe andare meglio — dicci come migliorare",
+    no: "😐 Kunne vært bedre — fortell oss hvordan vi kan forbedre oss",
+    de: "😐 Könnte besser sein — sag uns, wie wir uns verbessern können",
+    pl: "😐 Mogło być lepiej — powiedz nam, jak możemy się poprawić",
+    sv: "😐 Det kunde vara bättre — berätta hur vi kan förbättra oss",
+    fi: "😐 Voisi olla parempi — kerro miten voimme parantaa",
+    da: "😐 Det kunne være bedre — fortæl os hvordan vi kan forbedre os",
+    hu: "😐 Lehetne jobb — mondd el, hogyan javíthatunk",
+    pt: "😐 Poderia ser melhor — diz-nos como melhorar",
   };
 
   return `
-    <div style="margin:0; padding:0; background:#f3f4f6;">
-      <div style="max-width:640px; margin:0 auto; padding:32px 16px; font-family:Arial,Helvetica,sans-serif;">
-        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:22px; padding:32px 24px; text-align:center;">
-          <h1 style="margin:0 0 14px 0; font-size:24px; line-height:30px; color:#111827; font-weight:700;">
+    <div style="margin:0; padding:0; background:#f5f5f5;">
+      <div style="max-width:760px; margin:0 auto; padding:40px 16px; font-family:Arial,Helvetica,sans-serif;">
+        <div style="background:#ffffff; border-radius:28px; padding:48px 28px; text-align:center;">
+          <h1 style="margin:0 0 18px 0; font-size:34px; line-height:42px; color:#111111; font-weight:700;">
             ${titleByLanguage[language] || titleByLanguage.en}
           </h1>
 
-          <p style="margin:0 0 12px 0; font-size:16px; line-height:24px; color:#374151;">
-            ${introByLanguage[language] || introByLanguage.en}
+          <p style="margin:0 0 34px 0; font-size:16px; line-height:26px; color:#5b6470;">
+            ${subtitleByLanguage[language] || subtitleByLanguage.en}
           </p>
 
-          <p style="margin:0 0 12px 0; font-size:16px; line-height:24px; color:#374151;">
-            ${bodyByLanguage[language] || bodyByLanguage.en}
-          </p>
+          <div style="margin:0 auto; max-width:620px;">
+            <a
+              href="${params.reviewUrl}"
+              target="_blank"
+              rel="noreferrer"
+              style="display:block; width:100%; box-sizing:border-box; background:#000000; color:#ffffff; text-decoration:none; font-size:18px; line-height:24px; font-weight:700; padding:20px 24px; border-radius:18px; margin-bottom:18px;"
+            >
+              ${goodByLanguage[language] || goodByLanguage.en}
+            </a>
 
-          <p style="margin:0 0 22px 0; font-size:16px; line-height:24px; color:#374151;">
-            ${askByLanguage[language] || askByLanguage.en}
-          </p>
-
-          <a
-            href="${params.reviewUrl}"
-            target="_blank"
-            rel="noreferrer"
-            style="display:inline-block; padding:12px 20px; border-radius:999px; background:#111827; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
-          >
-            ${ctaByLanguage[language] || ctaByLanguage.en}
-          </a>
-
-          <p style="margin:24px 0 0 0; font-size:15px; line-height:22px; color:#374151;">
-            ${thanksByLanguage[language] || thanksByLanguage.en}
-          </p>
-
-          <p style="margin:18px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
-            Alicantissima | Luggage Storage & Shower Lounge
-          </p>
+            <a
+              href="${privateFeedbackUrl}"
+              target="_blank"
+              rel="noreferrer"
+              style="display:block; width:100%; box-sizing:border-box; background:#ffffff; color:#111111; text-decoration:none; font-size:18px; line-height:24px; font-weight:700; padding:20px 24px; border-radius:18px; border:1px solid #cfcfcf;"
+            >
+              ${improveByLanguage[language] || improveByLanguage.en}
+            </a>
+          </div>
         </div>
       </div>
     </div>
