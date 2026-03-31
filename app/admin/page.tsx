@@ -571,55 +571,59 @@ export default async function AdminPage({
   const citiesTodayCounts: Record<string, number> = {};
 
   for (const booking of ((bookings as BookingRow[]) ?? [])) {
-    const normalizedStatus = normalizeStatus(booking.status);
-    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-    const bookingDate = meta.date;
+  const normalizedStatus = normalizeStatus(booking.status);
+  const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+  const bookingDate = meta.date;
 
-    const itemsForBooking =
-      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
+  const itemsForBooking =
+    (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
 
-    if (isToday(bookingDate) && normalizedStatus !== "cancelled") {
-      const currentSource = (booking.source ?? "choose") as SourceKey;
+  if (
+    isToday(bookingDate) &&
+    normalizedStatus !== "cancelled" &&
+    normalizedStatus !== "no_show"
+  ) {
+    const currentSource = (booking.source ?? "choose") as SourceKey;
 
-      const computedRevenue = itemsForBooking.reduce(
-        (sum, item) => sum + Number(item.line_total ?? 0),
-        0
-      );
+    const computedRevenue = itemsForBooking.reduce(
+      (sum, item) => sum + Number(item.line_total ?? 0),
+      0
+    );
 
-      const bookingRevenue =
-        computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
+    const bookingRevenue =
+      computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
 
-      revenueToday += bookingRevenue;
+    revenueToday += bookingRevenue;
 
-      if (currentSource in sourceTodayCounts) {
-        sourceTodayCounts[currentSource]++;
-        sourceTodayRevenue[currentSource] += bookingRevenue;
-      }
-
-      for (const item of itemsForBooking) {
-        const code = getItemCode(item);
-
-        if (code === "luggage") bagsToday += item.quantity;
-        if (code === "shower") showersToday += item.quantity;
-        if (code === "combo") combosToday += item.quantity;
-      }
-
-      const cityName = (booking.city ?? meta.city ?? "").trim();
-
-      if (cityName) {
-        citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
-      }
+    if (currentSource in sourceTodayCounts) {
+      sourceTodayCounts[currentSource]++;
+      sourceTodayRevenue[currentSource] += bookingRevenue;
     }
 
-    if (normalizedStatus === "inside") {
-      for (const item of itemsForBooking) {
-        const code = getItemCode(item);
+    for (const item of itemsForBooking) {
+      const code = getItemCode(item);
 
-        if (code === "luggage") bagsInside += item.quantity;
-        if (code === "shower") showersInside += item.quantity;
-      }
+      if (code === "luggage") bagsToday += item.quantity;
+      if (code === "shower") showersToday += item.quantity;
+      if (code === "combo") combosToday += item.quantity;
+    }
+
+    const cityName = (booking.city ?? meta.city ?? "").trim();
+
+    if (cityName) {
+      citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
     }
   }
+
+  if (normalizedStatus === "inside") {
+    for (const item of itemsForBooking) {
+      const code = getItemCode(item);
+
+      if (code === "luggage") bagsInside += item.quantity;
+      if (code === "shower") showersInside += item.quantity;
+    }
+  }
+}
 
   const sortedBookings = [...((bookings as BookingRow[]) ?? [])].sort((a, b) => {
     const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
@@ -642,38 +646,38 @@ export default async function AdminPage({
   const cancelledBookings: BookingRow[] = [];
 
   for (const booking of sortedBookings) {
-    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-    const date = meta.date;
-    const status = normalizeStatus(booking.status);
+  const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+  const date = meta.date;
+  const status = normalizeStatus(booking.status);
 
-    if (status === "inside") {
-      insideBookings.push(booking);
-      continue;
-    }
-
-    if (status === "cancelled") {
-      if (isToday(date)) {
-        cancelledBookings.push(booking);
-      }
-      continue;
-    }
-
-    if (status === "completed" || status === "no_show") {
-  if (isToday(date)) {
-    finishedBookings.push(booking);
+  if (status === "inside") {
+    insideBookings.push(booking);
+    continue;
   }
-  continue;
-}
 
+  if (status === "cancelled" || status === "no_show") {
     if (isToday(date)) {
-      todayBookings.push(booking);
-      continue;
+      cancelledBookings.push(booking);
     }
-
-    if (isFuture(date)) {
-      upcomingBookings.push(booking);
-    }
+    continue;
   }
+
+  if (status === "completed") {
+    if (isToday(date)) {
+      finishedBookings.push(booking);
+    }
+    continue;
+  }
+
+  if (isToday(date)) {
+    todayBookings.push(booking);
+    continue;
+  }
+
+  if (isFuture(date)) {
+    upcomingBookings.push(booking);
+  }
+}
 
   const upcomingTotal = upcomingBookings.reduce(
     (sum, booking) => sum + Number(booking.total_amount || 0),
@@ -869,11 +873,12 @@ export default async function AdminPage({
       </div>
 
       {renderSectionTable({
-        title: "Cancelled",
-        bookings: cancelledBookings,
-        bookingMetaMap,
-        codeFilter,
-        cancelled: true,
+  title: "Cancelled / No show",
+  bookings: cancelledBookings,
+  bookingMetaMap,
+  codeFilter,
+  cancelled: true,
+})}
       })}
     </main>
   );
