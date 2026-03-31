@@ -879,7 +879,6 @@ export default async function AdminPage({
   codeFilter,
   cancelled: true,
 })}
-      })}
     </main>
   );
 }
