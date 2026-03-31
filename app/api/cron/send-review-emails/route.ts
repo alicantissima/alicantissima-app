@@ -337,7 +337,7 @@ export async function GET(request: NextRequest) {
       check_out_time,
       review_email_sent_at
     `)
-    .eq("status", "finished")
+    .in("status", ["finished", "completed"])
     .not("check_out_time", "is", null)
     .is("review_email_sent_at", null);
 
