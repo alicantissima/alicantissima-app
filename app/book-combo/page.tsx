@@ -77,6 +77,21 @@ function BookComboContent() {
     extraLuggageQty * extraLuggagePrice +
     extraShowerQty * extraShowerPrice;
 
+  const fieldClass =
+    "mt-1 w-full rounded-xl border border-zinc-300 bg-white p-2 text-zinc-900 placeholder:text-zinc-400 dark:border-zinc-300 dark:bg-black dark:text-white dark:placeholder:text-zinc-400";
+  const labelClass =
+    "text-sm font-semibold text-zinc-900 dark:text-zinc-100";
+  const mutedClass = "text-sm text-zinc-600 dark:text-zinc-300";
+  const helpClass = "mt-1 text-xs text-zinc-500 dark:text-zinc-400";
+  const qtyButtonClass =
+    "rounded-xl border border-zinc-300 bg-white px-3 py-1 text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98] dark:border-zinc-300 dark:bg-black dark:text-white dark:hover:bg-zinc-900";
+  const boxClass =
+    "space-y-3 rounded-2xl border border-zinc-300 bg-white p-4 text-zinc-900 dark:border-zinc-300 dark:bg-black dark:text-white";
+  const ctaClass =
+    "w-full rounded-xl border border-zinc-900 bg-zinc-900 px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98] dark:border-[#AFC3BE] dark:bg-[#AFC3BE] dark:text-black";
+  const backClass =
+    "text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white";
+
   function handleAddToBooking() {
     if (!date) {
       alert(t.bookComboChooseDateAlert);
@@ -126,21 +141,15 @@ function BookComboContent() {
     });
 
     window.scrollTo({ top: 0, behavior: "auto" });
-    const checkoutParams = new URLSearchParams();
-checkoutParams.set("lang", language);
 
-if (source === "walkin") {
-  checkoutParams.set("source", "walkin");
-}
+    const params = new URLSearchParams();
+    params.set("lang", language);
 
-const params = new URLSearchParams();
-params.set("lang", language);
+    if (source === "walkin") {
+      params.set("source", "walkin");
+    }
 
-if (searchParams.get("source") === "walkin") {
-  params.set("source", "walkin");
-}
-
-router.push(`/checkout?${params.toString()}`);
+    router.push(`/checkout?${params.toString()}`);
   }
 
   function decrease(
@@ -156,36 +165,36 @@ router.push(`/checkout?${params.toString()}`);
   }
 
   return (
-    <main className="mx-auto max-w-md space-y-6 p-6">
+    <main className="mx-auto max-w-md space-y-6 p-6 text-zinc-900 dark:text-white">
       <button
         onClick={() => router.push(`/?lang=${language}`)}
-        className="text-sm text-gray-600 hover:text-black"
+        className={backClass}
       >
         ← {t.back}
       </button>
 
-      <h1 className="text-2xl font-bold uppercase">{t.bookComboTitle}</h1>
+      <h1 className="text-2xl font-bold uppercase text-zinc-900 dark:text-white">
+        {t.bookComboTitle}
+      </h1>
 
-      <p className="text-sm text-gray-600">{t.bookComboSubtitle}</p>
+      <p className={mutedClass}>{t.bookComboSubtitle}</p>
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-semibold">{t.chooseComboDate}</label>
+          <label className={labelClass}>{t.chooseComboDate}</label>
           <input
             type="date"
             min={getTodayString()}
-            className="mt-1 w-full rounded border p-2"
+            className={fieldClass}
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="text-sm font-semibold">
-            {t.chooseLuggageDropOffTime}
-          </label>
+          <label className={labelClass}>{t.chooseLuggageDropOffTime}</label>
           <select
-            className="mt-1 w-full rounded border p-2"
+            className={fieldClass}
             value={dropOffTime}
             onChange={(e) => setDropOffTime(e.target.value)}
           >
@@ -198,11 +207,9 @@ router.push(`/checkout?${params.toString()}`);
         </div>
 
         <div>
-          <label className="text-sm font-semibold">
-            {t.chooseApproxShowerTime}
-          </label>
+          <label className={labelClass}>{t.chooseApproxShowerTime}</label>
           <select
-            className="mt-1 w-full rounded border p-2"
+            className={fieldClass}
             value={showerTime}
             onChange={(e) => setShowerTime(e.target.value)}
           >
@@ -212,29 +219,33 @@ router.push(`/checkout?${params.toString()}`);
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-500">{t.comboShowerHelpText}</p>
+          <p className={helpClass}>{t.comboShowerHelpText}</p>
         </div>
 
-        <div className="space-y-3 rounded-2xl border p-4">
-          <div className="flex items-center justify-between">
+        <div className={boxClass}>
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="font-semibold">{t.comboMainLabel}</p>
-              <p className="text-sm text-gray-600">{t.comboMainPriceLabel}</p>
+              <p className="font-semibold text-zinc-900 dark:text-white">
+                {t.comboMainLabel}
+              </p>
+              <p className={mutedClass}>{t.comboMainPriceLabel}</p>
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => decrease(comboQty, setComboQty, 1)}
-                className="rounded border px-3 py-1"
+                className={qtyButtonClass}
               >
                 -
               </button>
-              <span>{comboQty}</span>
+              <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
+                {comboQty}
+              </span>
               <button
                 type="button"
                 onClick={() => increase(comboQty, setComboQty)}
-                className="rounded border px-3 py-1"
+                className={qtyButtonClass}
               >
                 +
               </button>
@@ -242,28 +253,30 @@ router.push(`/checkout?${params.toString()}`);
           </div>
         </div>
 
-        <div className="space-y-3 rounded-2xl border p-4">
-          <div className="flex items-center justify-between">
+        <div className={boxClass}>
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="font-semibold">{t.comboExtraLuggageLabel}</p>
-              <p className="text-sm text-gray-600">
-                {t.comboExtraLuggagePriceLabel}
+              <p className="font-semibold text-zinc-900 dark:text-white">
+                {t.comboExtraLuggageLabel}
               </p>
+              <p className={mutedClass}>{t.comboExtraLuggagePriceLabel}</p>
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => decrease(extraLuggageQty, setExtraLuggageQty)}
-                className="rounded border px-3 py-1"
+                className={qtyButtonClass}
               >
                 -
               </button>
-              <span>{extraLuggageQty}</span>
+              <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
+                {extraLuggageQty}
+              </span>
               <button
                 type="button"
                 onClick={() => increase(extraLuggageQty, setExtraLuggageQty)}
-                className="rounded border px-3 py-1"
+                className={qtyButtonClass}
               >
                 +
               </button>
@@ -271,28 +284,30 @@ router.push(`/checkout?${params.toString()}`);
           </div>
         </div>
 
-        <div className="space-y-3 rounded-2xl border p-4">
-          <div className="flex items-center justify-between">
+        <div className={boxClass}>
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="font-semibold">{t.comboExtraShowerLabel}</p>
-              <p className="text-sm text-gray-600">
-                {t.comboExtraShowerPriceLabel}
+              <p className="font-semibold text-zinc-900 dark:text-white">
+                {t.comboExtraShowerLabel}
               </p>
+              <p className={mutedClass}>{t.comboExtraShowerPriceLabel}</p>
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => decrease(extraShowerQty, setExtraShowerQty)}
-                className="rounded border px-3 py-1"
+                className={qtyButtonClass}
               >
                 -
               </button>
-              <span>{extraShowerQty}</span>
+              <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
+                {extraShowerQty}
+              </span>
               <button
                 type="button"
                 onClick={() => increase(extraShowerQty, setExtraShowerQty)}
-                className="rounded border px-3 py-1"
+                className={qtyButtonClass}
               >
                 +
               </button>
@@ -301,23 +316,23 @@ router.push(`/checkout?${params.toString()}`);
         </div>
       </div>
 
-      <div className="space-y-2 rounded-2xl border p-4">
-        <p className="text-sm font-semibold">{t.totalPrice}</p>
-        <p className="text-2xl font-bold">€ {totalPrice}</p>
+      <div className={boxClass}>
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          {t.totalPrice}
+        </p>
+        <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+          € {totalPrice}
+        </p>
       </div>
 
-      <button
-        type="button"
-        onClick={handleAddToBooking}
-        className="w-full rounded-xl border border-black bg-black px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98]"
-      >
+      <button type="button" onClick={handleAddToBooking} className={ctaClass}>
         {t.bookNow}
       </button>
 
       <div>
-        <label className="text-sm font-semibold">{t.commentsOptional}</label>
+        <label className={labelClass}>{t.commentsOptional}</label>
         <textarea
-          className="mt-1 w-full rounded border p-2"
+          className={fieldClass}
           value={comments}
           onChange={(e) => setComments(e.target.value)}
         />
