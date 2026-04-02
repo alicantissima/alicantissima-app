@@ -65,6 +65,20 @@ function BookShowerContent() {
   const unitPrice = 12;
   const totalPrice = showers * unitPrice;
 
+  const fieldClass =
+    "mt-1 w-full rounded-xl border border-zinc-300 bg-white p-2 text-zinc-900 placeholder:text-zinc-400 dark:border-zinc-300 dark:bg-black dark:text-white dark:placeholder:text-zinc-400";
+  const labelClass =
+    "text-sm font-semibold text-zinc-900 dark:text-zinc-100";
+  const mutedClass = "text-sm text-zinc-600 dark:text-zinc-300";
+  const qtyButtonClass =
+    "rounded-xl border border-zinc-300 bg-white px-3 py-1 text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98] dark:border-zinc-300 dark:bg-black dark:text-white dark:hover:bg-zinc-900";
+  const panelClass =
+    "rounded-2xl border border-zinc-300 bg-white p-4 text-zinc-900 dark:border-zinc-300 dark:bg-black dark:text-white";
+  const ctaClass =
+    "w-full rounded-xl border border-zinc-900 bg-zinc-900 px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98] dark:border-[#AFC3BE] dark:bg-[#AFC3BE] dark:text-black";
+  const backClass =
+    "text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white";
+
   function handleAddToBooking() {
     if (!date) {
       alert(t.bookShowerChooseDateAlert);
@@ -88,52 +102,48 @@ function BookShowerContent() {
     });
 
     window.scrollTo({ top: 0, behavior: "auto" });
-    const checkoutParams = new URLSearchParams();
-checkoutParams.set("lang", language);
 
-if (source === "walkin") {
-  checkoutParams.set("source", "walkin");
-}
+    const params = new URLSearchParams();
+    params.set("lang", language);
 
-const params = new URLSearchParams();
-params.set("lang", language);
+    if (source === "walkin") {
+      params.set("source", "walkin");
+    }
 
-if (searchParams.get("source") === "walkin") {
-  params.set("source", "walkin");
-}
-
-router.push(`/checkout?${params.toString()}`);
+    router.push(`/checkout?${params.toString()}`);
   }
 
   return (
-    <main className="mx-auto max-w-md space-y-6 p-6">
+    <main className="mx-auto max-w-md space-y-6 p-6 text-zinc-900 dark:text-white">
       <button
         onClick={() => router.push(`/?lang=${language}`)}
-        className="text-sm text-gray-600 hover:text-black"
+        className={backClass}
       >
         ← {t.back}
       </button>
 
-      <h1 className="text-2xl font-bold uppercase">{t.bookShowerTitle}</h1>
+      <h1 className="text-2xl font-bold uppercase text-zinc-900 dark:text-white">
+        {t.bookShowerTitle}
+      </h1>
 
-      <p className="text-sm text-gray-600">{t.bookShowerSubtitle}</p>
+      <p className={mutedClass}>{t.bookShowerSubtitle}</p>
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-semibold">{t.chooseDate}</label>
+          <label className={labelClass}>{t.chooseDate}</label>
           <input
             type="date"
             min={getTodayString()}
-            className="mt-1 w-full rounded border p-2"
+            className={fieldClass}
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="text-sm font-semibold">{t.chooseShowerTime}</label>
+          <label className={labelClass}>{t.chooseShowerTime}</label>
           <select
-            className="mt-1 w-full rounded border p-2"
+            className={fieldClass}
             value={showerTime}
             onChange={(e) => setShowerTime(e.target.value)}
           >
@@ -146,23 +156,25 @@ router.push(`/checkout?${params.toString()}`);
         </div>
 
         <div>
-          <label className="text-sm font-semibold">{t.numberOfShowers}</label>
+          <label className={labelClass}>{t.numberOfShowers}</label>
 
           <div className="mt-1 flex items-center gap-4">
             <button
               type="button"
               onClick={() => setShowers(Math.max(1, showers - 1))}
-              className="rounded border px-3 py-1"
+              className={qtyButtonClass}
             >
               -
             </button>
 
-            <span>{showers}</span>
+            <span className="text-lg font-medium text-zinc-900 dark:text-white">
+              {showers}
+            </span>
 
             <button
               type="button"
               onClick={() => setShowers(showers + 1)}
-              className="rounded border px-3 py-1"
+              className={qtyButtonClass}
             >
               +
             </button>
@@ -170,23 +182,23 @@ router.push(`/checkout?${params.toString()}`);
         </div>
       </div>
 
-      <div className="rounded-2xl border p-4">
-        <p className="text-sm font-semibold">{t.totalPrice}</p>
-        <p className="mt-1 text-2xl font-bold">€ {totalPrice}</p>
+      <div className={panelClass}>
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          {t.totalPrice}
+        </p>
+        <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
+          € {totalPrice}
+        </p>
       </div>
 
-      <button
-        type="button"
-        onClick={handleAddToBooking}
-        className="w-full rounded-xl border border-black bg-black px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98]"
-      >
+      <button type="button" onClick={handleAddToBooking} className={ctaClass}>
         {t.bookNow}
       </button>
 
       <div>
-        <label className="text-sm font-semibold">{t.commentsOptional}</label>
+        <label className={labelClass}>{t.commentsOptional}</label>
         <textarea
-          className="mt-1 w-full rounded border p-2"
+          className={fieldClass}
           value={comments}
           onChange={(e) => setComments(e.target.value)}
         />
