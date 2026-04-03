@@ -56,11 +56,19 @@ async function sendEmail(params: {
     cache: "no-store",
   });
 
-  const responseText = await response.text();
+  const json = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(`Resend error: ${response.status} ${responseText}`);
+    throw new Error(
+      `Resend error: ${response.status} ${JSON.stringify(json)}`
+    );
   }
+
+  if (!json?.id) {
+    throw new Error(`Resend success without id: ${JSON.stringify(json)}`);
+  }
+
+  return json;
 }
 
 function buildReviewEmailText(params: {
@@ -294,28 +302,67 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
-  let sent = 0;
+    let sent = 0;
   let skipped = 0;
+  let skippedNoEmail = 0;
+  let skippedInvalidEmail = 0;
+  let skippedNotDueYet = 0;
+  let skippedMaxLimit = 0;
+
   const errors: Array<{ booking_code: string; error: string }> = [];
+  const debug: Array<Record<string, unknown>> = [];
   const MAX_SENDS_PER_RUN = 50;
 
   for (const booking of bookings || []) {
     if (sent >= MAX_SENDS_PER_RUN) {
       skipped += 1;
+      skippedMaxLimit += 1;
+      debug.push({
+        booking_code: booking.booking_code,
+        action: "skip",
+        reason: "max_limit_reached",
+      });
       continue;
     }
 
     const email = booking.customer_email?.trim();
 
-if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-  skipped += 1;
-  continue;
-}
+    if (!email) {
+      skipped += 1;
+      skippedNoEmail += 1;
+      debug.push({
+        booking_code: booking.booking_code,
+        action: "skip",
+        reason: "missing_email",
+      });
+      continue;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      skipped += 1;
+      skippedInvalidEmail += 1;
+      debug.push({
+        booking_code: booking.booking_code,
+        action: "skip",
+        reason: "invalid_email",
+        email,
+      });
+      continue;
+    }
 
     const sendAt = getReviewSendAt(booking.check_out_time);
 
     if (!sendAt || now < sendAt) {
       skipped += 1;
+      skippedNotDueYet += 1;
+      debug.push({
+        booking_code: booking.booking_code,
+        action: "skip",
+        reason: "not_due_yet",
+        check_out_time: booking.check_out_time,
+        send_at: sendAt ? sendAt.toISOString() : null,
+        now: now.toISOString(),
+      });
       continue;
     }
 
@@ -337,55 +384,102 @@ if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     };
 
     try {
-  const trackedReviewUrl = buildTrackedReviewUrl({
-    bookingCode: booking.booking_code,
-    language: booking.language,
-  });
+      const trackedReviewUrl = buildTrackedReviewUrl({
+        bookingCode: booking.booking_code,
+        language: booking.language,
+      });
 
-  await sendEmail({
-    to: email,
-    subject: subjectByLanguage[language] || subjectByLanguage.en,
-    text: buildReviewEmailText({
-      reviewUrl: trackedReviewUrl,
-      language,
-    }),
-    html: buildReviewEmailHtml({
-      reviewUrl: trackedReviewUrl,
-      language,
-    }),
-  });
+      const resendResult = await sendEmail({
+        to: email,
+        subject: subjectByLanguage[language] || subjectByLanguage.en,
+        text: buildReviewEmailText({
+          reviewUrl: trackedReviewUrl,
+          language,
+        }),
+        html: buildReviewEmailHtml({
+          reviewUrl: trackedReviewUrl,
+          language,
+        }),
+      });
 
-  const { error: updateError } = await supabase
-    .from("bookings")
-    .update({
-      review_email_sent_at: new Date().toISOString(),
-    })
-    .eq("id", booking.id);
+      const sentAtIso = new Date().toISOString();
+
+      const { error: updateError } = await supabase
+        .from("bookings")
+        .update({
+          review_email_sent_at: sentAtIso,
+        })
+        .eq("id", booking.id);
 
       if (updateError) {
         errors.push({
           booking_code: booking.booking_code,
           error: updateError.message,
         });
+
+        debug.push({
+          booking_code: booking.booking_code,
+          action: "send_ok_update_failed",
+          email,
+          resend_id: resendResult.id,
+          update_error: updateError.message,
+        });
       } else {
         sent += 1;
+
+        debug.push({
+          booking_code: booking.booking_code,
+          action: "sent",
+          email,
+          resend_id: resendResult.id,
+          review_email_sent_at: sentAtIso,
+        });
+
+        console.log("[review-email] sent", {
+          booking_code: booking.booking_code,
+          email,
+          resend_id: resendResult.id,
+          review_email_sent_at: sentAtIso,
+        });
       }
 
       await sleep(600);
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+
       errors.push({
         booking_code: booking.booking_code,
-        error: err instanceof Error ? err.message : "Unknown error",
+        error: message,
+      });
+
+      debug.push({
+        booking_code: booking.booking_code,
+        action: "error",
+        email,
+        error: message,
+      });
+
+      console.error("[review-email] failed", {
+        booking_code: booking.booking_code,
+        email,
+        error: message,
       });
 
       await sleep(600);
     }
   }
 
-  return NextResponse.json({
+    return NextResponse.json({
     ok: true,
+    now: now.toISOString(),
+    found: bookings?.length || 0,
     sent,
     skipped,
+    skippedNoEmail,
+    skippedInvalidEmail,
+    skippedNotDueYet,
+    skippedMaxLimit,
     errors,
+    debug,
   });
 }
