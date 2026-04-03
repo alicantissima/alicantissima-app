@@ -7,9 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 
 type PageProps = {
-  params: Promise<{
-    code: string;
-  }>;
+  params: Promise<{ code: string }>;
 };
 
 type BookingRow = {
@@ -51,8 +49,7 @@ function formatHumanDate(value?: string | null) {
 
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
-    month: "long",
-    year: "numeric",
+    month: "short",
   }).format(date);
 }
 
@@ -64,21 +61,27 @@ function formatTimeRange(value?: string | null) {
 }
 
 function getQrCodeUrl(text: string) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(text)}`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(
+    text
+  )}`;
 }
 
-function getLocalizedProductTitle(params: {
+function getLocalizedProductTitle({
+  productType,
+  fallbackTitle,
+  language,
+}: {
   productType?: string | null;
   fallbackTitle?: string | null;
   language?: string | null;
 }) {
-  const t = getMessages(params.language);
+  const t = getMessages(language);
 
-  if (params.productType === "booking") return t.bookLuggageProductName;
-  if (params.productType === "shower") return t.bookShowerProductName;
-  if (params.productType === "combo") return t.bookComboProductName;
+  if (productType === "booking") return t.bookLuggageProductName;
+  if (productType === "shower") return t.bookShowerProductName;
+  if (productType === "combo") return t.bookComboProductName;
 
-  return params.fallbackTitle || t.itemFallback;
+  return fallbackTitle || t.itemFallback;
 }
 
 export default async function BookingPage({ params }: PageProps) {
@@ -89,216 +92,134 @@ export default async function BookingPage({ params }: PageProps) {
 
   const supabase = createAdminClient();
 
-  const { data: booking, error: bookingError } = await supabase
+  const { data: booking } = await supabase
     .from("bookings")
-    .select("id, booking_code, customer_name, customer_email, notes, total_amount, currency, status, service_date, language")
+    .select("*")
     .eq("booking_code", bookingCode)
     .maybeSingle<BookingRow>();
 
-  if (bookingError || !booking) {
-    notFound();
-  }
+  if (!booking) notFound();
 
-  const { data: items, error: itemsError } = await supabase
+  const { data: items } = await supabase
     .from("booking_items")
-    .select("booking_id, quantity, line_total, title, product_type, meta")
+    .select("*")
     .eq("booking_id", booking.id)
     .returns<BookingItemRow[]>();
-
-  if (itemsError) {
-    notFound();
-  }
 
   const language = normalizeLanguage(booking.language);
   const t = getMessages(language);
 
-  const appBaseUrl = (
-    process.env.APP_BASE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "https://app.alicantissima.es"
-  ).replace(/\/$/, "");
+  const appBaseUrl =
+    process.env.NEXT_PUBLIC_APP_URL || "https://app.alicantissima.es";
 
   const bookingUrl = `${appBaseUrl}/b/${booking.booking_code}`;
   const qrCodeUrl = getQrCodeUrl(bookingUrl);
 
-  const reviewUrl =
-    process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL ||
-    process.env.GOOGLE_REVIEW_URL ||
-    "";
+  const item = items?.[0];
+
+  const date = formatHumanDate(item?.meta?.date || booking.service_date);
+  const dropOff = formatTimeRange(item?.meta?.dropOffTime);
+  const pickUp = formatTimeRange(item?.meta?.pickUpTime);
+
+  const productTitle = getLocalizedProductTitle({
+    productType: item?.product_type,
+    fallbackTitle: item?.title,
+    language,
+  });
 
   return (
-    <main className="min-h-screen bg-neutral-100 px-4 py-8">
-      <div className="mx-auto max-w-2xl space-y-6">
-        <section className="text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
-            {t.bookingConfirmedTitle}
+    <main className="min-h-screen bg-black px-4 py-8 text-white">
+      <div className="mx-auto max-w-md space-y-6">
+
+        {/* HEADER */}
+        <div className="text-center">
+          <p className="text-sm text-white/50">Booking code</p>
+          <h1 className="mt-1 text-2xl font-bold tracking-widest">
+            {booking.booking_code}
           </h1>
-          <p className="mt-3 text-base text-neutral-700">
-            {t.thankYouBookingCodePrefix}{" "}
-            <strong>{booking.booking_code}</strong>.
-          </p>
-        </section>
+        </div>
 
-        <section className="rounded-[22px] border border-neutral-900 bg-white p-6">
-          <h2 className="mb-5 text-center text-xl font-semibold text-neutral-900">
-            {t.bookingSummary}
-          </h2>
+        {/* WALLET CARD */}
+        <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-neutral-900 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
 
-          <p className="mb-4 text-[15px] leading-6 text-neutral-900">
-            <strong>{t.nameLabel}</strong> {booking.customer_name}
-          </p>
-
-          <div className="space-y-5">
-            {items?.map((item, index) => {
-              const productTitle = getLocalizedProductTitle({
-                productType: item.product_type,
-                fallbackTitle: item.title,
-                language,
-              });
-
-              const date = formatHumanDate(item.meta?.date || booking.service_date);
-              const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
-              const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
-              const showerTime = formatTimeRange(item.meta?.showerTime);
-              const comments = item.meta?.comments?.trim();
-
-              return (
-                <div
-                  key={`${item.booking_id}-${index}`}
-                  className="border-b border-neutral-300 pb-5 last:border-b-0 last:pb-0"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <p className="text-base font-semibold text-neutral-900">
-                      {productTitle}
-                    </p>
-                    <p className="whitespace-nowrap text-base font-semibold text-neutral-900">
-                      € {formatPrice(item.line_total)}
-                    </p>
-                  </div>
-
-                  <p className="mt-1 text-sm text-neutral-500">
-                    {t.qtyLabel}: {item.quantity}
-                  </p>
-
-                  <div className="mt-3 space-y-1 text-[15px] leading-6 text-neutral-900">
-                    {date ? (
-                      <p>
-                        <strong>{t.dateLabel}</strong> {date}
-                      </p>
-                    ) : null}
-
-                    {dropOffTime ? (
-                      <p>
-                        <strong>{t.dropOffLabel}</strong> {dropOffTime}
-                      </p>
-                    ) : null}
-
-                    {pickUpTime ? (
-                      <p>
-                        <strong>{t.estimatedPickUpLabel}</strong> {pickUpTime}
-                      </p>
-                    ) : null}
-
-                    {showerTime ? (
-                      <p>
-                        <strong>{t.showerTimeLabel}</strong> {showerTime}
-                      </p>
-                    ) : null}
-
-                    {comments ? (
-                      <p>
-                        <strong>{t.commentsLabel}:</strong> {comments}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-5 border-t border-neutral-300 pt-5">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-lg font-semibold text-neutral-900">
-                {t.totalLabel}
+          {/* top */}
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-white/50">{t.nameLabel}</p>
+              <p className="text-base font-semibold">
+                {booking.customer_name}
               </p>
-              <p className="whitespace-nowrap text-lg font-semibold text-neutral-900">
+            </div>
+
+            <div className="text-right">
+              <p className="text-sm text-white/50">{t.totalLabel}</p>
+              <p className="text-lg font-semibold">
                 € {formatPrice(booking.total_amount)}
               </p>
             </div>
-
-            <p className="mt-3 text-[15px] leading-6 text-orange-600">
-              {t.paymentOnSite}
-            </p>
-
-            {booking.notes ? (
-              <p className="mt-3 text-[15px] leading-6 text-neutral-700">
-                <strong>{t.notes}:</strong> {booking.notes}
-              </p>
-            ) : null}
           </div>
-        </section>
 
-        <section className="text-center">
-          <h2 className="mb-2 text-lg font-semibold text-neutral-900">
-            {t.checkInQrTitle}
-          </h2>
-          <p className="mb-4 text-sm text-neutral-500">
+          {/* divider */}
+          <div className="my-5 border-t border-dashed border-white/10" />
+
+          {/* product */}
+          <div>
+            <p className="text-sm text-white/50">Service</p>
+            <p className="font-semibold">{productTitle}</p>
+          </div>
+
+          {/* grid */}
+          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+            {date && (
+              <div>
+                <p className="text-white/50">{t.dateLabel}</p>
+                <p className="font-medium">{date}</p>
+              </div>
+            )}
+
+            {dropOff && (
+              <div>
+                <p className="text-white/50">{t.dropOffLabel}</p>
+                <p className="font-medium">{dropOff}</p>
+              </div>
+            )}
+
+            {pickUp && (
+              <div>
+                <p className="text-white/50">{t.estimatedPickUpLabel}</p>
+                <p className="font-medium">{pickUp}</p>
+              </div>
+            )}
+          </div>
+
+          {/* payment note */}
+          <p className="mt-5 text-sm text-amber-400">
+            {t.paymentOnSite}
+          </p>
+        </div>
+
+        {/* QR HERO */}
+        <div className="text-center">
+          <p className="mb-3 text-sm text-white/50">
             {t.showQrAtReception}
           </p>
 
-          <div className="inline-block rounded-[18px] border border-neutral-900 bg-white p-3">
-            <img
-              src={qrCodeUrl}
-              alt={`${t.qrAltPrefix} ${booking.booking_code}`}
-              width={220}
-              height={220}
-              className="mx-auto rounded-lg"
-            />
+          <div className="inline-block rounded-[24px] bg-white p-4">
+            <img src={qrCodeUrl} width={220} height={220} />
           </div>
-        </section>
+        </div>
 
-        <section className="rounded-[22px] border border-neutral-300 bg-white p-6 text-center">
-          <h2 className="mb-2 text-lg font-semibold text-neutral-900">
-            {t.installAppTitle}
-          </h2>
-          <p className="mx-auto max-w-xl text-sm leading-6 text-neutral-600">
-            {t.installAppText}
-          </p>
+        {/* ACTION */}
+        <Link
+          href="/"
+          className="block w-full rounded-full bg-white py-4 text-center font-semibold text-black"
+        >
+          Back to home
+        </Link>
 
-          <div className="mt-4">
-            <Link
-              href={bookingUrl}
-              className="inline-flex rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-800"
-            >
-              {t.openInApp}
-            </Link>
-          </div>
-        </section>
-
-        {reviewUrl ? (
-          <section className="rounded-[22px] border border-neutral-300 bg-white p-6 text-center">
-            <h2 className="mb-2 text-lg font-semibold text-neutral-900">
-              Enjoyed the service?
-            </h2>
-            <p className="mx-auto max-w-xl text-sm leading-6 text-neutral-600">
-              If everything went well, your Google review helps us a lot.
-            </p>
-
-            <div className="mt-4">
-              <a
-                href={reviewUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex rounded-full bg-neutral-900 px-5 py-3 text-sm font-semibold text-white hover:bg-neutral-800"
-              >
-                Leave a Google review
-              </a>
-            </div>
-          </section>
-        ) : null}
-
-        <p className="pb-4 text-center text-sm text-neutral-600">
-          Alicantissima | Luggage Storage & Shower Lounge
+        {/* FOOTER */}
+        <p className="text-center text-xs text-white/30">
+          Alicantissima · Luggage & Shower Lounge
         </p>
       </div>
     </main>
