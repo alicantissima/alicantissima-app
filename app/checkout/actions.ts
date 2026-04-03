@@ -206,8 +206,6 @@ function buildConfirmationEmailText(params: {
   lines.push(`${t.checkInQrTitle}`);
   lines.push(t.showQrAtReception);
   lines.push("");
-  lines.push(`${t.installAppTitle}`);
-  lines.push(t.installAppText);
   lines.push(`${t.openInApp}: ${params.bookingUrl}`);
   lines.push("");
   lines.push("Alicantissima | Luggage Storage & Shower Lounge");
@@ -346,22 +344,14 @@ function buildConfirmationEmailHtml(params: {
           </div>
         </div>
 
-        <div style="background:#ffffff; border:1px solid #d1d5db; border-radius:22px; padding:20px 22px; margin:0 0 22px 0; text-align:center;">
-          <h2 style="margin:0 0 10px 0; font-size:18px; line-height:24px; color:#111827; font-weight:700;">
-            ${t.installAppTitle}
-          </h2>
-
-          <p style="margin:0 0 16px 0; font-size:14px; line-height:21px; color:#4b5563;">
-            ${t.installAppText}
-          </p>
-
-          <a
-            href="${params.bookingUrl}"
-            style="display:inline-block; padding:11px 18px; border-radius:999px; background:#0f766e; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
-          >
-            ${t.openInApp}
-          </a>
-        </div>
+        <div style="text-align:center; margin:0 0 22px 0;">
+  <a
+    href="${params.bookingUrl}"
+    style="display:inline-block; padding:14px 22px; border-radius:999px; background:#111827; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
+  >
+    ${t.openInApp}
+  </a>
+</div>
 
         <p style="margin:24px 0 0 0; text-align:center; font-size:14px; line-height:21px; color:#374151;">
           Alicantissima | Luggage Storage & Shower Lounge
