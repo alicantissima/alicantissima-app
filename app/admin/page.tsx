@@ -13,6 +13,7 @@ import AdminStatusSelect from "@/components/admin-status-select";
 
 export const revalidate = 0;
 
+
 type BookingRow = {
   id: string;
   created_at: string;
