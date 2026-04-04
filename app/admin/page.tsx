@@ -162,48 +162,63 @@ function getSourceRowClass(source?: string | null) {
 }
 
 function getItemCode(item: BookingItemRow) {
-  const productCode = item.meta?.product_code?.toLowerCase().trim();
+  const productCode = item.meta?.product_code?.toLowerCase().trim() ?? "";
   const productType = item.product_type?.toLowerCase().trim() ?? "";
   const title = item.title?.toLowerCase().trim() ?? "";
 
-  const candidates = [productCode, productType, title].filter(Boolean).join(" ");
+  const dropOffTime =
+    typeof item.meta?.dropOffTime === "string" ? item.meta.dropOffTime.trim() : "";
+  const pickUpTime =
+    typeof item.meta?.pickUpTime === "string" ? item.meta.pickUpTime.trim() : "";
+  const showerTime =
+    typeof item.meta?.showerTime === "string" ? item.meta.showerTime.trim() : "";
+
+  const hasBagSignal = !!dropOffTime || !!pickUpTime;
+  const hasShowerSignal = !!showerTime;
+
+  const text = [productCode, productType, title].filter(Boolean).join(" ");
+
+  const hasBagWord =
+    text.includes("luggage") ||
+    text.includes("bag") ||
+    text.includes("bags") ||
+    text.includes("bagagem") ||
+    text.includes("maleta") ||
+    text.includes("bagagli") ||
+    text.includes("bagaglio");
+
+  const hasShowerWord =
+    text.includes("shower") ||
+    text.includes("ducha") ||
+    text.includes("duche") ||
+    text.includes("doccia");
 
   if (
     productCode === "combo" ||
     productType === "combo" ||
-    candidates.includes("combo") ||
-    ((candidates.includes("luggage") ||
-      candidates.includes("bag") ||
-      candidates.includes("bags") ||
-      candidates.includes("bagagem") ||
-      candidates.includes("maleta")) &&
-      (candidates.includes("shower") ||
-        candidates.includes("ducha") ||
-        candidates.includes("duche")))
+    text.includes("combo") ||
+    (hasBagSignal && hasShowerSignal) ||
+    (hasBagWord && hasShowerWord)
   ) {
     return "combo";
   }
 
   if (
-    productCode === "luggage" ||
-    productType === "luggage" ||
-    candidates.includes("luggage") ||
-    candidates.includes("bag") ||
-    candidates.includes("bags") ||
-    candidates.includes("bagagem") ||
-    candidates.includes("maleta")
+    productCode === "shower" ||
+    productType === "shower" ||
+    hasShowerSignal ||
+    hasShowerWord
   ) {
-    return "luggage";
+    return "shower";
   }
 
   if (
-    productCode === "shower" ||
-    productType === "shower" ||
-    candidates.includes("shower") ||
-    candidates.includes("ducha") ||
-    candidates.includes("duche")
+    productCode === "luggage" ||
+    productType === "luggage" ||
+    hasBagSignal ||
+    hasBagWord
   ) {
-    return "shower";
+    return "luggage";
   }
 
   return null;
