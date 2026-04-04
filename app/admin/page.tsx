@@ -401,7 +401,13 @@ function renderSectionTable({
 </td>
 
 <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-  {getFirstTimeSlot(meta.time_out || meta.pick_up || meta.shower_time || meta.checkout_time)}
+  {booking.check_out_at
+    ? new Intl.DateTimeFormat("pt-PT", {
+        timeZone: "Europe/Madrid",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(booking.check_out_at))
+    : getFirstTimeSlot(meta.time_out || meta.pick_up || meta.shower_time)}
 </td>
 
                   <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
