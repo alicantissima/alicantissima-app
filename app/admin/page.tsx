@@ -392,7 +392,7 @@ function renderSectionTable({
                   </td>
 
                   <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-  {getFirstTimeSlot(meta.time_in)}
+  {getFirstTimeSlot(meta.time_out || meta.pick_up || meta.shower_time || meta.checkout_time)}
 </td>
 
 <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
@@ -482,12 +482,15 @@ export default async function AdminPage({
         : current.time_in;
 
     const timeOut =
-      typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
-        ? item.meta.time_out
-        : typeof item.meta?.pickUpTime === "string" &&
-          item.meta.pickUpTime.trim() !== ""
-        ? item.meta.pickUpTime
-        : current.time_out;
+  typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
+    ? item.meta.time_out
+    : typeof item.meta?.pickUpTime === "string" &&
+      item.meta.pickUpTime.trim() !== ""
+    ? item.meta.pickUpTime
+    : typeof item.meta?.showerTime === "string" &&
+      item.meta.showerTime.trim() !== ""
+    ? item.meta.showerTime
+    : current.time_out;
 
     const city =
       typeof item.meta?.city === "string" && item.meta.city.trim() !== ""
