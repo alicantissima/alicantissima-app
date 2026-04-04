@@ -28,8 +28,8 @@ type BookingRow = {
   city?: string | null;
   service_date?: string | null;
   booking_date?: string | null;
-  check_in_at?: string | null;
-  check_out_at?: string | null;
+  check_in_time?: string | null;
+  check_out_time?: string | null;
 };
 
 type BookingItemRow = {
@@ -401,13 +401,13 @@ function renderSectionTable({
 </td>
 
 <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-  {booking.check_out_at
-    ? new Intl.DateTimeFormat("pt-PT", {
-        timeZone: "Europe/Madrid",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(booking.check_out_at))
-    : getFirstTimeSlot(meta.time_out || meta.pick_up || meta.shower_time)}
+  {booking.check_out_time
+  ? new Intl.DateTimeFormat("pt-PT", {
+      timeZone: "Europe/Madrid",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(booking.check_out_time))
+  : getFirstTimeSlot(meta.time_out || meta.pick_up || meta.shower_time)}
 </td>
 
                   <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
@@ -724,17 +724,15 @@ insideBookings.sort((a, b) => {
 });
 
 finishedBookings.sort((a, b) => {
-  const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
-  const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
+  const aTime = a.check_out_time
+    ? new Date(a.check_out_time).getTime()
+    : 0;
 
-  const aOut = getSortableTime(
-    aMeta.time_out || aMeta.pick_up || aMeta.shower_time || aMeta.checkout_time
-  );
-  const bOut = getSortableTime(
-    bMeta.time_out || bMeta.pick_up || bMeta.shower_time || bMeta.checkout_time
-  );
+  const bTime = b.check_out_time
+    ? new Date(b.check_out_time).getTime()
+    : 0;
 
-  return bOut.localeCompare(aOut);
+  return bTime - aTime;
 });
 
   const upcomingTotal = upcomingBookings.reduce(
