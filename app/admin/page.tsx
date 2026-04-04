@@ -113,6 +113,11 @@ function normalizeStatus(status: string) {
   return "booked";
 }
 
+function getSortableTime(value?: string | null) {
+  if (!value) return "99:99";
+  return getFirstTimeSlot(value).replace("h", ":");
+}
+
 function getStatusClass(status: string) {
   const normalized = normalizeStatus(status);
 
@@ -697,6 +702,34 @@ export default async function AdminPage({
     upcomingBookings.push(booking);
   }
 }
+
+insideBookings.sort((a, b) => {
+  const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
+  const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
+
+  const aOut = getSortableTime(
+    aMeta.time_out || aMeta.pick_up || aMeta.shower_time || aMeta.checkout_time
+  );
+  const bOut = getSortableTime(
+    bMeta.time_out || bMeta.pick_up || bMeta.shower_time || bMeta.checkout_time
+  );
+
+  return aOut.localeCompare(bOut);
+});
+
+finishedBookings.sort((a, b) => {
+  const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
+  const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
+
+  const aOut = getSortableTime(
+    aMeta.time_out || aMeta.pick_up || aMeta.shower_time || aMeta.checkout_time
+  );
+  const bOut = getSortableTime(
+    bMeta.time_out || bMeta.pick_up || bMeta.shower_time || bMeta.checkout_time
+  );
+
+  return bOut.localeCompare(aOut);
+});
 
   const upcomingTotal = upcomingBookings.reduce(
     (sum, booking) => sum + Number(booking.total_amount || 0),
