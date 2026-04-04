@@ -392,11 +392,11 @@ function renderSectionTable({
                   </td>
 
                   <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-  {getFirstTimeSlot(meta.time_out || meta.pick_up || meta.shower_time || meta.checkout_time)}
+  {getFirstTimeSlot(meta.time_in || meta.drop_off)}
 </td>
 
 <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-  {getFirstTimeSlot(meta.time_out ?? meta.checkout_time)}
+  {getFirstTimeSlot(meta.time_out || meta.pick_up || meta.shower_time || meta.checkout_time)}
 </td>
 
                   <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
