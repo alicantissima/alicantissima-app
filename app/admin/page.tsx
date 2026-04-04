@@ -13,7 +13,6 @@ import AdminStatusSelect from "@/components/admin-status-select";
 
 export const revalidate = 0;
 
-
 type BookingRow = {
   id: string;
   created_at: string;
@@ -95,11 +94,29 @@ function getFirstTimeSlot(value?: string | null) {
   return value.split("-")[0]?.trim() || "-";
 }
 
+function getSortableTime(value?: string | null) {
+  if (!value) return "99:99";
+  return getFirstTimeSlot(value).replace("h", ":");
+}
+
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("pt-PT", {
     style: "currency",
     currency,
   }).format(amount);
+}
+
+function formatRealTime(value?: string | null) {
+  if (!value) return "-";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat("pt-PT", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function normalizeStatus(status: string) {
@@ -111,56 +128,6 @@ function normalizeStatus(status: string) {
   if (status === "cancelled") return "cancelled";
   if (status === "no_show") return "no_show";
   return "booked";
-}
-
-function getSortableTime(value?: string | null) {
-  if (!value) return "99:99";
-  return getFirstTimeSlot(value).replace("h", ":");
-}
-
-function getStatusClass(status: string) {
-  const normalized = normalizeStatus(status);
-
-  if (normalized === "booked") {
-    return "bg-yellow-100 text-yellow-800 border-yellow-200";
-  }
-
-  if (normalized === "inside") {
-    return "bg-green-100 text-green-800 border-green-200";
-  }
-
-  if (normalized === "completed") {
-    return "bg-gray-200 text-gray-800 border-gray-300";
-  }
-
-  if (normalized === "cancelled") {
-    return "bg-red-100 text-red-700 border-red-200";
-  }
-
-  if (normalized === "no_show") {
-    return "bg-orange-100 text-orange-800 border-orange-200";
-  }
-
-  return "bg-gray-100 text-gray-700 border-gray-200";
-}
-
-function getStatusLabel(status: string) {
-  const normalized = normalizeStatus(status);
-
-  switch (normalized) {
-    case "booked":
-      return "BOOKED";
-    case "inside":
-      return "INSIDE";
-    case "completed":
-      return "COMPLETED";
-    case "cancelled":
-      return "CANCELLED";
-    case "no_show":
-      return "NO SHOW";
-    default:
-      return "BOOKED";
-  }
 }
 
 function getSourceRowClass(source?: string | null) {
@@ -326,6 +293,7 @@ function renderSectionTable({
               const normalizedStatus = normalizeStatus(booking.status);
               const isFilteredMatch = codeFilter === booking.booking_code;
               const sourceRowClass = getSourceRowClass(booking.source ?? null);
+              const isFinished = normalizedStatus === "completed";
 
               const rowClass = cancelled
                 ? "bg-red-50/40"
@@ -397,18 +365,18 @@ function renderSectionTable({
                   </td>
 
                   <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-  {getFirstTimeSlot(meta.time_in || meta.drop_off)}
-</td>
+                    {isFinished
+                      ? formatRealTime(booking.check_in_time)
+                      : getFirstTimeSlot(meta.time_in || meta.drop_off)}
+                  </td>
 
-<td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-  {booking.check_out_time
-  ? new Intl.DateTimeFormat("pt-PT", {
-      timeZone: "Europe/Madrid",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(booking.check_out_time))
-  : getFirstTimeSlot(meta.time_out || meta.pick_up || meta.shower_time)}
-</td>
+                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+                    {isFinished
+                      ? formatRealTime(booking.check_out_time)
+                      : getFirstTimeSlot(
+                          meta.time_out || meta.pick_up || meta.shower_time
+                        )}
+                  </td>
 
                   <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
                     {formatCurrency(Number(booking.total_amount), booking.currency)}
@@ -493,15 +461,15 @@ export default async function AdminPage({
         : current.time_in;
 
     const timeOut =
-  typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
-    ? item.meta.time_out
-    : typeof item.meta?.pickUpTime === "string" &&
-      item.meta.pickUpTime.trim() !== ""
-    ? item.meta.pickUpTime
-    : typeof item.meta?.showerTime === "string" &&
-      item.meta.showerTime.trim() !== ""
-    ? item.meta.showerTime
-    : current.time_out;
+      typeof item.meta?.time_out === "string" && item.meta.time_out.trim() !== ""
+        ? item.meta.time_out
+        : typeof item.meta?.pickUpTime === "string" &&
+          item.meta.pickUpTime.trim() !== ""
+        ? item.meta.pickUpTime
+        : typeof item.meta?.showerTime === "string" &&
+          item.meta.showerTime.trim() !== ""
+        ? item.meta.showerTime
+        : current.time_out;
 
     const city =
       typeof item.meta?.city === "string" && item.meta.city.trim() !== ""
@@ -601,59 +569,59 @@ export default async function AdminPage({
   const citiesTodayCounts: Record<string, number> = {};
 
   for (const booking of ((bookings as BookingRow[]) ?? [])) {
-  const normalizedStatus = normalizeStatus(booking.status);
-  const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-  const bookingDate = meta.date;
+    const normalizedStatus = normalizeStatus(booking.status);
+    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+    const bookingDate = meta.date;
 
-  const itemsForBooking =
-    (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
+    const itemsForBooking =
+      (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
 
-  if (
-    isToday(bookingDate) &&
-    normalizedStatus !== "cancelled" &&
-    normalizedStatus !== "no_show"
-  ) {
-    const currentSource = (booking.source ?? "choose") as SourceKey;
+    if (
+      isToday(bookingDate) &&
+      normalizedStatus !== "cancelled" &&
+      normalizedStatus !== "no_show"
+    ) {
+      const currentSource = (booking.source ?? "choose") as SourceKey;
 
-    const computedRevenue = itemsForBooking.reduce(
-      (sum, item) => sum + Number(item.line_total ?? 0),
-      0
-    );
+      const computedRevenue = itemsForBooking.reduce(
+        (sum, item) => sum + Number(item.line_total ?? 0),
+        0
+      );
 
-    const bookingRevenue =
-      computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
+      const bookingRevenue =
+        computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
 
-    revenueToday += bookingRevenue;
+      revenueToday += bookingRevenue;
 
-    if (currentSource in sourceTodayCounts) {
-      sourceTodayCounts[currentSource]++;
-      sourceTodayRevenue[currentSource] += bookingRevenue;
+      if (currentSource in sourceTodayCounts) {
+        sourceTodayCounts[currentSource]++;
+        sourceTodayRevenue[currentSource] += bookingRevenue;
+      }
+
+      for (const item of itemsForBooking) {
+        const code = getItemCode(item);
+
+        if (code === "luggage") bagsToday += item.quantity;
+        if (code === "shower") showersToday += item.quantity;
+        if (code === "combo") combosToday += item.quantity;
+      }
+
+      const cityName = (booking.city ?? meta.city ?? "").trim();
+
+      if (cityName) {
+        citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
+      }
     }
 
-    for (const item of itemsForBooking) {
-      const code = getItemCode(item);
+    if (normalizedStatus === "inside") {
+      for (const item of itemsForBooking) {
+        const code = getItemCode(item);
 
-      if (code === "luggage") bagsToday += item.quantity;
-      if (code === "shower") showersToday += item.quantity;
-      if (code === "combo") combosToday += item.quantity;
-    }
-
-    const cityName = (booking.city ?? meta.city ?? "").trim();
-
-    if (cityName) {
-      citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
+        if (code === "luggage") bagsInside += item.quantity;
+        if (code === "shower") showersInside += item.quantity;
+      }
     }
   }
-
-  if (normalizedStatus === "inside") {
-    for (const item of itemsForBooking) {
-      const code = getItemCode(item);
-
-      if (code === "luggage") bagsInside += item.quantity;
-      if (code === "shower") showersInside += item.quantity;
-    }
-  }
-}
 
   const sortedBookings = [...((bookings as BookingRow[]) ?? [])].sort((a, b) => {
     const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
@@ -676,64 +644,59 @@ export default async function AdminPage({
   const cancelledBookings: BookingRow[] = [];
 
   for (const booking of sortedBookings) {
-  const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-  const date = meta.date;
-  const status = normalizeStatus(booking.status);
+    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+    const date = meta.date;
+    const status = normalizeStatus(booking.status);
 
-  if (status === "inside") {
-    insideBookings.push(booking);
-    continue;
-  }
-
-  if (status === "cancelled" || status === "no_show") {
-    if (isToday(date)) {
-      cancelledBookings.push(booking);
+    if (status === "inside") {
+      insideBookings.push(booking);
+      continue;
     }
-    continue;
-  }
 
-  if (status === "completed") {
-    if (isToday(date)) {
-      finishedBookings.push(booking);
+    if (status === "cancelled" || status === "no_show") {
+      if (isToday(date)) {
+        cancelledBookings.push(booking);
+      }
+      continue;
     }
-    continue;
+
+    if (status === "completed") {
+      if (isToday(date)) {
+        finishedBookings.push(booking);
+      }
+      continue;
+    }
+
+    if (isToday(date)) {
+      todayBookings.push(booking);
+      continue;
+    }
+
+    if (isFuture(date)) {
+      upcomingBookings.push(booking);
+    }
   }
 
-  if (isToday(date)) {
-    todayBookings.push(booking);
-    continue;
-  }
+  insideBookings.sort((a, b) => {
+    const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
+    const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
 
-  if (isFuture(date)) {
-    upcomingBookings.push(booking);
-  }
-}
+    const aOut = getSortableTime(
+      aMeta.time_out || aMeta.pick_up || aMeta.shower_time || aMeta.checkout_time
+    );
+    const bOut = getSortableTime(
+      bMeta.time_out || bMeta.pick_up || bMeta.shower_time || bMeta.checkout_time
+    );
 
-insideBookings.sort((a, b) => {
-  const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
-  const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
+    return aOut.localeCompare(bOut);
+  });
 
-  const aOut = getSortableTime(
-    aMeta.time_out || aMeta.pick_up || aMeta.shower_time || aMeta.checkout_time
-  );
-  const bOut = getSortableTime(
-    bMeta.time_out || bMeta.pick_up || bMeta.shower_time || bMeta.checkout_time
-  );
+  finishedBookings.sort((a, b) => {
+    const aTime = a.check_out_time ? new Date(a.check_out_time).getTime() : 0;
+    const bTime = b.check_out_time ? new Date(b.check_out_time).getTime() : 0;
 
-  return aOut.localeCompare(bOut);
-});
-
-finishedBookings.sort((a, b) => {
-  const aTime = a.check_out_time
-    ? new Date(a.check_out_time).getTime()
-    : 0;
-
-  const bTime = b.check_out_time
-    ? new Date(b.check_out_time).getTime()
-    : 0;
-
-  return bTime - aTime;
-});
+    return bTime - aTime;
+  });
 
   const upcomingTotal = upcomingBookings.reduce(
     (sum, booking) => sum + Number(booking.total_amount || 0),
@@ -749,57 +712,57 @@ finishedBookings.sort((a, b) => {
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
-  <AdminAutoRefresh intervalMs={60000} />
+      <AdminAutoRefresh intervalMs={60000} />
 
-  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-    <div>
-      <h1 className="text-2xl font-bold">Admin · Reservas</h1>
-      <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
-    </div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Admin · Reservas</h1>
+          <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
+        </div>
 
-    <div className="flex flex-col items-start gap-2 lg:items-end">
-      <div className="mt-1 flex flex-wrap items-center gap-2">
-        <Link
-          href="/desk"
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-        >
-          Abrir Desk
-        </Link>
+        <div className="flex flex-col items-start gap-2 lg:items-end">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <Link
+              href="/desk"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+            >
+              Abrir Desk
+            </Link>
 
-        <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
-      </div>
+            <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+          </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <AdminQrScanner className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+          <div className="flex flex-wrap items-center gap-2">
+            <AdminQrScanner className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
 
-        <Link
-          href="/admin/history"
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-        >
-          Histórico
-        </Link>
+            <Link
+              href="/admin/history"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+            >
+              Histórico
+            </Link>
 
-        <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
-          Total visíveis:
-          <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
+            <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
+              Total visíveis:
+              <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  {codeFilter && (
-    <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-      Showing booking: <strong>{codeFilter}</strong>
-      <Link href="/admin" className="ml-3 underline">
-        Clear filter
-      </Link>
-    </div>
-  )}
+      {codeFilter && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          Showing booking: <strong>{codeFilter}</strong>
+          <Link href="/admin" className="ml-3 underline">
+            Clear filter
+          </Link>
+        </div>
+      )}
 
       <section className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         <div className="rounded-xl border px-4 py-3">
           <div className="text-xs text-gray-500">Bags</div>
-<div className="text-xl font-bold">{bagsToday}</div>
+          <div className="text-xl font-bold">{bagsToday}</div>
         </div>
 
         <div className="rounded-xl border px-4 py-3">
@@ -816,6 +779,7 @@ finishedBookings.sort((a, b) => {
           <div className="text-xs text-gray-500">Bags in</div>
           <div className="text-xl font-bold">{bagsInside}</div>
         </div>
+
         <div className="rounded-xl border px-4 py-3">
           <div className="text-xs text-gray-500">Showers in</div>
           <div className="text-xl font-bold">{showersInside}</div>
@@ -830,43 +794,43 @@ finishedBookings.sort((a, b) => {
       </section>
 
       <section className="rounded-xl border p-4">
-  <div className="mb-3 text-sm font-semibold text-gray-700">
-    Results by source today
-  </div>
+        <div className="mb-3 text-sm font-semibold text-gray-700">
+          Results by source today
+        </div>
 
-  <div className="flex flex-wrap gap-2 text-sm">
-    {sourceKeys
-      .filter(
-        (key) => sourceTodayCounts[key] > 0 || sourceTodayRevenue[key] > 0
-      )
-      .map((key) => {
-        const colorClass =
-          key === "choose"
-            ? "bg-zinc-100 text-zinc-800"
-            : key === "site"
-            ? "bg-pink-100 text-pink-800"
-            : key === "viator"
-            ? "bg-green-100 text-green-800"
-            : key === "walkin"
-            ? "bg-orange-100 text-orange-800"
-            : key === "turismo"
-            ? "bg-sky-100 text-sky-800"
-            : key === "hector" ||
-              key === "pilar" ||
-              key === "melia" ||
-              key === "other_host"
-            ? "bg-yellow-100 text-yellow-800"
-            : "bg-purple-100 text-purple-800";
+        <div className="flex flex-wrap gap-2 text-sm">
+          {sourceKeys
+            .filter(
+              (key) => sourceTodayCounts[key] > 0 || sourceTodayRevenue[key] > 0
+            )
+            .map((key) => {
+              const colorClass =
+                key === "choose"
+                  ? "bg-zinc-100 text-zinc-800"
+                  : key === "site"
+                  ? "bg-pink-100 text-pink-800"
+                  : key === "viator"
+                  ? "bg-green-100 text-green-800"
+                  : key === "walkin"
+                  ? "bg-orange-100 text-orange-800"
+                  : key === "turismo"
+                  ? "bg-sky-100 text-sky-800"
+                  : key === "hector" ||
+                    key === "pilar" ||
+                    key === "melia" ||
+                    key === "other_host"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-purple-100 text-purple-800";
 
-        return (
-          <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-            {key}: {sourceTodayCounts[key]} ·{" "}
-            {formatCurrency(sourceTodayRevenue[key], "EUR")}
-          </span>
-        );
-      })}
-  </div>
-</section>
+              return (
+                <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+                  {key}: {sourceTodayCounts[key]} ·{" "}
+                  {formatCurrency(sourceTodayRevenue[key], "EUR")}
+                </span>
+              );
+            })}
+        </div>
+      </section>
 
       <section className="rounded-xl border p-4">
         <div className="mb-3 text-sm font-semibold text-gray-700">
@@ -929,12 +893,12 @@ finishedBookings.sort((a, b) => {
       </div>
 
       {renderSectionTable({
-  title: "Cancelled / No show",
-  bookings: cancelledBookings,
-  bookingMetaMap,
-  codeFilter,
-  cancelled: true,
-})}
+        title: "Cancelled / No show",
+        bookings: cancelledBookings,
+        bookingMetaMap,
+        codeFilter,
+        cancelled: true,
+      })}
     </main>
   );
 }
