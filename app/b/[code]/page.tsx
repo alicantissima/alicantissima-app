@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 
 type PageProps = {
@@ -91,6 +92,23 @@ export default async function BookingPage({ params }: PageProps) {
   if (!bookingCode) notFound();
 
   const supabase = createAdminClient();
+  const authSupabase = await createClient();
+
+  const {
+    data: { user },
+  } = await authSupabase.auth.getUser();
+
+  let isAdmin = false;
+
+  if (user) {
+    const { data: profile } = await authSupabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    isAdmin = profile?.role === "admin";
+  }
 
   const { data: booking } = await supabase
     .from("bookings")
@@ -127,10 +145,12 @@ export default async function BookingPage({ params }: PageProps) {
     language,
   });
 
+  const backHref = isAdmin ? "/admin" : "/";
+  const backLabel = isAdmin ? "Back to admin" : "Back to home";
+
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white">
       <div className="mx-auto max-w-md space-y-6">
-
         {/* HEADER */}
         <div className="text-center">
           <p className="text-sm text-white/50">Booking code</p>
@@ -141,7 +161,6 @@ export default async function BookingPage({ params }: PageProps) {
 
         {/* WALLET CARD */}
         <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-neutral-900 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
-
           {/* top */}
           <div className="flex items-start justify-between">
             <div>
@@ -211,10 +230,10 @@ export default async function BookingPage({ params }: PageProps) {
 
         {/* ACTION */}
         <Link
-          href="/"
+          href={backHref}
           className="block w-full rounded-full bg-white py-4 text-center font-semibold text-black"
         >
-          Back to home
+          {backLabel}
         </Link>
 
         {/* FOOTER */}
