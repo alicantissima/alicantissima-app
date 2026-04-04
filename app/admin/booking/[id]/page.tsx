@@ -67,6 +67,22 @@ export default async function BookingPage({ params }: PageProps) {
   const supabase = await createClient();
   const { id } = await params;
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let isAdmin = false;
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    isAdmin = profile?.role === "admin";
+  }
+
   const { data: booking, error } = await supabase
     .from("bookings")
     .select("*")
@@ -78,22 +94,25 @@ export default async function BookingPage({ params }: PageProps) {
   }
 
   const { data: bookingItemsData } = await supabase
-  .from("booking_items")
-  .select("id, title, quantity, line_total, product_type, meta")
-  .eq("booking_id", booking.id)
-  .order("id", { ascending: true });
+    .from("booking_items")
+    .select("id, title, quantity, line_total, product_type, meta")
+    .eq("booking_id", booking.id)
+    .order("id", { ascending: true });
 
-const bookingItems = (bookingItemsData ?? []) as BookingItem[];
+  const bookingItems = (bookingItemsData ?? []) as BookingItem[];
+
+  const backHref = isAdmin ? "/admin" : "/desk";
+  const backLabel = isAdmin ? "Return to admin" : "Return";
 
   return (
     <main className="mx-auto max-w-5xl space-y-4 p-4">
       <section className="rounded-xl border p-4 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
-            href="/desk"
+            href={backHref}
             className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
           >
-            Return
+            {backLabel}
           </Link>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
