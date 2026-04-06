@@ -308,9 +308,8 @@ function buildConfirmationEmailHtml(params: {
       const comments =
         typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
 
-      const titleBlock =
-  breakdown.length > 0
-    ? `
+      const titleBlock = breakdown.length > 0
+  ? `
       ${breakdown
         .map(
           (part) => `
@@ -331,22 +330,21 @@ function buildConfirmationEmailHtml(params: {
         )
         .join("")}
     `
-          `
-          : `
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-                  ${productTitle}
-                </td>
-                <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
-                  € ${formatPrice(item.totalPrice)}
-                </td>
-              </tr>
-            </table>
-            <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
-              ${t.qtyLabel}: ${item.quantity}
-            </p>
-          `;
+  : `
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+            ${productTitle}
+          </td>
+          <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
+            € ${formatPrice(item.totalPrice)}
+          </td>
+        </tr>
+      </table>
+      <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
+        ${t.qtyLabel}: ${item.quantity}
+      </p>
+    `;
 
       return `
         <div style="padding:0 0 18px 0; margin:0 0 18px 0; border-bottom:1px solid #d1d5db;">
