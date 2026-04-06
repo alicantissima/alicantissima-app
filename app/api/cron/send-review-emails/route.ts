@@ -268,26 +268,27 @@ function buildTrackedReviewUrl(params: {
 }
 
 export async function GET(request: NextRequest) {
-  const isVercelCron = request.headers.get("x-vercel-cron") === "1";
-  const manualSecret = request.nextUrl.searchParams.get("secret");
+  const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
+  const manualSecret = request.nextUrl.searchParams.get("secret");
+
+  const isVercelCronAuthorized =
+    !!cronSecret && authHeader === `Bearer ${cronSecret}`;
 
   const isManualAuthorized =
     !!cronSecret && !!manualSecret && manualSecret === cronSecret;
 
   console.log("=== SEND REVIEW EMAILS CRON START ===");
   console.log("Time:", new Date().toISOString());
-  console.log("x-vercel-cron:", request.headers.get("x-vercel-cron"));
-  console.log("isVercelCron:", isVercelCron);
+  console.log("authorization:", authHeader ? "present" : "missing");
+  console.log("user-agent:", request.headers.get("user-agent"));
+  console.log("isVercelCronAuthorized:", isVercelCronAuthorized);
   console.log("hasManualSecret:", !!manualSecret);
   console.log("isManualAuthorized:", isManualAuthorized);
 
-  if (!isVercelCron && !isManualAuthorized) {
+  if (!isVercelCronAuthorized && !isManualAuthorized) {
     console.log("Unauthorized request blocked.");
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 }
-    );
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
   const supabase = createAdminClient();
