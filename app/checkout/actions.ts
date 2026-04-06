@@ -88,6 +88,46 @@ function getLocalizedProductTitle(params: {
   return params.fallbackTitle;
 }
 
+type BookingBreakdownItem = {
+  label: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+};
+
+function getBreakdown(meta?: Record<string, unknown>): BookingBreakdownItem[] {
+  const raw = meta?.breakdown;
+
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") return null;
+
+      const item = entry as Record<string, unknown>;
+
+      const label =
+        typeof item.label === "string" ? item.label.trim() : "";
+
+      const quantity = Number(item.quantity);
+      const unitPrice = Number(item.unitPrice);
+      const totalPrice = Number(item.totalPrice);
+
+      if (!label) return null;
+      if (!Number.isFinite(quantity)) return null;
+      if (!Number.isFinite(unitPrice)) return null;
+      if (!Number.isFinite(totalPrice)) return null;
+
+      return {
+        label,
+        quantity,
+        unitPrice,
+        totalPrice,
+      };
+    })
+    .filter((value): value is BookingBreakdownItem => value !== null);
+}
+
 function buildBookingLines(params: {
   items: Array<{
     title: string;
@@ -100,7 +140,19 @@ function buildBookingLines(params: {
   const lines: string[] = [];
 
   params.items.forEach((item) => {
-    lines.push(`${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}`);
+    const breakdown = getBreakdown(item.meta);
+
+    if (breakdown.length > 0) {
+      breakdown.forEach((part) => {
+        lines.push(
+          `${part.quantity} × ${part.label} - € ${formatPrice(part.totalPrice)}`
+        );
+      });
+    } else {
+      lines.push(
+        `${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}`
+      );
+    }
 
     const date = formatHumanDate(item.meta?.date);
     const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
@@ -427,28 +479,44 @@ function buildInternalEmailHtml(params: {
   notes?: string | null;
 }) {
   const itemBlocks = params.items
-    .map((item) => {
-      const date = formatHumanDate(item.meta?.date);
-      const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
-      const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
-      const showerTime = formatTimeRange(item.meta?.showerTime);
-      const comments =
-        typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
+  .map((item) => {
+    const date = formatHumanDate(item.meta?.date);
+    const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
+    const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
+    const showerTime = formatTimeRange(item.meta?.showerTime);
+    const comments =
+      typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
+    const breakdown = getBreakdown(item.meta);
 
-      return `
-        <div style="margin:0 0 18px 0; padding:0 0 18px 0; border-bottom:1px solid #e5e7eb;">
-          <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-            ${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}
-          </p>
-          ${date ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Date: ${date}</p>` : ""}
-          ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Drop-off: ${dropOffTime}</p>` : ""}
-          ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Estimated pick-up: ${pickUpTime}</p>` : ""}
-          ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Shower time: ${showerTime}</p>` : ""}
-          ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Comments: ${comments}</p>` : ""}
-        </div>
-      `;
-    })
-    .join("");
+    const titleLines =
+      breakdown.length > 0
+        ? breakdown
+            .map(
+              (part) => `
+                <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+                  ${part.quantity} × ${part.label} - € ${formatPrice(part.totalPrice)}
+                </p>
+              `
+            )
+            .join("")
+        : `
+            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+              ${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}
+            </p>
+          `;
+
+    return `
+      <div style="margin:0 0 18px 0; padding:0 0 18px 0; border-bottom:1px solid #e5e7eb;">
+        ${titleLines}
+        ${date ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Date: ${date}</p>` : ""}
+        ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Drop-off: ${dropOffTime}</p>` : ""}
+        ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Estimated pick-up: ${pickUpTime}</p>` : ""}
+        ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Shower time: ${showerTime}</p>` : ""}
+        ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Comments: ${comments}</p>` : ""}
+      </div>
+    `;
+  })
+  .join("");
 
   return `
     <div style="margin:0; padding:0; background:#f7f7f2;">
