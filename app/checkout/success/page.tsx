@@ -63,6 +63,19 @@ function formatHumanDate(value?: string | null) {
   }).format(date);
 }
 
+function getBreakdownTotalQuantity(
+  breakdown?: Array<{
+    label: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }> | null
+) {
+  if (!Array.isArray(breakdown) || breakdown.length === 0) return null;
+
+  return breakdown.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+}
+
 function formatTimeRange(value?: string | null) {
   if (!value) return "";
   return value
@@ -157,60 +170,95 @@ export default async function CheckoutSuccessPage({
 
           <div className="space-y-5">
             {bookingItems.map((item) => {
-              const comments = item.meta?.comments?.trim();
+  const comments = item.meta?.comments?.trim();
+  const breakdown = Array.isArray(item.meta?.breakdown)
+    ? item.meta.breakdown
+    : [];
+  const hasBreakdown = breakdown.length > 0;
+  const totalItems = getBreakdownTotalQuantity(item.meta?.breakdown);
 
-              return (
-                <div
-                  key={item.id}
-                  className="border-b border-zinc-300 pb-5 last:border-b-0 last:pb-0"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <p className="text-base font-semibold text-zinc-900">
-                      {getLocalizedProductTitle(item, language)}
-                    </p>
-                    <p className="whitespace-nowrap text-base font-semibold text-zinc-900">
-                      € {Number(item.line_total).toFixed(2)}
-                    </p>
-                  </div>
+  return (
+    <div
+      key={item.id}
+      className="border-b border-zinc-300 pb-5 last:border-b-0 last:pb-0"
+    >
+      {hasBreakdown ? (
+        <div className="space-y-2">
+          {breakdown.map((part, index) => (
+            <div
+              key={`${item.id}-part-${index}`}
+              className="flex items-start justify-between gap-4"
+            >
+              <div>
+                <p className="text-base font-semibold text-zinc-900">
+                  {part.label}
+                </p>
+                <p className="mt-1 text-sm text-zinc-500">
+                  {t.qtyLabel}: {part.quantity}
+                </p>
+              </div>
 
-                  <p className="mt-1 text-sm text-zinc-500">
-                    {t.qtyLabel}: {item.quantity}
-                  </p>
+              <p className="whitespace-nowrap text-base font-semibold text-zinc-900">
+                € {Number(part.totalPrice).toFixed(2)}
+              </p>
+            </div>
+          ))}
 
-                  <div className="mt-3 space-y-1 text-[15px] leading-6 text-zinc-900">
-                    {bookingDate && (
-                      <p>
-                        <strong>{t.dateLabel}</strong> {bookingDate}
-                      </p>
-                    )}
+          <p className="mt-1 text-sm text-zinc-500">
+            {t.qtyLabel}: {totalItems}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-base font-semibold text-zinc-900">
+              {getLocalizedProductTitle(item, language)}
+            </p>
+            <p className="whitespace-nowrap text-base font-semibold text-zinc-900">
+              € {Number(item.line_total).toFixed(2)}
+            </p>
+          </div>
 
-                    {dropOffTime && (
-                      <p>
-                        <strong>{t.dropOffLabel}</strong> {dropOffTime}
-                      </p>
-                    )}
+          <p className="mt-1 text-sm text-zinc-500">
+            {t.qtyLabel}: {item.quantity}
+          </p>
+        </>
+      )}
 
-                    {pickUpTime && (
-                      <p>
-                        <strong>{t.estimatedPickUpLabel}</strong> {pickUpTime}
-                      </p>
-                    )}
+      <div className="mt-3 space-y-1 text-[15px] leading-6 text-zinc-900">
+        {bookingDate && (
+          <p>
+            <strong>{t.dateLabel}</strong> {bookingDate}
+          </p>
+        )}
 
-                    {showerTime && (
-                      <p>
-                        <strong>{t.showerTimeLabel}</strong> {showerTime}
-                      </p>
-                    )}
+        {dropOffTime && (
+          <p>
+            <strong>{t.dropOffLabel}</strong> {dropOffTime}
+          </p>
+        )}
 
-                    {comments && (
-                      <p>
-                        <strong>{t.commentsLabel}:</strong> {comments}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+        {pickUpTime && (
+          <p>
+            <strong>{t.estimatedPickUpLabel}</strong> {pickUpTime}
+          </p>
+        )}
+
+        {showerTime && (
+          <p>
+            <strong>{t.showerTimeLabel}</strong> {showerTime}
+          </p>
+        )}
+
+        {comments && (
+          <p>
+            <strong>{t.commentsLabel}:</strong> {comments}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+})}
           </div>
 
           <div className="mt-5 border-t border-zinc-300 pt-5">

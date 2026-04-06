@@ -218,32 +218,47 @@ function buildConfirmationEmailText(params: {
   lines.push(`${t.nameLabel} ${params.customerName}`);
 
   params.items.forEach((item) => {
-    const productTitle = getLocalizedProductTitle({
-      productType: item.productType,
-      fallbackTitle: item.title,
-      language: params.language,
+  const productTitle = getLocalizedProductTitle({
+    productType: item.productType,
+    fallbackTitle: item.title,
+    language: params.language,
+  });
+
+  const breakdown = getBreakdown(item.meta);
+  const date = formatHumanDate(item.meta?.date);
+  const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
+  const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
+  const showerTime = formatTimeRange(item.meta?.showerTime);
+  const comments = item.meta?.comments;
+
+  if (breakdown.length > 0) {
+    breakdown.forEach((part) => {
+      lines.push(`${part.label} - € ${formatPrice(part.totalPrice)}`);
+      lines.push(`${t.qtyLabel}: ${part.quantity}`);
     });
 
-    const date = formatHumanDate(item.meta?.date);
-    const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
-    const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
-    const showerTime = formatTimeRange(item.meta?.showerTime);
-    const comments = item.meta?.comments;
+    const totalItems = breakdown.reduce(
+      (sum, part) => sum + Number(part.quantity || 0),
+      0
+    );
 
+    lines.push(`${t.qtyLabel}: ${totalItems}`);
+  } else {
     lines.push(`${productTitle} - € ${formatPrice(item.totalPrice)}`);
     lines.push(`${t.qtyLabel}: ${item.quantity}`);
+  }
 
-    if (date) lines.push(`${t.dateLabel} ${date}`);
-    if (dropOffTime) lines.push(`${t.dropOffLabel} ${dropOffTime}`);
-    if (pickUpTime) lines.push(`${t.estimatedPickUpLabel} ${pickUpTime}`);
-    if (showerTime) lines.push(`${t.showerTimeLabel} ${showerTime}`);
+  if (date) lines.push(`${t.dateLabel} ${date}`);
+  if (dropOffTime) lines.push(`${t.dropOffLabel} ${dropOffTime}`);
+  if (pickUpTime) lines.push(`${t.estimatedPickUpLabel} ${pickUpTime}`);
+  if (showerTime) lines.push(`${t.showerTimeLabel} ${showerTime}`);
 
-    if (typeof comments === "string" && comments.trim()) {
-      lines.push(`${t.commentsLabel}: ${comments.trim()}`);
-    }
+  if (typeof comments === "string" && comments.trim()) {
+    lines.push(`${t.commentsLabel}: ${comments.trim()}`);
+  }
 
-    lines.push("");
-  });
+  lines.push("");
+});;
 
   lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
   lines.push("");
@@ -286,31 +301,50 @@ function buildConfirmationEmailHtml(params: {
 
   const itemBlocks = params.items
     .map((item) => {
-      const productTitle = getLocalizedProductTitle({
-        productType: item.productType,
-        fallbackTitle: item.title,
-        language: params.language,
-      });
+      const breakdown = getBreakdown(item.meta);
 
-      const date = formatHumanDate(item.meta?.date);
-      const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
-      const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
-      const showerTime = formatTimeRange(item.meta?.showerTime);
-      const comments =
-        typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
+const titleBlock =
+  breakdown.length > 0
+    ? `
+      ${breakdown
+        .map(
+          (part) => `
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;">
+              <tr>
+                <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+                  ${part.label}
+                </td>
+                <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
+                  € ${formatPrice(part.totalPrice)}
+                </td>
+              </tr>
+            </table>
+            <p style="margin:0 0 6px 0; font-size:14px; line-height:21px; color:#6b7280;">
+              ${t.qtyLabel}: ${part.quantity}
+            </p>
+          `
+        )
+        .join("")}
+      <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
+        ${t.qtyLabel}: ${breakdown.reduce((sum, part) => sum + Number(part.quantity || 0), 0)}
+      </p>
+    `
+    : `
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+            ${productTitle}
+          </td>
+          <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
+            € ${formatPrice(item.totalPrice)}
+          </td>
+        </tr>
+      </table>
 
-      return `
-        <div style="padding:0 0 18px 0; margin:0 0 18px 0; border-bottom:1px solid #d1d5db;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-            <tr>
-              <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-                ${productTitle}
-              </td>
-              <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
-                € ${formatPrice(item.totalPrice)}
-              </td>
-            </tr>
-          </table>
+      <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
+        ${t.qtyLabel}: ${item.quantity}
+      </p>
+    `;
 
           <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
             ${t.qtyLabel}: ${item.quantity}

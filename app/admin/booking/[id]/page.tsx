@@ -225,58 +225,64 @@ export default async function BookingPage({ params }: PageProps) {
           <p className="text-sm text-gray-500">Sem items associados.</p>
         ) : (
           <div className="space-y-3">
-            {bookingItems.map((item) => (
-              <div key={item.id} className="rounded-lg border p-3 space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="font-semibold">
-                    {item.title || item.product_type || "Item"}
-                  </div>
-                  <div className="text-sm font-medium">
-                    {Number(item.line_total ?? 0).toFixed(2)} €
-                  </div>
-                </div>
+            {bookingItems.map((item) => {
+  const hasBreakdown = !!(item.meta?.breakdown && item.meta.breakdown.length > 0);
+  const totalItems = getBreakdownTotalQuantity(item.meta?.breakdown);
 
-                <div className="grid gap-2 text-sm md:grid-cols-4">
-                  <div>
-                    <span className="text-gray-500">Qtd:</span> {item.quantity}
-                  </div>
+  return (
+    <div key={item.id} className="rounded-lg border p-3 space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="font-semibold">
+          {item.title || item.product_type || "Item"}
+        </div>
 
-                  <div>
-                    <span className="text-gray-500">Entrega:</span>{" "}
-                    {item.meta?.dropOffTime || "-"}
-                  </div>
+        {!hasBreakdown && (
+          <div className="text-sm font-medium">
+            {Number(item.line_total ?? 0).toFixed(2)} €
+          </div>
+        )}
+      </div>
 
-                  <div>
-                    <span className="text-gray-500">Recolha:</span>{" "}
-                    {item.meta?.pickUpTime || "-"}
-                  </div>
+      <div className="grid gap-2 text-sm md:grid-cols-4">
+        <div>
+          <span className="text-gray-500">Qtd:</span>{" "}
+          {totalItems ?? item.quantity}
+        </div>
 
-                  <div>
-                    <span className="text-gray-500">Duche:</span>{" "}
-                    {item.meta?.showerTime || "-"}
-                  </div>
-                </div>
+        <div>
+          <span className="text-gray-500">Entrega:</span>{" "}
+          {item.meta?.dropOffTime || "-"}
+        </div>
 
-                {item.meta?.breakdown && item.meta.breakdown.length > 0 && (
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <div className="mb-2 text-sm font-medium">Breakdown</div>
-                    <div className="space-y-1 text-sm">
-                      {item.meta.breakdown.map((b, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between gap-3"
-                        >
-                          <span>
-                            {b.label} × {b.quantity}
-                          </span>
-                          <span>{Number(b.totalPrice).toFixed(2)} €</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        <div>
+          <span className="text-gray-500">Recolha:</span>{" "}
+          {item.meta?.pickUpTime || "-"}
+        </div>
+
+        <div>
+          <span className="text-gray-500">Duche:</span>{" "}
+          {item.meta?.showerTime || "-"}
+        </div>
+      </div>
+
+      {hasBreakdown && (
+        <div className="rounded-lg bg-gray-50 p-3">
+          <div className="mb-2 text-sm font-medium">Breakdown</div>
+          <div className="space-y-1 text-sm">
+            {item.meta!.breakdown!.map((b, index) => (
+              <div key={index} className="flex justify-between gap-3">
+                <span>
+                  {b.label} × {b.quantity}
+                </span>
+                <span>{Number(b.totalPrice).toFixed(2)} €</span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+})}
           </div>
         )}
       </section>

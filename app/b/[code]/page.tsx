@@ -85,6 +85,19 @@ function getLocalizedProductTitle({
   return fallbackTitle || t.itemFallback;
 }
 
+function getBreakdownTotalQuantity(
+  breakdown?: Array<{
+    label: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }> | null
+) {
+  if (!Array.isArray(breakdown) || breakdown.length === 0) return null;
+
+  return breakdown.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+}
+
 export default async function BookingPage({ params }: PageProps) {
   const { code } = await params;
   const bookingCode = code?.trim().toUpperCase();
