@@ -197,6 +197,29 @@ function getItemCode(item: BookingItemRow) {
   return null;
 }
 
+function getBreakdown(item: BookingItemRow) {
+  return Array.isArray(item.meta?.breakdown) ? item.meta.breakdown : [];
+}
+
+function getExtraShowerQty(item: BookingItemRow) {
+  return getBreakdown(item).reduce((sum, part) => {
+    const label = part.label?.toLowerCase().trim() ?? "";
+
+    const isExtraShower =
+      label.includes("additional shower") ||
+      label.includes("extra shower") ||
+      label === "shower" ||
+      label === "showers" ||
+      label.includes("duche extra") ||
+      label.includes("ducha extra") ||
+      label.includes("doccia extra");
+
+    if (!isExtraShower) return sum;
+
+    return sum + Number(part.quantity || 0);
+  }, 0);
+}
+
 function getTodayString() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Madrid",
@@ -445,12 +468,16 @@ export default async function AdminPage({
     const code = getItemCode(item);
 
     let bags = current.bags;
-    let showers = current.showers;
-    let combo = current.combo;
+let showers = current.showers;
+let combo = current.combo;
 
-    if (code === "luggage") bags += item.quantity;
-    if (code === "shower") showers += item.quantity;
-    if (code === "combo") combo += item.quantity;
+const extraShowerQty = getExtraShowerQty(item);
+
+if (code === "luggage") bags += item.quantity;
+if (code === "shower") showers += item.quantity;
+if (code === "combo") combo += item.quantity;
+
+showers += extraShowerQty;
 
     const timeIn =
       typeof item.meta?.time_in === "string" && item.meta.time_in.trim() !== ""
@@ -599,12 +626,15 @@ export default async function AdminPage({
       }
 
       for (const item of itemsForBooking) {
-        const code = getItemCode(item);
+  const code = getItemCode(item);
+  const extraShowerQty = getExtraShowerQty(item);
 
-        if (code === "luggage") bagsToday += item.quantity;
-        if (code === "shower") showersToday += item.quantity;
-        if (code === "combo") combosToday += item.quantity;
-      }
+  if (code === "luggage") bagsToday += item.quantity;
+  if (code === "shower") showersToday += item.quantity;
+  if (code === "combo") combosToday += item.quantity;
+
+  showersToday += extraShowerQty;
+}
 
       const cityName = (booking.city ?? meta.city ?? "").trim();
 
@@ -615,11 +645,14 @@ export default async function AdminPage({
 
     if (normalizedStatus === "inside") {
       for (const item of itemsForBooking) {
-        const code = getItemCode(item);
+  const code = getItemCode(item);
+  const extraShowerQty = getExtraShowerQty(item);
 
-        if (code === "luggage") bagsInside += item.quantity;
-        if (code === "shower") showersInside += item.quantity;
-      }
+  if (code === "luggage") bagsInside += item.quantity;
+  if (code === "shower") showersInside += item.quantity;
+
+  showersInside += extraShowerQty;
+}
     }
   }
 
