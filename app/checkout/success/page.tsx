@@ -134,6 +134,24 @@ export default async function CheckoutSuccessPage({
 
   const bookingItems = (items ?? []) as BookingItem[];
 
+const totalItemsAll = bookingItems.reduce((sum, item) => {
+  const breakdown = Array.isArray(item.meta?.breakdown)
+    ? item.meta.breakdown
+    : [];
+
+  if (breakdown.length > 0) {
+    return (
+      sum +
+      breakdown.reduce(
+        (innerSum, part) => innerSum + Number(part.quantity || 0),
+        0
+      )
+    );
+  }
+
+  return sum + Number(item.quantity || 0);
+}, 0);
+
   const firstMeta = bookingItems.find((item) => item.meta)?.meta ?? null;
   const bookingDate = formatHumanDate(firstMeta?.date ?? null);
   const dropOffTime = formatTimeRange(firstMeta?.dropOffTime ?? null);
@@ -262,14 +280,9 @@ export default async function CheckoutSuccessPage({
           </div>
 
           <div className="mt-5 border-t border-zinc-300 pt-5">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-lg font-semibold text-zinc-900">
-                {t.totalLabel}
-              </p>
-              <p className="whitespace-nowrap text-lg font-semibold text-zinc-900">
-                € {Number(booking.total_amount).toFixed(2)}
-              </p>
-            </div>
+            <p className="mb-3 text-sm text-zinc-500">
+  Total items: {totalItemsAll}
+</p>
 
             <p className="mt-3 text-[15px] leading-6 text-amber-700">
               {t.paymentOnSite}
