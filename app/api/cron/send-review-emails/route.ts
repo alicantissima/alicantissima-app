@@ -275,8 +275,19 @@ export async function GET(request: NextRequest) {
   const isManualAuthorized =
     !!cronSecret && !!manualSecret && manualSecret === cronSecret;
 
+  console.log("=== SEND REVIEW EMAILS CRON START ===");
+  console.log("Time:", new Date().toISOString());
+  console.log("x-vercel-cron:", request.headers.get("x-vercel-cron"));
+  console.log("isVercelCron:", isVercelCron);
+  console.log("hasManualSecret:", !!manualSecret);
+  console.log("isManualAuthorized:", isManualAuthorized);
+
   if (!isVercelCron && !isManualAuthorized) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    console.log("Unauthorized request blocked.");
+    return NextResponse.json(
+      { ok: false, error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   const supabase = createAdminClient();
@@ -299,70 +310,48 @@ export async function GET(request: NextRequest) {
     .is("review_email_sent_at", null);
 
   if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    console.error("Supabase query error:", error.message);
+    return NextResponse.json(
+      { ok: false, error: error.message },
+      { status: 500 }
+    );
   }
 
-    let sent = 0;
-  let skipped = 0;
-  let skippedNoEmail = 0;
-  let skippedInvalidEmail = 0;
-  let skippedNotDueYet = 0;
-  let skippedMaxLimit = 0;
+  console.log("Eligible raw bookings found:", bookings?.length || 0);
 
+  let sent = 0;
+  let skipped = 0;
   const errors: Array<{ booking_code: string; error: string }> = [];
-  const debug: Array<Record<string, unknown>> = [];
   const MAX_SENDS_PER_RUN = 50;
 
   for (const booking of bookings || []) {
     if (sent >= MAX_SENDS_PER_RUN) {
+      console.log(`Skipping ${booking.booking_code}: max sends per run reached`);
       skipped += 1;
-      skippedMaxLimit += 1;
-      debug.push({
-        booking_code: booking.booking_code,
-        action: "skip",
-        reason: "max_limit_reached",
-      });
       continue;
     }
 
     const email = booking.customer_email?.trim();
 
-    if (!email) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      console.log(`Skipping ${booking.booking_code}: invalid email`);
       skipped += 1;
-      skippedNoEmail += 1;
-      debug.push({
-        booking_code: booking.booking_code,
-        action: "skip",
-        reason: "missing_email",
-      });
-      continue;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      skipped += 1;
-      skippedInvalidEmail += 1;
-      debug.push({
-        booking_code: booking.booking_code,
-        action: "skip",
-        reason: "invalid_email",
-        email,
-      });
       continue;
     }
 
     const sendAt = getReviewSendAt(booking.check_out_time);
 
-    if (!sendAt || now < sendAt) {
+    if (!sendAt) {
+      console.log(`Skipping ${booking.booking_code}: invalid check_out_time`);
       skipped += 1;
-      skippedNotDueYet += 1;
-      debug.push({
-        booking_code: booking.booking_code,
-        action: "skip",
-        reason: "not_due_yet",
-        check_out_time: booking.check_out_time,
-        send_at: sendAt ? sendAt.toISOString() : null,
-        now: now.toISOString(),
-      });
+      continue;
+    }
+
+    if (now < sendAt) {
+      console.log(
+        `Skipping ${booking.booking_code}: not yet time. sendAt=${sendAt.toISOString()} now=${now.toISOString()}`
+      );
+      skipped += 1;
       continue;
     }
 
@@ -389,7 +378,9 @@ export async function GET(request: NextRequest) {
         language: booking.language,
       });
 
-      const resendResult = await sendEmail({
+      console.log(`Sending review email to ${booking.booking_code} -> ${email}`);
+
+      await sendEmail({
         to: email,
         subject: subjectByLanguage[language] || subjectByLanguage.en,
         text: buildReviewEmailText({
@@ -402,66 +393,34 @@ export async function GET(request: NextRequest) {
         }),
       });
 
-      const sentAtIso = new Date().toISOString();
-
       const { error: updateError } = await supabase
         .from("bookings")
         .update({
-          review_email_sent_at: sentAtIso,
+          review_email_sent_at: new Date().toISOString(),
         })
         .eq("id", booking.id);
 
       if (updateError) {
+        console.error(
+          `Sent BUT failed to update booking ${booking.booking_code}:`,
+          updateError.message
+        );
         errors.push({
           booking_code: booking.booking_code,
           error: updateError.message,
         });
-
-        debug.push({
-          booking_code: booking.booking_code,
-          action: "send_ok_update_failed",
-          email,
-          resend_id: resendResult.id,
-          update_error: updateError.message,
-        });
       } else {
+        console.log(`Sent successfully: ${booking.booking_code}`);
         sent += 1;
-
-        debug.push({
-          booking_code: booking.booking_code,
-          action: "sent",
-          email,
-          resend_id: resendResult.id,
-          review_email_sent_at: sentAtIso,
-        });
-
-        console.log("[review-email] sent", {
-          booking_code: booking.booking_code,
-          email,
-          resend_id: resendResult.id,
-          review_email_sent_at: sentAtIso,
-        });
       }
 
       await sleep(600);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
+      console.error(`Failed sending ${booking.booking_code}:`, message);
 
       errors.push({
         booking_code: booking.booking_code,
-        error: message,
-      });
-
-      debug.push({
-        booking_code: booking.booking_code,
-        action: "error",
-        email,
-        error: message,
-      });
-
-      console.error("[review-email] failed", {
-        booking_code: booking.booking_code,
-        email,
         error: message,
       });
 
@@ -469,17 +428,17 @@ export async function GET(request: NextRequest) {
     }
   }
 
-    return NextResponse.json({
-    ok: true,
-    now: now.toISOString(),
-    found: bookings?.length || 0,
+  console.log("=== SEND REVIEW EMAILS CRON END ===");
+  console.log({
     sent,
     skipped,
-    skippedNoEmail,
-    skippedInvalidEmail,
-    skippedNotDueYet,
-    skippedMaxLimit,
+    errorsCount: errors.length,
+  });
+
+  return NextResponse.json({
+    ok: true,
+    sent,
+    skipped,
     errors,
-    debug,
   });
 }
