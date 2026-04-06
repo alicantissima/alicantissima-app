@@ -193,8 +193,6 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
     ? item.meta.breakdown
     : [];
   const hasBreakdown = breakdown.length > 0;
-  const totalItems = getBreakdownTotalQuantity(item.meta?.breakdown);
-
   return (
     <div
       key={item.id}
@@ -276,19 +274,24 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
 })}
           </div>
 
-          <div className="mt-5 border-t border-zinc-300 pt-5">
+                    <div className="mt-5 border-t border-zinc-300 pt-5">
             <p className="mb-3 text-sm text-zinc-500">
-  Total items: {totalItemsAll}
-</p>
+              Total items: {totalItemsAll}
+            </p>
 
-<div className="flex items-center justify-between gap-4">
-  <p className="text-lg font-semibold text-zinc-900">
-    {t.totalLabel}
-  </p>
-  <p className="whitespace-nowrap text-lg font-semibold text-zinc-900">
-    € {Number(booking.total_amount).toFixed(2)}
-  </p>
-</div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-lg font-semibold text-zinc-900">
+                {t.totalLabel}
+              </p>
+              <p className="whitespace-nowrap text-lg font-semibold text-zinc-900">
+                € {Number(booking.total_amount).toFixed(2)}
+              </p>
+            </div>
+
+            <p className="mt-3 text-[15px] leading-6 text-amber-700">
+              {t.paymentOnSite}
+            </p>
+          </div>
         </section>
       )}
 
