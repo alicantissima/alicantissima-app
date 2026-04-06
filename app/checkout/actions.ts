@@ -324,61 +324,46 @@ function buildConfirmationEmailHtml(params: {
       const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
       const showerTime = formatTimeRange(item.meta?.showerTime);
       const comments =
-        typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
+        typeof item.meta?.comments === "string"
+          ? item.meta.comments.trim()
+          : "";
 
-      const titleBlock = breakdown.length > 0
-  ? `
-      ${breakdown
-        .map(
-          (part) => `
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;">
-              <tr>
-                <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-                  ${part.label}
-                </td>
-                <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
-                  € ${formatPrice(part.totalPrice)}
-                </td>
-              </tr>
-            </table>
-            <p style="margin:0 0 6px 0; font-size:14px; line-height:21px; color:#6b7280;">
-              ${t.qtyLabel}: ${part.quantity}
-            </p>
-          `
-        )
-        .join("")}
-    `
-  : `
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-            ${productTitle}
-          </td>
-          <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
-            € ${formatPrice(item.totalPrice)}
-          </td>
-        </tr>
-      </table>
-      <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
-        ${t.qtyLabel}: ${item.quantity}
-      </p>
-    `;
-
-const totalItemsAll = params.items.reduce((sum, item) => {
-  const breakdown = getBreakdown(item.meta);
-
-  if (breakdown.length > 0) {
-    return (
-      sum +
-      breakdown.reduce(
-        (innerSum, part) => innerSum + Number(part.quantity || 0),
-        0
-      )
-    );
-  }
-
-  return sum + Number(item.quantity || 0);
-}, 0);
+      const titleBlock =
+        breakdown.length > 0
+          ? breakdown
+              .map(
+                (part) => `
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;">
+                    <tr>
+                      <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+                        ${part.label}
+                      </td>
+                      <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
+                        € ${formatPrice(part.totalPrice)}
+                      </td>
+                    </tr>
+                  </table>
+                  <p style="margin:0 0 6px 0; font-size:14px; line-height:21px; color:#6b7280;">
+                    ${t.qtyLabel}: ${part.quantity}
+                  </p>
+                `
+              )
+              .join("")
+          : `
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+                    ${productTitle}
+                  </td>
+                  <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
+                    € ${formatPrice(item.totalPrice)}
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
+                ${t.qtyLabel}: ${item.quantity}
+              </p>
+            `;
 
       return `
         <div style="padding:0 0 18px 0; margin:0 0 18px 0; border-bottom:1px solid #d1d5db;">
@@ -393,6 +378,22 @@ const totalItemsAll = params.items.reduce((sum, item) => {
       `;
     })
     .join("");
+
+  const totalItemsAll = params.items.reduce((sum, item) => {
+    const breakdown = getBreakdown(item.meta);
+
+    if (breakdown.length > 0) {
+      return (
+        sum +
+        breakdown.reduce(
+          (innerSum, part) => innerSum + Number(part.quantity || 0),
+          0
+        )
+      );
+    }
+
+    return sum + Number(item.quantity || 0);
+  }, 0);
 
   return `
     <div style="margin:0; padding:0; background:#f3f4f6;">
@@ -419,19 +420,19 @@ const totalItemsAll = params.items.reduce((sum, item) => {
           ${itemBlocks}
 
           <p style="margin:0 0 10px 0; font-size:14px; line-height:21px; color:#6b7280;">
-  Total items: ${totalItemsAll}
-</p>
+            Total items: ${totalItemsAll}
+          </p>
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px 0;">
-  <tr>
-    <td style="font-size:17px; line-height:25px; color:#111827; font-weight:700;">
-      ${t.totalLabel}
-    </td>
-    <td align="right" style="font-size:17px; line-height:25px; color:#111827; font-weight:700; white-space:nowrap;">
-      € ${formatPrice(params.totalAmount)}
-    </td>
-  </tr>
-</table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px 0;">
+            <tr>
+              <td style="font-size:17px; line-height:25px; color:#111827; font-weight:700;">
+                ${t.totalLabel}
+              </td>
+              <td align="right" style="font-size:17px; line-height:25px; color:#111827; font-weight:700; white-space:nowrap;">
+                € ${formatPrice(params.totalAmount)}
+              </td>
+            </tr>
+          </table>
 
           <p style="margin:0; font-size:15px; line-height:23px; color:#ea580c;">
             ${t.paymentOnSite}
