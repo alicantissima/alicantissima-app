@@ -63,6 +63,19 @@ function formatMoney(amount?: number | null, currency?: string | null) {
   return `${value.toFixed(2)} ${currency ?? "EUR"}`;
 }
 
+function getBreakdownTotalQuantity(
+  breakdown?: Array<{
+    label: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }> | null
+) {
+  if (!Array.isArray(breakdown) || breakdown.length === 0) return null;
+
+  return breakdown.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+}
+
 export default async function BookingPage({ params }: PageProps) {
   const supabase = await createClient();
   const { id } = await params;
