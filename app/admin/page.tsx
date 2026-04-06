@@ -201,23 +201,45 @@ function getBreakdown(item: BookingItemRow) {
   return Array.isArray(item.meta?.breakdown) ? item.meta.breakdown : [];
 }
 
-function getExtraShowerQty(item: BookingItemRow) {
-  return getBreakdown(item).reduce((sum, part) => {
-    const label = part.label?.toLowerCase().trim() ?? "";
+function getExtraCounts(item: BookingItemRow) {
+  return getBreakdown(item).reduce(
+    (acc, part) => {
+      const label = part.label?.toLowerCase().trim() ?? "";
+      const qty = Number(part.quantity || 0);
 
-    const isExtraShower =
-      label.includes("additional shower") ||
-      label.includes("extra shower") ||
-      label === "shower" ||
-      label === "showers" ||
-      label.includes("duche extra") ||
-      label.includes("ducha extra") ||
-      label.includes("doccia extra");
+      if (!qty) return acc;
 
-    if (!isExtraShower) return sum;
+      const isCombo =
+        label.includes("luggage + shower") ||
+        label.includes("lug+shw") ||
+        label.includes("combo");
 
-    return sum + Number(part.quantity || 0);
-  }, 0);
+      const isExtraShower =
+        !isCombo &&
+        (label.includes("additional shower") ||
+          label.includes("extra shower") ||
+          label.includes("duche extra") ||
+          label.includes("ducha extra") ||
+          label.includes("doccia extra"));
+
+      const isExtraLuggage =
+        !isCombo &&
+        (label.includes("additional luggage") ||
+          label.includes("extra luggage") ||
+          label.includes("additional bag") ||
+          label.includes("extra bag") ||
+          label.includes("bag extra") ||
+          label.includes("bags extra") ||
+          label.includes("bagagem extra") ||
+          label.includes("mala extra"));
+
+      if (isExtraShower) acc.showers += qty;
+      if (isExtraLuggage) acc.bags += qty;
+
+      return acc;
+    },
+    { bags: 0, showers: 0 }
+  );
 }
 
 function getTodayString() {
@@ -471,13 +493,14 @@ export default async function AdminPage({
 let showers = current.showers;
 let combo = current.combo;
 
-const extraShowerQty = getExtraShowerQty(item);
+const extraCounts = getExtraCounts(item);
 
 if (code === "luggage") bags += item.quantity;
 if (code === "shower") showers += item.quantity;
 if (code === "combo") combo += item.quantity;
 
-showers += extraShowerQty;
+bags += extraCounts.bags;
+showers += extraCounts.showers;
 
     const timeIn =
       typeof item.meta?.time_in === "string" && item.meta.time_in.trim() !== ""
@@ -627,13 +650,14 @@ showers += extraShowerQty;
 
       for (const item of itemsForBooking) {
   const code = getItemCode(item);
-  const extraShowerQty = getExtraShowerQty(item);
+  const extraCounts = getExtraCounts(item);
 
   if (code === "luggage") bagsToday += item.quantity;
   if (code === "shower") showersToday += item.quantity;
   if (code === "combo") combosToday += item.quantity;
 
-  showersToday += extraShowerQty;
+  bagsToday += extraCounts.bags;
+  showersToday += extraCounts.showers;
 }
 
       const cityName = (booking.city ?? meta.city ?? "").trim();
@@ -646,12 +670,13 @@ showers += extraShowerQty;
     if (normalizedStatus === "inside") {
       for (const item of itemsForBooking) {
   const code = getItemCode(item);
-  const extraShowerQty = getExtraShowerQty(item);
+  const extraCounts = getExtraCounts(item);
 
   if (code === "luggage") bagsInside += item.quantity;
   if (code === "shower") showersInside += item.quantity;
 
-  showersInside += extraShowerQty;
+  bagsInside += extraCounts.bags;
+  showersInside += extraCounts.showers;
 }
     }
   }
