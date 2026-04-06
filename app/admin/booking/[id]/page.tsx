@@ -280,7 +280,7 @@ export default async function BookingPage({ params }: PageProps) {
 
       {hasBreakdown && (
         <div className="rounded-lg bg-gray-50 p-3">
-          <div className="mb-2 text-sm font-medium">Breakdown</div>
+          <div className="mb-2 text-sm font-medium">Details</div>
           <div className="space-y-1 text-sm">
             {item.meta!.breakdown!.map((b, index) => (
               <div key={index} className="flex justify-between gap-3">

@@ -232,18 +232,11 @@ function buildConfirmationEmailText(params: {
   const comments = item.meta?.comments;
 
   if (breakdown.length > 0) {
-    breakdown.forEach((part) => {
-      lines.push(`${part.label} - € ${formatPrice(part.totalPrice)}`);
-      lines.push(`${t.qtyLabel}: ${part.quantity}`);
-    });
-
-    const totalItems = breakdown.reduce(
-      (sum, part) => sum + Number(part.quantity || 0),
-      0
-    );
-
-    lines.push(`${t.qtyLabel}: ${totalItems}`);
-  } else {
+  breakdown.forEach((part) => {
+    lines.push(`${part.label} - € ${formatPrice(part.totalPrice)}`);
+    lines.push(`${t.qtyLabel}: ${part.quantity}`);
+  });
+} else {
     lines.push(`${productTitle} - € ${formatPrice(item.totalPrice)}`);
     lines.push(`${t.qtyLabel}: ${item.quantity}`);
   }
@@ -316,33 +309,28 @@ function buildConfirmationEmailHtml(params: {
         typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
 
       const titleBlock =
-        breakdown.length > 0
-          ? `
-            ${breakdown
-              .map(
-                (part) => `
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;">
-                    <tr>
-                      <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-                        ${part.label}
-                      </td>
-                      <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
-                        € ${formatPrice(part.totalPrice)}
-                      </td>
-                    </tr>
-                  </table>
-                  <p style="margin:0 0 6px 0; font-size:14px; line-height:21px; color:#6b7280;">
-                    ${t.qtyLabel}: ${part.quantity}
-                  </p>
-                `
-              )
-              .join("")}
-            <p style="margin:6px 0 0 0; font-size:14px; line-height:21px; color:#6b7280;">
-              ${t.qtyLabel}: ${breakdown.reduce(
-                (sum, part) => sum + Number(part.quantity || 0),
-                0
-              )}
+  breakdown.length > 0
+    ? `
+      ${breakdown
+        .map(
+          (part) => `
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;">
+              <tr>
+                <td style="font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+                  ${part.label}
+                </td>
+                <td align="right" style="font-size:16px; line-height:24px; color:#111827; font-weight:700; white-space:nowrap;">
+                  € ${formatPrice(part.totalPrice)}
+                </td>
+              </tr>
+            </table>
+            <p style="margin:0 0 6px 0; font-size:14px; line-height:21px; color:#6b7280;">
+              ${t.qtyLabel}: ${part.quantity}
             </p>
+          `
+        )
+        .join("")}
+    `
           `
           : `
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
