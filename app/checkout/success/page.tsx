@@ -275,23 +275,24 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
           </div>
 
                     <div className="mt-5 border-t border-zinc-300 pt-5">
-            <p className="mb-3 text-sm text-zinc-500">
-              Total items: {totalItemsAll}
-            </p>
+  <div className="mb-3 flex items-center justify-between gap-4 text-sm text-zinc-500">
+    <span>Total items</span>
+    <span className="font-medium text-zinc-700">{totalItemsAll}</span>
+  </div>
 
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-lg font-semibold text-zinc-900">
-                {t.totalLabel}
-              </p>
-              <p className="whitespace-nowrap text-lg font-semibold text-zinc-900">
-                € {Number(booking.total_amount).toFixed(2)}
-              </p>
-            </div>
+  <div className="flex items-center justify-between gap-4">
+    <p className="text-lg font-semibold text-zinc-900">
+      {t.totalLabel}
+    </p>
+    <p className="whitespace-nowrap text-2xl font-bold text-zinc-900">
+      € {Number(booking.total_amount).toFixed(2)}
+    </p>
+  </div>
 
-            <p className="mt-3 text-[15px] leading-6 text-amber-700">
-              {t.paymentOnSite}
-            </p>
-          </div>
+  <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-[14px] leading-6 text-amber-700">
+    {t.paymentOnSite}
+  </p>
+</div>
         </section>
       )}
 
