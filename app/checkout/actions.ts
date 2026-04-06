@@ -253,6 +253,24 @@ function buildConfirmationEmailText(params: {
   lines.push("");
 });
 
+const totalItemsAll = params.items.reduce((sum, item) => {
+  const breakdown = getBreakdown(item.meta);
+
+  if (breakdown.length > 0) {
+    return (
+      sum +
+      breakdown.reduce(
+        (innerSum, part) => innerSum + Number(part.quantity || 0),
+        0
+      )
+    );
+  }
+
+  return sum + Number(item.quantity || 0);
+}, 0);
+
+lines.push(`Total items: ${totalItemsAll}`);
+
   lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
   lines.push("");
   lines.push(t.paymentOnSite);
@@ -346,6 +364,22 @@ function buildConfirmationEmailHtml(params: {
       </p>
     `;
 
+const totalItemsAll = params.items.reduce((sum, item) => {
+  const breakdown = getBreakdown(item.meta);
+
+  if (breakdown.length > 0) {
+    return (
+      sum +
+      breakdown.reduce(
+        (innerSum, part) => innerSum + Number(part.quantity || 0),
+        0
+      )
+    );
+  }
+
+  return sum + Number(item.quantity || 0);
+}, 0);
+
       return `
         <div style="padding:0 0 18px 0; margin:0 0 18px 0; border-bottom:1px solid #d1d5db;">
           ${titleBlock}
@@ -384,16 +418,20 @@ function buildConfirmationEmailHtml(params: {
 
           ${itemBlocks}
 
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px 0;">
-            <tr>
-              <td style="font-size:17px; line-height:25px; color:#111827; font-weight:700;">
-                ${t.totalLabel}
-              </td>
-              <td align="right" style="font-size:17px; line-height:25px; color:#111827; font-weight:700; white-space:nowrap;">
-                € ${formatPrice(params.totalAmount)}
-              </td>
-            </tr>
-          </table>
+          <p style="margin:0 0 10px 0; font-size:14px; line-height:21px; color:#6b7280;">
+  Total items: ${totalItemsAll}
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px 0;">
+  <tr>
+    <td style="font-size:17px; line-height:25px; color:#111827; font-weight:700;">
+      ${t.totalLabel}
+    </td>
+    <td align="right" style="font-size:17px; line-height:25px; color:#111827; font-weight:700; white-space:nowrap;">
+      € ${formatPrice(params.totalAmount)}
+    </td>
+  </tr>
+</table>
 
           <p style="margin:0; font-size:15px; line-height:23px; color:#ea580c;">
             ${t.paymentOnSite}
