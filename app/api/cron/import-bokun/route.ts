@@ -74,6 +74,11 @@ export async function GET(req: NextRequest) {
 
         const parsed = parseBokunEmail(rawText);
 
+console.log("Parsed Bokun email", {
+  messageId: msg.id,
+  parsed,
+});
+
         if (!parsed.bookingCode) {
   skipped += 1;
   errors.push({
@@ -118,9 +123,12 @@ export async function GET(req: NextRequest) {
           .select("id")
           .single();
 
+
         if (bookingError) {
           throw bookingError;
         }
+
+console.log("Inserted booking row", bookingRow);
 
         const itemMeta = {
           date: parsed.serviceDate,
@@ -148,10 +156,29 @@ export async function GET(req: NextRequest) {
         }
 
         created += 1;
-      } catch (error) {
+            } catch (error: unknown) {
+        console.error("Bokun import error", {
+          messageId: msg.id,
+          error,
+        });
+
+        let reason = "Unknown error";
+
+        if (error instanceof Error) {
+          reason = error.message;
+        } else if (typeof error === "string") {
+          reason = error;
+        } else if (error && typeof error === "object") {
+          try {
+            reason = JSON.stringify(error);
+          } catch {
+            reason = "Non-serializable error object";
+          }
+        }
+
         errors.push({
           id: msg.id || undefined,
-          reason: error instanceof Error ? error.message : "Unknown error",
+          reason,
         });
       }
     }
@@ -163,11 +190,27 @@ export async function GET(req: NextRequest) {
       skipped,
       errors,
     });
-  } catch (error) {
-    return NextResponse.json(
+    } catch (error: unknown) {
+    console.error("Bokun cron fatal error", error);
+
+    let reason = "Unknown error";
+
+    if (error instanceof Error) {
+      reason = error.message;
+    } else if (typeof error === "string") {
+      reason = error;
+    } else if (error && typeof error === "object") {
+      try {
+        reason = JSON.stringify(error);
+      } catch {
+        reason = "Non-serializable error object";
+      }
+    }
+
+        return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: reason,
       },
       { status: 500 }
     );
