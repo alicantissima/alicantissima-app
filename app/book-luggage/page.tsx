@@ -83,10 +83,7 @@ function BookLuggageContent() {
     if (
       getSlotIndex(pickUp, timeSlots) < getSlotIndex(dropOff, timeSlots)
     ) {
-      alert(
-        t.pickUpAfterDropOffAlert ??
-          "Pick-up time must be after drop-off time."
-      );
+      alert("Pick-up time must be after drop-off time.");
       return;
     }
 
