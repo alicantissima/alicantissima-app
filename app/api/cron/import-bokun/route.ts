@@ -10,7 +10,7 @@ import { parseBokunEmail } from "@/lib/parseBokunEmail";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-function getSecretFromRequest(req: NextRequest) {
+function getSecretFromRequest(req: NextRequest): string {
   const authHeader = req.headers.get("authorization");
   if (authHeader?.startsWith("Bearer ")) {
     return authHeader.slice(7);
@@ -26,6 +26,7 @@ function getSecretFromRequest(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const providedSecret = getSecretFromRequest(req);
+
     if (!process.env.CRON_SECRET || providedSecret !== process.env.CRON_SECRET) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -65,6 +66,7 @@ export async function GET(req: NextRequest) {
         });
 
         const rawText = extractMessageText(full.data);
+
         if (!rawText) {
           skipped += 1;
           continue;
@@ -74,7 +76,10 @@ export async function GET(req: NextRequest) {
 
         if (!parsed.bookingCode) {
           skipped += 1;
-          errors.push({ id: msg.id, reason: "Missing booking code" });
+          errors.push({
+            id: msg.id,
+            reason: "Missing booking code",
+          });
           continue;
         }
 
@@ -84,7 +89,9 @@ export async function GET(req: NextRequest) {
           .eq("booking_code", parsed.bookingCode)
           .maybeSingle();
 
-        if (existingError) throw existingError;
+        if (existingError) {
+          throw existingError;
+        }
 
         if (existing) {
           skipped += 1;
@@ -111,7 +118,9 @@ export async function GET(req: NextRequest) {
           .select("id")
           .single();
 
-        if (bookingError) throw bookingError;
+        if (bookingError) {
+          throw bookingError;
+        }
 
         const itemMeta = {
           date: parsed.serviceDate,
@@ -123,26 +132,29 @@ export async function GET(req: NextRequest) {
           importedFrom: "bokun_gmail",
         };
 
-        const { error: itemError } = await supabase.from("booking_items").insert({
-          booking_id: bookingRow.id,
-          title: parsed.product || "Viator booking",
-          quantity: parsed.quantity ?? 1,
-          line_total: parsed.viatorAmount ?? 0,
-          product_type: "luggage",
-          meta: itemMeta,
-        });
+        const { error: itemError } = await supabase
+          .from("booking_items")
+          .insert({
+            booking_id: bookingRow.id,
+            title: parsed.product || "Viator booking",
+            quantity: parsed.quantity ?? 1,
+            line_total: parsed.viatorAmount ?? 0,
+            product_type: "luggage",
+            meta: itemMeta,
+          });
 
-        if (itemError) throw itemError;
+        if (itemError) {
+          throw itemError;
+        }
 
         created += 1;
-            } catch (error) {
-        const messageId = msg.id ?? undefined;
-
+      } catch (error) {
         errors.push({
-          id: messageId,
+          id: msg.id || undefined,
           reason: error instanceof Error ? error.message : "Unknown error",
         });
       }
+    }
 
     return NextResponse.json({
       ok: true,
@@ -161,3 +173,5 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+
