@@ -75,13 +75,13 @@ export async function GET(req: NextRequest) {
         const parsed = parseBokunEmail(rawText);
 
         if (!parsed.bookingCode) {
-          skipped += 1;
-          errors.push({
-            id: msg.id,
-            reason: "Missing booking code",
-          });
-          continue;
-        }
+  skipped += 1;
+  errors.push({
+    id: msg.id,
+    reason: `Missing booking code | preview: ${rawText.slice(0, 220).replace(/\s+/g, " ")}`,
+  });
+  continue;
+}
 
         const { data: existing, error: existingError } = await supabase
           .from("bookings")

@@ -1,7 +1,8 @@
 
 
 
-export type ParsedBokunEmail = {
+export function parseBokunEmail(text: string): ParsedBokunEmail {
+  const normalizedText = text.replace(/\r/g, "");
   bookingCode: string | null;
   extRef: string | null;
   bookingRef: string | null;
@@ -58,20 +59,23 @@ function parseQuantity(paxRaw: string | null) {
 }
 
 export function parseBokunEmail(text: string): ParsedBokunEmail {
-  const bookingCode =
-    extract(text, /\((ALI-[A-Z0-9]+)\)/) ||
-    extract(text, /Product booking ref\.\s*(ALI-[A-Z0-9]+)/i);
+  const normalizedText = text.replace(/\r/g, "");
 
-  const extRef = extract(text, /Ext\. booking ref\.?\s*(\d+)/i);
-  const bookingRef = extract(text, /Booking ref\.?\s*([A-Z0-9-]+)/i);
-  const productBookingRef = extract(text, /Product booking ref\.?\s*(ALI-[A-Z0-9]+)/i);
-  const customerName = extract(text, /Customer\s+([^\n]+)/i);
-  const email = extract(text, /Customer email\s+([^\n]+)/i);
-  const phone = extract(text, /Customer phone\s+([^\n]+)/i);
-  const dateRaw = extract(text, /Date\s+([^\n]+)/i);
-  const paxRaw = extract(text, /PAX\s+([^\n]+)/i);
-  const product = extract(text, /Rate\s+([^\n]+)/i);
-  const amountRaw = extract(text, /Viator amount:\s*EUR\s*([0-9]+(?:\.[0-9]+)?)/i);
+  const bookingCode =
+    extract(normalizedText, /\b(ALI-[A-Z0-9]+)\b/i) ||
+    extract(normalizedText, /\((ALI-[A-Z0-9]+)\)/i) ||
+    extract(normalizedText, /Product booking ref\.?\s*(ALI-[A-Z0-9]+)/i);
+
+  const extRef = extract(normalizedText, /Ext\. booking ref\.?\s*(\d+)/i);
+  const bookingRef = extract(normalizedText, /Booking ref\.?\s*([A-Z0-9-]+)/i);
+  const productBookingRef = extract(normalizedText, /Product booking ref\.?\s*(ALI-[A-Z0-9]+)/i);
+  const customerName = extract(normalizedText, /Customer\s+([^\n]+)/i);
+  const email = extract(normalizedText, /Customer email\s+([^\n]+)/i);
+  const phone = extract(normalizedText, /Customer phone\s+([^\n]+)/i);
+  const dateRaw = extract(normalizedText, /Date\s+([^\n]+)/i);
+  const paxRaw = extract(normalizedText, /PAX\s+([^\n]+)/i);
+  const product = extract(normalizedText, /Rate\s+([^\n]+)/i);
+  const amountRaw = extract(normalizedText, /Viator amount:\s*EUR\s*([0-9]+(?:\.[0-9]+)?)/i);
 
   return {
     bookingCode,
