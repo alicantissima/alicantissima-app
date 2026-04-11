@@ -288,31 +288,94 @@ export default async function DeskBookingPage({ params }: PageProps) {
             )}
           </section>
 
+                    <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
+            <h2 className="text-2xl font-bold">Customer</h2>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <InfoCard label="Name" value={booking.customer_name || "-"} />
+
+              <InlineEditBookingField
+                bookingId={booking.id}
+                label="City"
+                field="city"
+                value={booking.city}
+              />
+
+              <InlineEditBookingField
+                bookingId={booking.id}
+                label="Phone"
+                field="customer_phone"
+                value={booking.customer_phone}
+              />
+
+              <InlineEditBookingField
+                bookingId={booking.id}
+                label="Email"
+                field="customer_email"
+                value={booking.customer_email}
+              />
+            </div>
+          </section>
+
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
-  <h2 className="text-2xl font-bold">Customer</h2>
+            <h2 className="text-2xl font-bold">Notes</h2>
 
-  <div className="mt-4 grid gap-3 md:grid-cols-2">
-    <InfoCard label="Name" value={booking.customer_name || "-"} />
+            <div
+              className={`mt-4 rounded-2xl p-4 text-sm ${
+                booking.notes && booking.notes.trim()
+                  ? "border border-amber-200 bg-amber-50 text-amber-900"
+                  : "border bg-gray-50 text-gray-500"
+              }`}
+            >
+              {booking.notes && booking.notes.trim()
+                ? booking.notes
+                : "No notes."}
+            </div>
+          </section>
 
-    <InlineEditBookingField
-      bookingId={booking.id}
-      label="City"
-      field="city"
-      value={booking.city}
-    />
+          <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
+            <h2 className="text-2xl font-bold">Administrative data</h2>
 
-    <InlineEditBookingField
-      bookingId={booking.id}
-      label="Phone"
-      field="customer_phone"
-      value={booking.customer_phone}
-    />
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <InfoCard
+                label="Created at"
+                value={formatDateTime(booking.created_at)}
+              />
+              <InfoCard
+                label="Actual check-in"
+                value={formatDateTime(booking.check_in_time)}
+              />
+              <InfoCard
+                label="Actual check-out"
+                value={formatDateTime(booking.check_out_time)}
+              />
+              <InfoCard
+                label="Source"
+                value={
+                  isPaidPartner(booking.source)
+                    ? "viator · paid online"
+                    : booking.source || "-"
+                }
+              />
+            </div>
+          </section>
+        </section>
 
-    <InlineEditBookingField
-      bookingId={booking.id}
-      label="Email"
-      field="customer_email"
-      value={booking.customer_email}
-    />
-  </div>
-</section>
+        <aside className="space-y-4">
+          <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
+            <h2 className="text-2xl font-bold">QR</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Show to staff for quick scanning
+            </p>
+
+            <div className="mt-4 flex justify-center rounded-2xl border bg-gray-50 p-4">
+              <div className="w-full max-w-[220px]">
+                <BookingQr code={booking.booking_code} />
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </main>
+  );
+}
