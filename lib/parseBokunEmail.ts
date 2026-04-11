@@ -22,6 +22,14 @@ function extract(text: string, regex: RegExp) {
   return match?.[1]?.trim() || null;
 }
 
+function parseProductTitle(text: string) {
+  const match = text.match(
+    /Rate\s+(.+?)(?=\s+Guided languages\b|\s+Extras\b|\s+Created\b|\s+Notes\b|$)/i
+  );
+
+  return cleanField(match?.[1] || null);
+}
+
 function parseServiceDate(input: string | null) {
   if (!input) return null;
 
@@ -144,7 +152,7 @@ export function parseBokunEmail(text: string): ParsedBokunEmail {
   const phone = cleanField(extract(normalizedText, /Customer phone\s+([^\n]+)/i));
   const dateRaw = cleanField(extract(normalizedText, /Date\s+([^\n]+)/i));
   const paxRaw = cleanField(extract(normalizedText, /PAX\s+([^\n]+)/i));
-  const product = cleanField(extract(normalizedText, /Rate\s+([^\n]+)/i));
+  const product = parseProductTitle(normalizedText);
 
   const amountRaw = extract(
     normalizedText,
