@@ -71,6 +71,35 @@ function cleanField(value: string | null) {
   return cleaned;
 }
 
+function parseCustomerName(text: string) {
+  const patterns = [
+    /Customer\s*\n\s*([^\n]+)/i,
+    /Customer name\s*\n\s*([^\n]+)/i,
+    /Customer\s+([^\n]+)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const value = cleanField(extract(text, pattern));
+    if (value) {
+      // Se vier no formato "Apelido, Nome"
+      if (value.includes(",")) {
+        const parts = value
+          .split(",")
+          .map((part) => part.trim())
+          .filter(Boolean);
+
+        if (parts.length === 2) {
+          return `${parts[1]} ${parts[0]}`;
+        }
+      }
+
+      return value;
+    }
+  }
+
+  return null;
+}
+
 export function parseBokunEmail(text: string): ParsedBokunEmail {
   const normalizedText = text.replace(/\r/g, "");
 
@@ -86,9 +115,7 @@ export function parseBokunEmail(text: string): ParsedBokunEmail {
     /Product booking ref\.?\s*(ALI-[A-Z0-9]+)/i
   );
 
-  const customerName =
-    cleanField(extract(normalizedText, /Customer\s+([^\n]+)/i)) ||
-    cleanField(extract(normalizedText, /Customer name\s+([^\n]+)/i));
+  const customerName = parseCustomerName(normalizedText);
 
   const email = cleanField(
     extract(normalizedText, /Customer email\s+([^\s\n]+@[^\s\n]+)/i)
