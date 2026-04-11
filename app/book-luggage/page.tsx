@@ -158,7 +158,7 @@ function BookLuggageContent() {
               }
             }}
           >
-            <option value="">{t.chooseTime ?? "Choose time"}</option>
+            <option value="">Choose time</option>
             {timeSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
@@ -174,7 +174,7 @@ function BookLuggageContent() {
             value={pickUp}
             onChange={(e) => setPickUp(e.target.value)}
           >
-            <option value="">{t.chooseTime ?? "Choose time"}</option>
+            <option value="">Choose time</option>
             {availablePickUpSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
