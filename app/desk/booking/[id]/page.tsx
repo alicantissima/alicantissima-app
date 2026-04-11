@@ -141,13 +141,13 @@ export default async function DeskBookingPage({ params }: PageProps) {
               href="/desk"
               className="inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium hover:bg-gray-50"
             >
-              ← Voltar ao Desk
+              ← Back to Desk
             </Link>
 
             <div className="space-y-2">
   <div className="flex flex-wrap items-center gap-3">
     <h1 className="text-2xl font-bold leading-tight md:text-3xl">
-      {booking.customer_name || "Cliente"}
+      {booking.customer_name || "Customer"}
     </h1>
 
     <span
@@ -202,7 +202,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
         <section className="space-y-4">
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-2xl font-bold">Produtos comprados</h2>
+              <h2 className="text-2xl font-bold">Purchased products</h2>
               <span className="rounded-full border px-3 py-1 text-xs font-medium text-gray-600">
                 {bookingItems.length}
               </span>
@@ -282,12 +282,12 @@ export default async function DeskBookingPage({ params }: PageProps) {
           </section>
 
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
-            <h2 className="text-2xl font-bold">Cliente</h2>
+            <h2 className="text-2xl font-bold">Customer</h2>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <InfoCard label="Nome" value={booking.customer_name || "-"} />
-              <InfoCard label="Cidade" value={booking.city || "-"} />
-              <InfoCard label="Telefone" value={booking.customer_phone || "-"} />
+              <InfoCard label="Name" value={booking.customer_name || "-"} />
+              <InfoCard label="City" value={booking.city || "-"} />
+              <InfoCard label="Phone" value={booking.customer_phone || "-"} />
               <InfoCard label="Email" value={booking.customer_email || "-"} />
             </div>
           </section>
@@ -304,19 +304,19 @@ export default async function DeskBookingPage({ params }: PageProps) {
             >
               {booking.notes && booking.notes.trim()
                 ? booking.notes
-                : "Sem notas."}
+                : "No notes."}
             </div>
           </section>
 
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
-            <h2 className="text-2xl font-bold">Dados administrativos</h2>
+            <h2 className="text-2xl font-bold">Administrative data</h2>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <InfoCard label="Criada em" value={formatDateTime(booking.created_at)} />
+              <InfoCard label="Created at" value={formatDateTime(booking.created_at)} />
               <InfoCard label="Check-in real" value={formatDateTime(booking.check_in_time)} />
               <InfoCard label="Check-out real" value={formatDateTime(booking.check_out_time)} />
               <InfoCard
-  label="Origem"
+  label="Source"
   value={isPaidPartner(booking.source) ? "viator · paid online" : booking.source || "-"}
 />
             </div>
@@ -327,7 +327,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
             <h2 className="text-2xl font-bold">QR</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Mostrar ao staff para leitura rápida
+              Show to staff for quick scanning
             </p>
 
             <div className="mt-4 flex justify-center rounded-2xl border bg-gray-50 p-4">
