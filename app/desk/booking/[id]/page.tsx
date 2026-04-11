@@ -160,7 +160,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
   </div>
 
   <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
-    <span>Serviço: {formatDate(booking.service_date)}</span>
+    <span>Service date: {formatDate(booking.service_date)}</span>
     <span className="rounded-full border px-2 py-0.5 text-xs">
       {booking.booking_code}
     </span>
@@ -209,7 +209,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
             </div>
 
             {bookingItems.length === 0 ? (
-              <p className="text-sm text-gray-500">Sem items associados.</p>
+              <p className="text-sm text-gray-500">No items linked to this booking.</p>
             ) : (
               <div className="space-y-3">
                 {bookingItems.map((item) => (
@@ -282,18 +282,39 @@ export default async function DeskBookingPage({ params }: PageProps) {
           </section>
 
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
-            <h2 className="text-2xl font-bold">Customer</h2>
+  <h2 className="text-2xl font-bold">Customer</h2>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <InfoCard label="Name" value={booking.customer_name || "-"} />
-              <InfoCard label="City" value={booking.city || "-"} />
-              <InfoCard label="Phone" value={booking.customer_phone || "-"} />
-              <InfoCard label="Email" value={booking.customer_email || "-"} />
-            </div>
-          </section>
+  <div className="mt-4 grid gap-3 md:grid-cols-2">
+    <InfoCard label="Name" value={booking.customer_name || "-"} />
+
+    <InlineEditBookingField
+      bookingId={booking.id}
+      label="City"
+      field="city"
+      value={booking.city}
+      type="text"
+    />
+
+    <InlineEditBookingField
+      bookingId={booking.id}
+      label="Phone"
+      field="customer_phone"
+      value={booking.customer_phone}
+      type="tel"
+    />
+
+    <InlineEditBookingField
+      bookingId={booking.id}
+      label="Email"
+      field="customer_email"
+      value={booking.customer_email}
+      type="email"
+    />
+  </div>
+</section>
 
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
-            <h2 className="text-2xl font-bold">Notas</h2>
+            <h2 className="text-2xl font-bold">Notes</h2>
 
             <div
               className={`mt-4 rounded-2xl p-4 text-sm ${
