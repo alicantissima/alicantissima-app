@@ -73,39 +73,37 @@ function cleanField(value: string | null) {
 
 function parseCustomerName(text: string) {
   const patterns = [
-    // Caso: Customer Cristian, Alexandru
     /Customer\s+([A-Za-zÀ-ÿ' -]+,\s*[A-Za-zÀ-ÿ' -]+)/i,
-
-    // Caso: Customer\nCristian, Alexandru
     /Customer\s*\n\s*([^\n]+)/i,
-
-    // fallback genérico
     /Customer\s+([^\n]+)/i,
   ];
 
   for (const pattern of patterns) {
     const value = cleanField(extract(text, pattern));
+
     if (value) {
-      const value = cleanField(extract(text, pattern));
-if (value) {
-  const cleanedValue = value.split(/Customer email/i)[0].trim();
+      const cleanedValue = value
+        .split(/Customer email/i)[0]
+        .split(/Customer phone/i)[0]
+        .split(/Date/i)[0]
+        .trim();
 
-  if (cleanedValue.includes(",")) {
-    const parts = cleanedValue
-      .split(",")
-      .map((p) => p.trim())
-      .filter(Boolean);
+      if (cleanedValue.includes(",")) {
+        const parts = cleanedValue
+          .split(",")
+          .map((p) => p.trim())
+          .filter(Boolean);
 
-    if (parts.length === 2) {
-      const first = parts[1];
-      const last = parts[0];
+        if (parts.length === 2) {
+          const first = parts[1];
+          const last = parts[0];
 
-      return `${capitalize(first)} ${capitalize(last)}`;
+          return `${capitalize(first)} ${capitalize(last)}`;
+        }
+      }
+
+      return capitalizeWords(cleanedValue);
     }
-  }
-
-  return capitalizeWords(cleanedValue);
-}
   }
 
   return null;
