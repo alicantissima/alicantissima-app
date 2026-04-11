@@ -223,7 +223,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
                           {item.title || item.product_type || "Item"}
                         </div>
                         <div className="mt-1 text-sm text-gray-500">
-                          Quantidade: {item.quantity}
+                          Quantity: {item.quantity}
                         </div>
                       </div>
 
@@ -261,9 +261,8 @@ export default async function DeskBookingPage({ params }: PageProps) {
     value={item.meta?.showerTime}
   />
 </div>
-                    </div>
 
-                    {item.meta?.breakdown && item.meta.breakdown.length > 0 && (
+{item.meta?.breakdown && item.meta.breakdown.length > 0 && (
                       <div className="mt-4 rounded-2xl bg-gray-50 p-4">
                         <div className="mb-2 text-sm font-semibold">
                           Breakdown
@@ -317,22 +316,3 @@ export default async function DeskBookingPage({ params }: PageProps) {
     />
   </div>
 </section>
-
-{item.meta?.breakdown && item.meta.breakdown.length > 0 && (
-  <div className="mt-4 rounded-2xl bg-gray-50 p-4">
-    <div className="mb-2 text-sm font-semibold">Breakdown</div>
-    <div className="space-y-2 text-sm">
-      {item.meta.breakdown.map((b, index) => (
-        <div
-          key={index}
-          className="flex justify-between gap-3"
-        >
-          <span>
-            {b.label} × {b.quantity}
-          </span>
-          <span>{Number(b.totalPrice).toFixed(2)} €</span>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
