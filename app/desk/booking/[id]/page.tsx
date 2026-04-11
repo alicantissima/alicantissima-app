@@ -8,6 +8,7 @@ import CancelBookingButton from "@/components/cancel-booking-button";
 import CheckInBookingButton from "@/components/check-in-booking-button";
 import FinishBookingButton from "@/components/finish-booking-button";
 import Link from "next/link";
+import InlineEditBookingField from "@/components/inline-edit-booking-field";
 
 type PageProps = {
   params: Promise<{
