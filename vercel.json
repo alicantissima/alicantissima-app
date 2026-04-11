@@ -8,7 +8,7 @@
       "schedule": "0 20 * * *"
     },
     {
-      "path": "/api/cron/import-bokun?secret=cron_ALI_9rT4mP8xQ2kV7nZ6_review,
+      "path": "/api/cron/import-bokun?secret=cron_ALI_9rT4mP8xQ2kV7nZ6_review",
       "schedule": "*/2 * * * *"
     }
   ]
