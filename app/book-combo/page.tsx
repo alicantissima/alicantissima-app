@@ -3,46 +3,17 @@
 
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
-
-function pad(value: number) {
-  return value.toString().padStart(2, "0");
-}
-
-function generateTimeSlots(startHour: number, endHour: number) {
-  const slots: string[] = [];
-
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (const minute of [0, 30]) {
-      const startH = hour;
-      const startM = minute;
-
-      let endH = hour;
-      let endM = minute + 30;
-
-      if (endM === 60) {
-        endH += 1;
-        endM = 0;
-      }
-
-      const start = `${pad(startH)}h${pad(startM)}`;
-      const end = `${pad(endH)}h${pad(endM)}`;
-
-      slots.push(`${start}-${end}`);
-    }
-  }
-
-  return slots;
-}
+import { TIME_SLOTS } from "@/lib/time-slots";
 
 function getTodayString() {
   const now = new Date();
   const year = now.getFullYear();
-  const month = pad(now.getMonth() + 1);
-  const day = pad(now.getDate());
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -55,12 +26,12 @@ function BookComboContent() {
   const source = searchParams.get("source") === "walkin" ? "walkin" : "";
   const t = getMessages(language);
 
-  const luggageTimeSlots = useMemo(() => generateTimeSlots(10, 20), []);
-  const showerTimeSlots = useMemo(() => generateTimeSlots(10, 20), []);
+  const luggageTimeSlots = TIME_SLOTS;
+  const showerTimeSlots = TIME_SLOTS;
 
   const [date, setDate] = useState("");
-  const [dropOffTime, setDropOffTime] = useState(luggageTimeSlots[0] ?? "");
-  const [showerTime, setShowerTime] = useState(showerTimeSlots[0] ?? "");
+  const [dropOffTime, setDropOffTime] = useState("");
+  const [showerTime, setShowerTime] = useState("");
 
   const [comboQty, setComboQty] = useState(1);
   const [extraLuggageQty, setExtraLuggageQty] = useState(0);
@@ -167,6 +138,7 @@ function BookComboContent() {
   return (
     <main className="mx-auto max-w-md space-y-6 p-6 text-zinc-900 dark:text-white">
       <button
+        type="button"
         onClick={() => router.push(`/?lang=${language}`)}
         className={backClass}
       >
@@ -198,6 +170,7 @@ function BookComboContent() {
             value={dropOffTime}
             onChange={(e) => setDropOffTime(e.target.value)}
           >
+            <option value="">Choose time</option>
             {luggageTimeSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
@@ -213,6 +186,7 @@ function BookComboContent() {
             value={showerTime}
             onChange={(e) => setShowerTime(e.target.value)}
           >
+            <option value="">Choose time</option>
             {showerTimeSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
@@ -348,3 +322,8 @@ export default function BookComboPage() {
     </Suspense>
   );
 }
+
+
+
+
+
