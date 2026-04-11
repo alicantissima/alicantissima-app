@@ -86,22 +86,26 @@ function parseCustomerName(text: string) {
   for (const pattern of patterns) {
     const value = cleanField(extract(text, pattern));
     if (value) {
-      if (value.includes(",")) {
-        const parts = value
-          .split(",")
-          .map((p) => p.trim())
-          .filter(Boolean);
+      const value = cleanField(extract(text, pattern));
+if (value) {
+  const cleanedValue = value.split(/Customer email/i)[0].trim();
 
-        if (parts.length === 2) {
-          const first = parts[1];
-          const last = parts[0];
+  if (cleanedValue.includes(",")) {
+    const parts = cleanedValue
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
 
-          return `${capitalize(first)} ${capitalize(last)}`;
-        }
-      }
+    if (parts.length === 2) {
+      const first = parts[1];
+      const last = parts[0];
 
-      return capitalizeWords(value);
+      return `${capitalize(first)} ${capitalize(last)}`;
     }
+  }
+
+  return capitalizeWords(cleanedValue);
+}
   }
 
   return null;
