@@ -1,8 +1,7 @@
 
 
 
-export function parseBokunEmail(text: string): ParsedBokunEmail {
-  const normalizedText = text.replace(/\r/g, "");
+export type ParsedBokunEmail = {
   bookingCode: string | null;
   extRef: string | null;
   bookingRef: string | null;
@@ -26,7 +25,9 @@ function extract(text: string, regex: RegExp) {
 function parseServiceDate(input: string | null) {
   if (!input) return null;
 
-  const m = input.match(/(\d{1,2})\.(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*'?(\d{2})/i);
+  const m = input.match(
+    /(\d{1,2})\.(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*'?(\d{2})/i
+  );
   if (!m) return null;
 
   const [, day, mon, yy] = m;
@@ -68,14 +69,20 @@ export function parseBokunEmail(text: string): ParsedBokunEmail {
 
   const extRef = extract(normalizedText, /Ext\. booking ref\.?\s*(\d+)/i);
   const bookingRef = extract(normalizedText, /Booking ref\.?\s*([A-Z0-9-]+)/i);
-  const productBookingRef = extract(normalizedText, /Product booking ref\.?\s*(ALI-[A-Z0-9]+)/i);
+  const productBookingRef = extract(
+    normalizedText,
+    /Product booking ref\.?\s*(ALI-[A-Z0-9]+)/i
+  );
   const customerName = extract(normalizedText, /Customer\s+([^\n]+)/i);
   const email = extract(normalizedText, /Customer email\s+([^\n]+)/i);
   const phone = extract(normalizedText, /Customer phone\s+([^\n]+)/i);
   const dateRaw = extract(normalizedText, /Date\s+([^\n]+)/i);
   const paxRaw = extract(normalizedText, /PAX\s+([^\n]+)/i);
   const product = extract(normalizedText, /Rate\s+([^\n]+)/i);
-  const amountRaw = extract(normalizedText, /Viator amount:\s*EUR\s*([0-9]+(?:\.[0-9]+)?)/i);
+  const amountRaw = extract(
+    normalizedText,
+    /Viator amount:\s*EUR\s*([0-9]+(?:\.[0-9]+)?)/i
+  );
 
   return {
     bookingCode,
@@ -90,6 +97,6 @@ export function parseBokunEmail(text: string): ParsedBokunEmail {
     product,
     productBookingRef,
     viatorAmount: amountRaw ? Number(amountRaw) : null,
-    rawText: text,
+    rawText: normalizedText,
   };
 }
