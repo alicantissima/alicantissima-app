@@ -233,13 +233,31 @@ export default async function DeskBookingPage({ params }: PageProps) {
                       </div>
                     </div>
 
-                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                      <div className="rounded-xl bg-gray-50 p-3 text-sm">
-                        <div className="text-xs text-gray-500">Entrega</div>
-                        <div className="font-medium">
-                          {item.meta?.dropOffTime || "-"}
-                        </div>
-                      </div>
+                    import InlineEditTime from "@/components/inline-edit-time";
+
+<InlineEditTime
+  bookingId={booking.id}
+  itemId={item.id}
+  label="Drop-off"
+  field="dropOffTime"
+  value={item.meta?.dropOffTime}
+/>
+
+<InlineEditTime
+  bookingId={booking.id}
+  itemId={item.id}
+  label="Pick-up"
+  field="pickUpTime"
+  value={item.meta?.pickUpTime}
+/>
+
+<InlineEditTime
+  bookingId={booking.id}
+  itemId={item.id}
+  label="Shower"
+  field="showerTime"
+  value={item.meta?.showerTime}
+/>
 
                       <div className="rounded-xl bg-gray-50 p-3 text-sm">
                         <div className="text-xs text-gray-500">Recolha</div>
