@@ -14,6 +14,38 @@ type Props = {
   value: string | null | undefined;
 };
 
+function pad(value: number) {
+  return value.toString().padStart(2, "0");
+}
+
+function generateTimeSlots(startHour: number, endHour: number) {
+  const slots: string[] = [];
+
+  for (let hour = startHour; hour < endHour; hour++) {
+    for (const minute of [0, 30]) {
+      const startH = hour;
+      const startM = minute;
+
+      let endH = hour;
+      let endM = minute + 30;
+
+      if (endM === 60) {
+        endH += 1;
+        endM = 0;
+      }
+
+      const start = `${pad(startH)}h${pad(startM)}`;
+      const end = `${pad(endH)}h${pad(endM)}`;
+
+      slots.push(`${start}-${end}`);
+    }
+  }
+
+  return slots;
+}
+
+const TIME_OPTIONS = generateTimeSlots(10, 22);
+
 export default function InlineEditTime({
   bookingId,
   itemId,
@@ -25,6 +57,11 @@ export default function InlineEditTime({
   const [draft, setDraft] = useState(value ?? "");
   const [isPending, startTransition] = useTransition();
 
+  function handleCancel() {
+    setDraft(value ?? "");
+    setIsEditing(false);
+  }
+
   return (
     <div className="rounded-xl bg-gray-50 p-3 text-sm">
       <div className="flex justify-between text-xs text-gray-500">
@@ -32,6 +69,7 @@ export default function InlineEditTime({
 
         {!isEditing && (
           <button
+            type="button"
             onClick={() => setIsEditing(true)}
             className="text-blue-600 hover:underline"
           >
@@ -44,16 +82,23 @@ export default function InlineEditTime({
         <div className="font-medium">{value || "-"}</div>
       ) : (
         <div className="mt-2 space-y-2">
-          <input
-            type="text"
+          <select
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            className="w-full rounded-lg border px-2 py-1 text-sm"
-            placeholder="e.g. 10:30"
-          />
+            className="w-full rounded-lg border px-2 py-2 text-sm"
+          >
+            <option value="">Select time</option>
+            {TIME_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
 
           <div className="flex gap-2">
             <button
+              type="button"
+              disabled={isPending}
               onClick={() =>
                 startTransition(async () => {
                   await updateBookingItemTime({
@@ -65,14 +110,16 @@ export default function InlineEditTime({
                   setIsEditing(false);
                 })
               }
-              className="text-xs text-white bg-blue-600 px-2 py-1 rounded"
+              className="rounded bg-blue-600 px-2 py-1 text-xs text-white disabled:opacity-60"
             >
-              Save
+              {isPending ? "Saving..." : "Save"}
             </button>
 
             <button
-              onClick={() => setIsEditing(false)}
-              className="text-xs border px-2 py-1 rounded"
+              type="button"
+              disabled={isPending}
+              onClick={handleCancel}
+              className="rounded border px-2 py-1 text-xs disabled:opacity-60"
             >
               Cancel
             </button>
