@@ -5,6 +5,7 @@
 
 import { useState, useTransition } from "react";
 import { updateBookingItemTime } from "@/app/desk/booking/[id]/actions-items";
+import { TIME_SLOTS } from "@/lib/time-slots";
 
 type Props = {
   bookingId: string;
@@ -13,38 +14,6 @@ type Props = {
   field: "dropOffTime" | "pickUpTime" | "showerTime";
   value: string | null | undefined;
 };
-
-function pad(value: number) {
-  return value.toString().padStart(2, "0");
-}
-
-function generateTimeSlots(startHour: number, endHour: number) {
-  const slots: string[] = [];
-
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (const minute of [0, 30]) {
-      const startH = hour;
-      const startM = minute;
-
-      let endH = hour;
-      let endM = minute + 30;
-
-      if (endM === 60) {
-        endH += 1;
-        endM = 0;
-      }
-
-      const start = `${pad(startH)}h${pad(startM)}`;
-      const end = `${pad(endH)}h${pad(endM)}`;
-
-      slots.push(`${start}-${end}`);
-    }
-  }
-
-  return slots;
-}
-
-const TIME_OPTIONS = generateTimeSlots(10, 22);
 
 export default function InlineEditTime({
   bookingId,
@@ -88,7 +57,7 @@ export default function InlineEditTime({
             className="w-full rounded-lg border px-2 py-2 text-sm"
           >
             <option value="">Select time</option>
-            {TIME_OPTIONS.map((option) => (
+            {TIME_SLOTS.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
