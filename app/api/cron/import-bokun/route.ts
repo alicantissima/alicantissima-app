@@ -104,27 +104,27 @@ console.log("Parsed Bokun email", {
         }
 
         const bookingInsert: Record<string, unknown> = {
-          booking_code: parsed.bookingCode,
-          customer_name:
-  parsed.customerName &&
-  !parsed.customerName.includes("</") &&
-  parsed.customerName.length < 120
-    ? parsed.customerName
-    : "Viator Customer",
-          customer_email:
-  parsed.email ||
-  `${(parsed.bookingCode || parsed.extRef || "viator-booking")
-    .toString()
-    .toLowerCase()}@viator.local`,
-          total_amount: parsed.viatorAmount ?? 0,
-          currency: "EUR",
-          status: "booked",
-          source: "viator",
-          payment_method: "viator",
-          service_date: parsed.serviceDate,
-          language: "en",
-          notes: "Imported automatically from Bokun/Gmail",
-        };
+  booking_code: parsed.bookingCode,
+  customer_name:
+    parsed.customerName &&
+    !parsed.customerName.includes("</") &&
+    parsed.customerName.length < 120
+      ? parsed.customerName
+      : "Viator Customer",
+  customer_email:
+    parsed.email ||
+    `${(parsed.bookingCode || parsed.extRef || "viator-booking")
+      .toString()
+      .toLowerCase()}@viator.local`,
+  total_amount: parsed.viatorAmount ?? 0,
+  currency: "EUR",
+  status: "booked",
+  source: "viator",
+  payment_method: "viator",
+  service_date: parsed.serviceDate,
+  language: "en",
+  notes: "Imported automatically from Bokun/Gmail",
+};
 
         const { data: bookingRow, error: bookingError } = await supabase
           .from("bookings")

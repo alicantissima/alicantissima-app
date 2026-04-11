@@ -30,9 +30,13 @@ export async function POST(req: NextRequest) {
 
     await supabase.from("bookings").insert({
   booking_code: data.bookingCode,
-  customer_name: data.customerName,
-  customer_email: data.email,
-  total_amount: data.viatorAmount,
+  customer_name: data.customerName || "Viator Customer",
+  customer_email:
+    data.email ||
+    `${(data.bookingCode || data.extRef || "viator-booking")
+      .toString()
+      .toLowerCase()}@viator.local`,
+  total_amount: data.viatorAmount ?? 0,
   currency: "EUR",
   status: "booked",
   source: "viator",

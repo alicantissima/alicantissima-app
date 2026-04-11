@@ -59,6 +59,18 @@ function parseQuantity(paxRaw: string | null) {
   return m ? Number(m[1]) : null;
 }
 
+function cleanField(value: string | null) {
+  if (!value) return null;
+
+  const cleaned = value
+    .replace(/\|/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned) return null;
+  return cleaned;
+}
+
 export function parseBokunEmail(text: string): ParsedBokunEmail {
   const normalizedText = text.replace(/\r/g, "");
 
@@ -73,12 +85,20 @@ export function parseBokunEmail(text: string): ParsedBokunEmail {
     normalizedText,
     /Product booking ref\.?\s*(ALI-[A-Z0-9]+)/i
   );
-  const customerName = extract(normalizedText, /Customer\s+([^\n]+)/i);
-  const email = extract(normalizedText, /Customer email\s+([^\n]+)/i);
-  const phone = extract(normalizedText, /Customer phone\s+([^\n]+)/i);
-  const dateRaw = extract(normalizedText, /Date\s+([^\n]+)/i);
-  const paxRaw = extract(normalizedText, /PAX\s+([^\n]+)/i);
-  const product = extract(normalizedText, /Rate\s+([^\n]+)/i);
+
+  const customerName =
+    cleanField(extract(normalizedText, /Customer\s+([^\n]+)/i)) ||
+    cleanField(extract(normalizedText, /Customer name\s+([^\n]+)/i));
+
+  const email = cleanField(
+    extract(normalizedText, /Customer email\s+([^\s\n]+@[^\s\n]+)/i)
+  );
+
+  const phone = cleanField(extract(normalizedText, /Customer phone\s+([^\n]+)/i));
+  const dateRaw = cleanField(extract(normalizedText, /Date\s+([^\n]+)/i));
+  const paxRaw = cleanField(extract(normalizedText, /PAX\s+([^\n]+)/i));
+  const product = cleanField(extract(normalizedText, /Rate\s+([^\n]+)/i));
+
   const amountRaw = extract(
     normalizedText,
     /Viator amount:\s*EUR\s*([0-9]+(?:\.[0-9]+)?)/i
