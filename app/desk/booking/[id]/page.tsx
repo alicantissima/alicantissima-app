@@ -9,6 +9,8 @@ import CheckInBookingButton from "@/components/check-in-booking-button";
 import FinishBookingButton from "@/components/finish-booking-button";
 import Link from "next/link";
 import InlineEditBookingField from "@/components/inline-edit-booking-field";
+import InlineEditTime from "@/components/inline-edit-time";
+
 
 type PageProps = {
   params: Promise<{
@@ -233,46 +235,32 @@ export default async function DeskBookingPage({ params }: PageProps) {
                       </div>
                     </div>
 
-                    import InlineEditTime from "@/components/inline-edit-time";
 
-<InlineEditTime
-  bookingId={booking.id}
-  itemId={item.id}
-  label="Drop-off"
-  field="dropOffTime"
-  value={item.meta?.dropOffTime}
-/>
+<div className="mt-4 grid gap-2 sm:grid-cols-3">
+  <InlineEditTime
+    bookingId={booking.id}
+    itemId={item.id}
+    label="Drop-off"
+    field="dropOffTime"
+    value={item.meta?.dropOffTime}
+  />
 
-<InlineEditTime
-  bookingId={booking.id}
-  itemId={item.id}
-  label="Pick-up"
-  field="pickUpTime"
-  value={item.meta?.pickUpTime}
-/>
+  <InlineEditTime
+    bookingId={booking.id}
+    itemId={item.id}
+    label="Pick-up"
+    field="pickUpTime"
+    value={item.meta?.pickUpTime}
+  />
 
-<InlineEditTime
-  bookingId={booking.id}
-  itemId={item.id}
-  label="Shower"
-  field="showerTime"
-  value={item.meta?.showerTime}
-/>
+  <InlineEditTime
+    bookingId={booking.id}
+    itemId={item.id}
+    label="Shower"
+    field="showerTime"
+    value={item.meta?.showerTime}
+  />
 </div>
-
-                      <div className="rounded-xl bg-gray-50 p-3 text-sm">
-                        <div className="text-xs text-gray-500">Recolha</div>
-                        <div className="font-medium">
-                          {item.meta?.pickUpTime || "-"}
-                        </div>
-                      </div>
-
-                      <div className="rounded-xl bg-gray-50 p-3 text-sm">
-                        <div className="text-xs text-gray-500">Duche</div>
-                        <div className="font-medium">
-                          {item.meta?.showerTime || "-"}
-                        </div>
-                      </div>
                     </div>
 
                     {item.meta?.breakdown && item.meta.breakdown.length > 0 && (
@@ -304,31 +292,31 @@ export default async function DeskBookingPage({ params }: PageProps) {
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
   <h2 className="text-2xl font-bold">Customer</h2>
 
-  <div className="mt-4 grid gap-2 sm:grid-cols-3">
-  <InlineEditTime
-    bookingId={booking.id}
-    itemId={item.id}
-    label="Drop-off"
-    field="dropOffTime"
-    value={item.meta?.dropOffTime}
-  />
+  <div className="mt-4 grid gap-3 md:grid-cols-2">
+    <InfoCard label="Name" value={booking.customer_name || "-"} />
 
-  <InlineEditTime
-    bookingId={booking.id}
-    itemId={item.id}
-    label="Pick-up"
-    field="pickUpTime"
-    value={item.meta?.pickUpTime}
-  />
+    <InlineEditBookingField
+      bookingId={booking.id}
+      label="City"
+      field="city"
+      value={booking.city}
+    />
 
-  <InlineEditTime
-    bookingId={booking.id}
-    itemId={item.id}
-    label="Shower"
-    field="showerTime"
-    value={item.meta?.showerTime}
-  />
-</div>
+    <InlineEditBookingField
+      bookingId={booking.id}
+      label="Phone"
+      field="customer_phone"
+      value={booking.customer_phone}
+    />
+
+    <InlineEditBookingField
+      bookingId={booking.id}
+      label="Email"
+      field="customer_email"
+      value={booking.customer_email}
+    />
+  </div>
+</section>
 
 {item.meta?.breakdown && item.meta.breakdown.length > 0 && (
   <div className="mt-4 rounded-2xl bg-gray-50 p-4">
