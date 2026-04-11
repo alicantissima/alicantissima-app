@@ -1,48 +1,24 @@
 
 
+
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
-
-function pad(value: number) {
-  return value.toString().padStart(2, "0");
-}
-
-function generateTimeSlots(startHour: number, endHour: number) {
-  const slots: string[] = [];
-
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (const minute of [0, 30]) {
-      const startH = hour;
-      const startM = minute;
-
-      let endH = hour;
-      let endM = minute + 30;
-
-      if (endM === 60) {
-        endH += 1;
-        endM = 0;
-      }
-
-      const start = `${pad(startH)}h${pad(startM)}`;
-      const end = `${pad(endH)}h${pad(endM)}`;
-
-      slots.push(`${start}-${end}`);
-    }
-  }
-
-  return slots;
-}
+import { TIME_SLOTS } from "@/lib/time-slots";
 
 function getTodayString() {
   const now = new Date();
   const year = now.getFullYear();
-  const month = pad(now.getMonth() + 1);
-  const day = pad(now.getDate());
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function getSlotIndex(slot: string, slots: string[]) {
+  return slots.indexOf(slot);
 }
 
 function BookLuggageContent() {
@@ -52,16 +28,23 @@ function BookLuggageContent() {
   const clearItems = useBookingStore((state) => state.clearItems);
 
   const language = normalizeLanguage(searchParams.get("lang"));
-  const source = searchParams.get("source") === "walkin" ? "walkin" : "";
-
   const t = getMessages(language);
-  const timeSlots = useMemo(() => generateTimeSlots(10, 20), []);
+  const timeSlots = TIME_SLOTS;
 
   const [date, setDate] = useState("");
-  const [dropOff, setDropOff] = useState(timeSlots[0] ?? "");
-  const [pickUp, setPickUp] = useState(timeSlots[0] ?? "");
+  const [dropOff, setDropOff] = useState("");
+  const [pickUp, setPickUp] = useState("");
   const [luggage, setLuggage] = useState(1);
   const [comments, setComments] = useState("");
+
+  const availablePickUpSlots = useMemo(() => {
+    if (!dropOff) return timeSlots;
+
+    const dropOffIndex = timeSlots.indexOf(dropOff);
+    if (dropOffIndex === -1) return timeSlots;
+
+    return timeSlots.slice(dropOffIndex);
+  }, [dropOff, timeSlots]);
 
   const unitPrice = 8;
   const totalPrice = luggage * unitPrice;
@@ -94,6 +77,16 @@ function BookLuggageContent() {
 
     if (!pickUp) {
       alert(t.bookLuggageChoosePickUpAlert);
+      return;
+    }
+
+    if (
+      getSlotIndex(pickUp, timeSlots) < getSlotIndex(dropOff, timeSlots)
+    ) {
+      alert(
+        t.pickUpAfterDropOffAlert ??
+          "Pick-up time must be after drop-off time."
+      );
       return;
     }
 
@@ -156,8 +149,19 @@ function BookLuggageContent() {
           <select
             className={fieldClass}
             value={dropOff}
-            onChange={(e) => setDropOff(e.target.value)}
+            onChange={(e) => {
+              const newDropOff = e.target.value;
+              setDropOff(newDropOff);
+
+              if (
+                pickUp &&
+                timeSlots.indexOf(pickUp) < timeSlots.indexOf(newDropOff)
+              ) {
+                setPickUp("");
+              }
+            }}
           >
+            <option value="">{t.chooseTime ?? "Choose time"}</option>
             {timeSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
@@ -173,7 +177,8 @@ function BookLuggageContent() {
             value={pickUp}
             onChange={(e) => setPickUp(e.target.value)}
           >
-            {timeSlots.map((slot) => (
+            <option value="">{t.chooseTime ?? "Choose time"}</option>
+            {availablePickUpSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
               </option>
