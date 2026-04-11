@@ -29,16 +29,16 @@ export async function POST(req: NextRequest) {
     }
 
     await supabase.from("bookings").insert({
-      booking_code: data.bookingCode,
-      customer_name: data.customerName,
-      customer_email: data.email,
-      total_amount: data.amount,
-      currency: "EUR",
-      status: "booked",
-      source: "viator",
-      payment_method: "viator",
-      service_date: data.serviceDate,
-    });
+  booking_code: data.bookingCode,
+  customer_name: data.customerName,
+  customer_email: data.email,
+  total_amount: data.viatorAmount,
+  currency: "EUR",
+  status: "booked",
+  source: "viator",
+  payment_method: "viator",
+  service_date: data.serviceDate,
+});
 
     return NextResponse.json({ success: true, data });
 
