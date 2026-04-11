@@ -68,7 +68,7 @@ export default function FinishBookingButton({
       disabled={loading}
       className="rounded-xl border border-blue-700 bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
     >
-      {loading ? "A finalizar..." : "Finalizar"}
+      {loading ? "A finalizar..." : "Check-out"}
     </button>
   );
 }
