@@ -258,6 +258,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
   field="showerTime"
   value={item.meta?.showerTime}
 />
+</div>
 
                       <div className="rounded-xl bg-gray-50 p-3 text-sm">
                         <div className="text-xs text-gray-500">Recolha</div>
@@ -303,81 +304,47 @@ export default async function DeskBookingPage({ params }: PageProps) {
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
   <h2 className="text-2xl font-bold">Customer</h2>
 
-  <div className="mt-4 grid gap-3 md:grid-cols-2">
-    <InfoCard label="Name" value={booking.customer_name || "-"} />
+  <div className="mt-4 grid gap-2 sm:grid-cols-3">
+  <InlineEditTime
+    bookingId={booking.id}
+    itemId={item.id}
+    label="Drop-off"
+    field="dropOffTime"
+    value={item.meta?.dropOffTime}
+  />
 
-    <InlineEditBookingField
-      bookingId={booking.id}
-      label="City"
-      field="city"
-      value={booking.city}
-      type="text"
-    />
+  <InlineEditTime
+    bookingId={booking.id}
+    itemId={item.id}
+    label="Pick-up"
+    field="pickUpTime"
+    value={item.meta?.pickUpTime}
+  />
 
-    <InlineEditBookingField
-      bookingId={booking.id}
-      label="Phone"
-      field="customer_phone"
-      value={booking.customer_phone}
-      type="tel"
-    />
+  <InlineEditTime
+    bookingId={booking.id}
+    itemId={item.id}
+    label="Shower"
+    field="showerTime"
+    value={item.meta?.showerTime}
+  />
+</div>
 
-    <InlineEditBookingField
-      bookingId={booking.id}
-      label="Email"
-      field="customer_email"
-      value={booking.customer_email}
-      type="email"
-    />
+{item.meta?.breakdown && item.meta.breakdown.length > 0 && (
+  <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+    <div className="mb-2 text-sm font-semibold">Breakdown</div>
+    <div className="space-y-2 text-sm">
+      {item.meta.breakdown.map((b, index) => (
+        <div
+          key={index}
+          className="flex justify-between gap-3"
+        >
+          <span>
+            {b.label} × {b.quantity}
+          </span>
+          <span>{Number(b.totalPrice).toFixed(2)} €</span>
+        </div>
+      ))}
+    </div>
   </div>
-</section>
-
-          <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
-            <h2 className="text-2xl font-bold">Notes</h2>
-
-            <div
-              className={`mt-4 rounded-2xl p-4 text-sm ${
-                booking.notes && booking.notes.trim()
-                  ? "border border-amber-200 bg-amber-50 text-amber-900"
-                  : "border bg-gray-50 text-gray-500"
-              }`}
-            >
-              {booking.notes && booking.notes.trim()
-                ? booking.notes
-                : "No notes."}
-            </div>
-          </section>
-
-          <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
-            <h2 className="text-2xl font-bold">Administrative data</h2>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <InfoCard label="Created at" value={formatDateTime(booking.created_at)} />
-              <InfoCard label="Check-in real" value={formatDateTime(booking.check_in_time)} />
-              <InfoCard label="Check-out real" value={formatDateTime(booking.check_out_time)} />
-              <InfoCard
-  label="Source"
-  value={isPaidPartner(booking.source) ? "viator · paid online" : booking.source || "-"}
-/>
-            </div>
-          </section>
-        </section>
-
-        <aside className="space-y-4">
-          <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
-            <h2 className="text-2xl font-bold">QR</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Show to staff for quick scanning
-            </p>
-
-            <div className="mt-4 flex justify-center rounded-2xl border bg-gray-50 p-4">
-              <div className="w-full max-w-[220px]">
-                <BookingQr code={booking.booking_code} />
-              </div>
-            </div>
-          </section>
-        </aside>
-      </section>
-    </main>
-  );
-}
+)}
