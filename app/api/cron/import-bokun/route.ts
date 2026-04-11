@@ -135,13 +135,14 @@ export async function GET(req: NextRequest) {
         if (itemError) throw itemError;
 
         created += 1;
-      } catch (error) {
+            } catch (error) {
+        const messageId = msg.id ?? undefined;
+
         errors.push({
-          id: msg.id,
+          id: messageId,
           reason: error instanceof Error ? error.message : "Unknown error",
         });
       }
-    }
 
     return NextResponse.json({
       ok: true,
