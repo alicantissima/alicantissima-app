@@ -457,15 +457,32 @@ export default async function AdminHistoryPage() {
   ] as const;
 
   const sourceHistoryCounts: Record<string, number> = {};
+const sourceHistoryRevenue: Record<string, number> = {};
 
-  for (const key of sourceKeys) {
-    sourceHistoryCounts[key] = 0;
-  }
+for (const key of sourceKeys) {
+  sourceHistoryCounts[key] = 0;
+  sourceHistoryRevenue[key] = 0;
+}
 
-  for (const booking of historyBookings) {
-    const currentSource = booking.source ?? "choose";
-    sourceHistoryCounts[currentSource] = (sourceHistoryCounts[currentSource] ?? 0) + 1;
-  }
+for (const booking of historyBookings) {
+  const currentSource = booking.source ?? "choose";
+  const bookingItems =
+    (items as BookingItemRow[])?.filter((item) => item.booking_id === booking.id) ?? [];
+
+  const computedRevenue = bookingItems.reduce(
+    (sum, item) => sum + Number(item.line_total ?? 0),
+    0
+  );
+
+  const bookingRevenue =
+    computedRevenue > 0 ? computedRevenue : Number(booking.total_amount || 0);
+
+  sourceHistoryCounts[currentSource] =
+    (sourceHistoryCounts[currentSource] ?? 0) + 1;
+
+  sourceHistoryRevenue[currentSource] =
+    (sourceHistoryRevenue[currentSource] ?? 0) + bookingRevenue;
+}
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
@@ -500,8 +517,8 @@ export default async function AdminHistoryPage() {
 
         <div className="flex flex-wrap gap-2 text-sm">
           {Object.entries(sourceHistoryCounts)
-            .filter(([, count]) => count > 0)
-            .map(([key, count]) => {
+  .filter(([key, count]) => count > 0 || (sourceHistoryRevenue[key] ?? 0) > 0)
+  .map(([key, count]) => {
               const colorClass =
                 key === "choose"
                   ? "bg-zinc-100 text-zinc-800"
@@ -526,7 +543,7 @@ export default async function AdminHistoryPage() {
 
               return (
                 <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-                  {key}: {count}
+                  {key}: {count} · {formatCurrency(sourceHistoryRevenue[key] ?? 0, "EUR")}
                 </span>
               );
             })}
