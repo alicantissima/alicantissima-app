@@ -121,6 +121,16 @@ function capitalize(word: string) {
   return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 }
 
+function cleanName(name: string | null) {
+  if (!name) return null;
+
+  return name
+    .toLowerCase()
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 function capitalizeWords(input: string) {
   return input
     .split(" ")
@@ -172,18 +182,18 @@ export function parseBokunEmail(text: string): ParsedBokunEmail {
   );
 
   return {
-    bookingCode,
-    extRef,
-    bookingRef,
-    customerName,
-    email: cleanEmail(email) || "ask customer",
-    phone,
-    serviceDate: parseServiceDate(dateRaw),
-    paxRaw,
-    quantity: parseQuantity(paxRaw),
-    product,
-    productBookingRef,
-    viatorAmount: amountRaw ? Number(amountRaw) : null,
-    rawText: normalizedText,
-  };
+  bookingCode,
+  extRef,
+  bookingRef,
+  customerName: cleanName(customerName),
+  email: cleanEmail(email) || "ask customer",
+  phone,
+  serviceDate: parseServiceDate(dateRaw),
+  paxRaw,
+  quantity: parseQuantity(paxRaw),
+  product,
+  productBookingRef,
+  viatorAmount: amountRaw ? Number(amountRaw) : null,
+  rawText: normalizedText,
+};
 }
