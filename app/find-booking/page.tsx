@@ -217,7 +217,7 @@ useEffect(() => {
                 <strong>Name:</strong> {booking.customer_name}
               </p>
               <p>
-                <strong>Email:</strong> {booking.source === "viator" ? "-" : booking.customer_email || "-"}
+                <strong>Email:</strong> {booking.customer_email || "-"}
               </p>
               <p>
   <strong>Status:</strong> {booking.status}
