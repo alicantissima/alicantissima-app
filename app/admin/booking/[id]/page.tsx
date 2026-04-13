@@ -173,7 +173,7 @@ export default async function BookingPage({ params }: PageProps) {
 
           <div className="rounded-lg border p-3 md:col-span-2">
             <div className="text-xs text-gray-500">Email</div>
-            <div className="font-semibold break-all">{booking.customer_email}</div>
+            <div className="font-semibold break-all">{booking.source === "viator" ? "-" : booking.customer_email || "-"}</div>
           </div>
 
           <div className="rounded-lg border p-3">

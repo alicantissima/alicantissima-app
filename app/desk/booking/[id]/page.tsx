@@ -312,7 +312,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
                 bookingId={booking.id}
                 label="Email"
                 field="customer_email"
-                value={booking.customer_email}
+                value={booking.source === "viator" ? "-" : booking.customer_email || "-"}
               />
             </div>
           </section>

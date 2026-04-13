@@ -446,7 +446,7 @@ export default async function AdminHistoryPage() {
                         {booking.customer_name}
                       </div>
                       <div className="text-[11px] leading-tight text-gray-500">
-                        {booking.customer_email}
+                        {booking.source === "viator" ? "-" : booking.customer_email || "-"}
                       </div>
                     </td>
 
