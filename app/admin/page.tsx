@@ -490,17 +490,17 @@ export default async function AdminPage({
     const code = getItemCode(item);
 
     let bags = current.bags;
-let showers = current.showers;
-let combo = current.combo;
+    let showers = current.showers;
+    let combo = current.combo;
 
-const extraCounts = getExtraCounts(item);
+    const extraCounts = getExtraCounts(item);
 
-if (code === "luggage") bags += item.quantity;
-if (code === "shower") showers += item.quantity;
-if (code === "combo") combo += item.quantity;
+    if (code === "luggage") bags += item.quantity;
+    if (code === "shower") showers += item.quantity;
+    if (code === "combo") combo += item.quantity;
 
-bags += extraCounts.bags;
-showers += extraCounts.showers;
+    bags += extraCounts.bags;
+    showers += extraCounts.showers;
 
     const timeIn =
       typeof item.meta?.time_in === "string" && item.meta.time_in.trim() !== ""
@@ -649,16 +649,16 @@ showers += extraCounts.showers;
       }
 
       for (const item of itemsForBooking) {
-  const code = getItemCode(item);
-  const extraCounts = getExtraCounts(item);
+        const code = getItemCode(item);
+        const extraCounts = getExtraCounts(item);
 
-  if (code === "luggage") bagsToday += item.quantity;
-  if (code === "shower") showersToday += item.quantity;
-  if (code === "combo") combosToday += item.quantity;
+        if (code === "luggage") bagsToday += item.quantity;
+        if (code === "shower") showersToday += item.quantity;
+        if (code === "combo") combosToday += item.quantity;
 
-  bagsToday += extraCounts.bags;
-  showersToday += extraCounts.showers;
-}
+        bagsToday += extraCounts.bags;
+        showersToday += extraCounts.showers;
+      }
 
       const cityName = (booking.city ?? meta.city ?? "").trim();
 
@@ -669,15 +669,15 @@ showers += extraCounts.showers;
 
     if (normalizedStatus === "inside") {
       for (const item of itemsForBooking) {
-  const code = getItemCode(item);
-  const extraCounts = getExtraCounts(item);
+        const code = getItemCode(item);
+        const extraCounts = getExtraCounts(item);
 
-  if (code === "luggage") bagsInside += item.quantity;
-  if (code === "shower") showersInside += item.quantity;
+        if (code === "luggage") bagsInside += item.quantity;
+        if (code === "shower") showersInside += item.quantity;
 
-  bagsInside += extraCounts.bags;
-  showersInside += extraCounts.showers;
-}
+        bagsInside += extraCounts.bags;
+        showersInside += extraCounts.showers;
+      }
     }
   }
 
