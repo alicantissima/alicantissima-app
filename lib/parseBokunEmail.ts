@@ -131,11 +131,13 @@ function capitalizeWords(input: string) {
 function cleanEmail(email: string | null) {
   if (!email) return null;
 
-  if (email.startsWith("S-")) {
+  const cleaned = email.trim();
+
+  if (/^S-/i.test(cleaned)) {
     return null;
   }
 
-  return email;
+  return cleaned;
 }
 
 export function parseBokunEmail(text: string): ParsedBokunEmail {
@@ -174,7 +176,7 @@ export function parseBokunEmail(text: string): ParsedBokunEmail {
     extRef,
     bookingRef,
     customerName,
-    email: cleanEmail(email),
+    email: cleanEmail(email) || "ask customer",
     phone,
     serviceDate: parseServiceDate(dateRaw),
     paxRaw,
