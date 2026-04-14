@@ -164,8 +164,8 @@ function getItemCode(item: BookingItemRow) {
     text.includes("shower") ||
     text.includes("ducha") ||
     text.includes("duche") ||
-    text.includes("doccia");
-    text.includes("prysznic")
+    text.includes("doccia")
+    text.includes("prysznic");
 
   if (
     productCode === "combo" ||
