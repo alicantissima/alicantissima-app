@@ -156,16 +156,24 @@ function getItemCode(item: BookingItemRow) {
     text.includes("bag") ||
     text.includes("bags") ||
     text.includes("bagagem") ||
+    text.includes("mala") ||
+    text.includes("malas") ||
     text.includes("maleta") ||
     text.includes("bagagli") ||
-    text.includes("bagaglio");
+    text.includes("bagaglio") ||
+    text.includes("bagaż") ||
+    text.includes("bagaz") ||
+    text.includes("walizk");
 
   const hasShowerWord =
     text.includes("shower") ||
+    text.includes("showers") ||
     text.includes("ducha") ||
     text.includes("duche") ||
-    text.includes("doccia")
-    text.includes("prysznic");
+    text.includes("doccia") ||
+    text.includes("prysznic") ||
+    text.includes("douche") ||
+    text.includes("dusche");
 
   if (
     productCode === "combo" ||
@@ -180,6 +188,8 @@ function getItemCode(item: BookingItemRow) {
   if (
     productCode === "shower" ||
     productType === "shower" ||
+    productCode === "extra_shower" ||
+    productType === "extra_shower" ||
     hasShowerSignal ||
     hasShowerWord
   ) {
@@ -189,6 +199,8 @@ function getItemCode(item: BookingItemRow) {
   if (
     productCode === "luggage" ||
     productType === "luggage" ||
+    productCode === "extra_luggage" ||
+    productType === "extra_luggage" ||
     hasBagSignal ||
     hasBagWord
   ) {
@@ -203,39 +215,53 @@ function getBreakdown(item: BookingItemRow) {
 }
 
 function getExtraCounts(item: BookingItemRow) {
-  return getBreakdown(item).reduce(
+  const breakdown = Array.isArray(item.meta?.breakdown) ? item.meta.breakdown : [];
+
+  return breakdown.reduce(
     (acc, part) => {
       const label = part.label?.toLowerCase().trim() ?? "";
       const qty = Number(part.quantity || 0);
 
       if (!qty) return acc;
 
+      const hasBagWord =
+        label.includes("luggage") ||
+        label.includes("bag") ||
+        label.includes("bags") ||
+        label.includes("bagagem") ||
+        label.includes("mala") ||
+        label.includes("malas") ||
+        label.includes("maleta") ||
+        label.includes("bagagli") ||
+        label.includes("bagaglio") ||
+        label.includes("bagaż") ||
+        label.includes("bagaz") ||
+        label.includes("walizk");
+
+      const hasShowerWord =
+        label.includes("shower") ||
+        label.includes("showers") ||
+        label.includes("ducha") ||
+        label.includes("duche") ||
+        label.includes("doccia") ||
+        label.includes("prysznic") ||
+        label.includes("douche") ||
+        label.includes("dusche");
+
       const isCombo =
-        label.includes("luggage + shower") ||
+        label.includes("combo") ||
         label.includes("lug+shw") ||
-        label.includes("combo");
+        (hasBagWord && hasShowerWord);
 
-      const isExtraShower =
-        !isCombo &&
-        (label.includes("additional shower") ||
-          label.includes("extra shower") ||
-          label.includes("duche extra") ||
-          label.includes("ducha extra") ||
-          label.includes("doccia extra"));
+      if (isCombo) {
+        return acc;
+      }
 
-      const isExtraLuggage =
-        !isCombo &&
-        (label.includes("additional luggage") ||
-          label.includes("extra luggage") ||
-          label.includes("additional bag") ||
-          label.includes("extra bag") ||
-          label.includes("bag extra") ||
-          label.includes("bags extra") ||
-          label.includes("bagagem extra") ||
-          label.includes("mala extra"));
-
-      if (isExtraShower) acc.showers += qty;
-      if (isExtraLuggage) acc.bags += qty;
+      if (hasShowerWord) {
+        acc.showers += qty;
+      } else if (hasBagWord) {
+        acc.bags += qty;
+      }
 
       return acc;
     },
