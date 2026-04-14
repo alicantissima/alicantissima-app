@@ -654,45 +654,38 @@ export default async function AdminPage({
       (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
 
     if (
-      isToday(bookingDate) &&
-      normalizedStatus !== "cancelled" &&
-      normalizedStatus !== "no_show"
-    ) {
-      const currentSource = (booking.source ?? "choose") as SourceKey;
+  isToday(bookingDate) &&
+  normalizedStatus !== "cancelled" &&
+  normalizedStatus !== "no_show"
+) {
+  const currentSource = (booking.source ?? "choose") as SourceKey;
+  const bookingRevenue = Number(booking.total_amount || 0);
 
-      const computedRevenue = itemsForBooking.reduce(
-        (sum, item) => sum + Number(item.line_total ?? 0),
-        0
-      );
+  revenueToday += bookingRevenue;
 
-      const bookingRevenue =
-        computedRevenue > 0 ? computedRevenue : Number(booking.total_amount);
+  if (currentSource in sourceTodayCounts) {
+    sourceTodayCounts[currentSource]++;
+    sourceTodayRevenue[currentSource] += bookingRevenue;
+  }
 
-      revenueToday += bookingRevenue;
+  for (const item of itemsForBooking) {
+    const code = getItemCode(item);
+    const extraCounts = getExtraCounts(item);
 
-      if (currentSource in sourceTodayCounts) {
-        sourceTodayCounts[currentSource]++;
-        sourceTodayRevenue[currentSource] += bookingRevenue;
-      }
+    if (code === "luggage") bagsToday += item.quantity;
+    if (code === "shower") showersToday += item.quantity;
+    if (code === "combo") combosToday += item.quantity;
 
-      for (const item of itemsForBooking) {
-        const code = getItemCode(item);
-        const extraCounts = getExtraCounts(item);
+    bagsToday += extraCounts.bags;
+    showersToday += extraCounts.showers;
+  }
 
-        if (code === "luggage") bagsToday += item.quantity;
-        if (code === "shower") showersToday += item.quantity;
-        if (code === "combo") combosToday += item.quantity;
+  const cityName = (booking.city ?? meta.city ?? "").trim();
 
-        bagsToday += extraCounts.bags;
-        showersToday += extraCounts.showers;
-      }
-
-      const cityName = (booking.city ?? meta.city ?? "").trim();
-
-      if (cityName) {
-        citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
-      }
-    }
+  if (cityName) {
+    citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
+  }
+}
 
     if (normalizedStatus === "inside") {
       for (const item of itemsForBooking) {
