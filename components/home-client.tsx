@@ -3,16 +3,8 @@
 
 "use client";
 
-import HomeClient from "@/components/home-client";
-
-export default function Page({
-  searchParams,
-}: {
-  searchParams: { source?: string };
-}) {
-  return <HomeClient forcedSource={searchParams.source} />;
-}
-
+import Link from "next/link";
+import RecoveryRedirect from "@/components/recovery-redirect";
 
 const extrasRows = [
   "Wi-Fi • Phone charging • WC • Sofa area",
@@ -25,6 +17,9 @@ const extrasRows = [
 type HomeClientProps = {
   forcedSource?: string;
 };
+
+export default function HomeClient({ forcedSource }: HomeClientProps) {
+  const sourceSuffix = forcedSource ? `?source=${forcedSource}` : "";
 
   const products = [
     {
