@@ -3,10 +3,14 @@
 
 import HomeClient from "@/components/home-client";
 
-export default function Page({
-  searchParams,
-}: {
-  searchParams: { source?: string };
-}) {
-  return <HomeClient forcedSource={searchParams.source} />;
+type PageProps = {
+  searchParams: Promise<{
+    source?: string;
+  }>;
+};
+
+export default async function Page({ searchParams }: PageProps) {
+  const params = await searchParams;
+
+  return <HomeClient forcedSource={params.source} />;
 }
