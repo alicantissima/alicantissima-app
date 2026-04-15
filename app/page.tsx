@@ -4,7 +4,9 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import RecoveryRedirect from "@/components/recovery-redirect";
+
 
 const extrasRows = [
   "Wi-Fi • Phone charging • WC • Sofa area",
@@ -19,7 +21,10 @@ type HomeClientProps = {
 };
 
 export default function HomeClient({ forcedSource }: HomeClientProps) {
-  const sourceSuffix = forcedSource ? `?source=${forcedSource}` : "";
+  const searchParams = useSearchParams();
+  const urlSource = searchParams.get("source");
+  const finalSource = forcedSource ?? urlSource ?? "";
+  const sourceSuffix = finalSource ? `?source=${finalSource}` : "";
 
   const products = [
     {
