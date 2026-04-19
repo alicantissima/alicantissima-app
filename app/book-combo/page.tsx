@@ -3,7 +3,7 @@
 
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
@@ -17,6 +17,32 @@ function getTodayString() {
   return `${year}-${month}-${day}`;
 }
 
+function getCurrentMadridSlotStart() {
+  const now = new Date();
+
+  const madrid = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+
+  const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
+  const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
+
+  if (minute === 0) return `${String(hour).padStart(2, "0")}h00`;
+  if (minute <= 30) return `${String(hour).padStart(2, "0")}h30`;
+  return `${String(hour + 1).padStart(2, "0")}h00`;
+}
+
+function getSlotStart(slot: string) {
+  return slot.split("-")[0];
+}
+
+function getSlotIndex(slot: string, slots: string[]) {
+  return slots.indexOf(slot);
+}
+
 function BookComboContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,8 +52,7 @@ function BookComboContent() {
   const source = searchParams.get("source") === "walkin" ? "walkin" : "";
   const t = getMessages(language);
 
-  const luggageTimeSlots = TIME_SLOTS;
-  const showerTimeSlots = TIME_SLOTS;
+  const timeSlots = TIME_SLOTS;
 
   const [date, setDate] = useState("");
   const [dropOffTime, setDropOffTime] = useState("");
@@ -38,6 +63,39 @@ function BookComboContent() {
   const [extraShowerQty, setExtraShowerQty] = useState(0);
 
   const [comments, setComments] = useState("");
+
+  const baseAvailableSlots = useMemo(() => {
+    if (!date) return timeSlots;
+
+    const today = getTodayString();
+    if (date !== today) return timeSlots;
+
+    const currentSlotStart = getCurrentMadridSlotStart();
+    return timeSlots.filter((slot) => getSlotStart(slot) >= currentSlotStart);
+  }, [date, timeSlots]);
+
+  const availableShowerSlots = useMemo(() => {
+    if (!dropOffTime) return baseAvailableSlots;
+
+    const dropOffIndex = timeSlots.indexOf(dropOffTime);
+    if (dropOffIndex === -1) return baseAvailableSlots;
+
+    return baseAvailableSlots.filter(
+      (slot) => timeSlots.indexOf(slot) >= dropOffIndex
+    );
+  }, [dropOffTime, baseAvailableSlots, timeSlots]);
+
+  useEffect(() => {
+    if (dropOffTime && !baseAvailableSlots.includes(dropOffTime)) {
+      setDropOffTime("");
+    }
+  }, [dropOffTime, baseAvailableSlots]);
+
+  useEffect(() => {
+    if (showerTime && !availableShowerSlots.includes(showerTime)) {
+      setShowerTime("");
+    }
+  }, [showerTime, availableShowerSlots]);
 
   const comboPrice = 18;
   const extraLuggagePrice = 8;
@@ -76,6 +134,11 @@ function BookComboContent() {
 
     if (!showerTime) {
       alert(t.bookComboChooseShowerAlert);
+      return;
+    }
+
+    if (getSlotIndex(showerTime, timeSlots) < getSlotIndex(dropOffTime, timeSlots)) {
+      alert("Shower time must be after drop-off time.");
       return;
     }
 
@@ -168,10 +231,20 @@ function BookComboContent() {
           <select
             className={fieldClass}
             value={dropOffTime}
-            onChange={(e) => setDropOffTime(e.target.value)}
+            onChange={(e) => {
+              const newDropOff = e.target.value;
+              setDropOffTime(newDropOff);
+
+              if (
+                showerTime &&
+                timeSlots.indexOf(showerTime) < timeSlots.indexOf(newDropOff)
+              ) {
+                setShowerTime("");
+              }
+            }}
           >
             <option value="">Choose time</option>
-            {luggageTimeSlots.map((slot) => (
+            {baseAvailableSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
               </option>
@@ -187,7 +260,7 @@ function BookComboContent() {
             onChange={(e) => setShowerTime(e.target.value)}
           >
             <option value="">Choose time</option>
-            {showerTimeSlots.map((slot) => (
+            {availableShowerSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
               </option>
@@ -322,8 +395,3 @@ export default function BookComboPage() {
     </Suspense>
   );
 }
-
-
-
-
-
