@@ -3,7 +3,7 @@
 
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
@@ -19,6 +19,28 @@ function getTodayString() {
 
 function getSlotIndex(slot: string, slots: string[]) {
   return slots.indexOf(slot);
+}
+
+function getCurrentMadridSlotStart() {
+  const now = new Date();
+
+  const madrid = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+
+  const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
+  const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
+
+  if (minute === 0) return `${String(hour).padStart(2, "0")}h00`;
+  if (minute <= 30) return `${String(hour).padStart(2, "0")}h30`;
+  return `${String(hour + 1).padStart(2, "0")}h00`;
+}
+
+function getSlotStart(slot: string) {
+  return slot.split("-")[0];
 }
 
 function BookLuggageContent() {
@@ -37,14 +59,38 @@ function BookLuggageContent() {
   const [luggage, setLuggage] = useState(1);
   const [comments, setComments] = useState("");
 
+  const baseAvailableSlots = useMemo(() => {
+    if (!date) return timeSlots;
+
+    const today = getTodayString();
+    if (date !== today) return timeSlots;
+
+    const currentSlotStart = getCurrentMadridSlotStart();
+    return timeSlots.filter((slot) => getSlotStart(slot) >= currentSlotStart);
+  }, [date, timeSlots]);
+
   const availablePickUpSlots = useMemo(() => {
-    if (!dropOff) return timeSlots;
+    if (!dropOff) return baseAvailableSlots;
 
     const dropOffIndex = timeSlots.indexOf(dropOff);
-    if (dropOffIndex === -1) return timeSlots;
+    if (dropOffIndex === -1) return baseAvailableSlots;
 
-    return timeSlots.slice(dropOffIndex);
-  }, [dropOff, timeSlots]);
+    return baseAvailableSlots.filter(
+      (slot) => timeSlots.indexOf(slot) >= dropOffIndex
+    );
+  }, [dropOff, baseAvailableSlots, timeSlots]);
+
+  useEffect(() => {
+    if (dropOff && !baseAvailableSlots.includes(dropOff)) {
+      setDropOff("");
+    }
+  }, [dropOff, baseAvailableSlots]);
+
+  useEffect(() => {
+    if (pickUp && !availablePickUpSlots.includes(pickUp)) {
+      setPickUp("");
+    }
+  }, [pickUp, availablePickUpSlots]);
 
   const unitPrice = 8;
   const totalPrice = luggage * unitPrice;
@@ -80,9 +126,7 @@ function BookLuggageContent() {
       return;
     }
 
-    if (
-      getSlotIndex(pickUp, timeSlots) < getSlotIndex(dropOff, timeSlots)
-    ) {
+    if (getSlotIndex(pickUp, timeSlots) < getSlotIndex(dropOff, timeSlots)) {
       alert("Pick-up time must be after drop-off time.");
       return;
     }
@@ -159,7 +203,7 @@ function BookLuggageContent() {
             }}
           >
             <option value="">Choose time</option>
-            {timeSlots.map((slot) => (
+            {baseAvailableSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
               </option>
