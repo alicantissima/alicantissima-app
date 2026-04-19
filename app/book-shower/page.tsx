@@ -3,7 +3,7 @@
 
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
@@ -15,6 +15,28 @@ function getTodayString() {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function getCurrentMadridSlotStart() {
+  const now = new Date();
+
+  const madrid = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+
+  const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
+  const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
+
+  if (minute === 0) return `${String(hour).padStart(2, "0")}h00`;
+  if (minute <= 30) return `${String(hour).padStart(2, "0")}h30`;
+  return `${String(hour + 1).padStart(2, "0")}h00`;
+}
+
+function getSlotStart(slot: string) {
+  return slot.split("-")[0];
 }
 
 function BookShowerContent() {
@@ -32,6 +54,22 @@ function BookShowerContent() {
   const [showerTime, setShowerTime] = useState("");
   const [showers, setShowers] = useState(1);
   const [comments, setComments] = useState("");
+
+  const availableShowerSlots = useMemo(() => {
+    if (!date) return showerSlots;
+
+    const today = getTodayString();
+    if (date !== today) return showerSlots;
+
+    const currentSlotStart = getCurrentMadridSlotStart();
+    return showerSlots.filter((slot) => getSlotStart(slot) >= currentSlotStart);
+  }, [date, showerSlots]);
+
+  useEffect(() => {
+    if (showerTime && !availableShowerSlots.includes(showerTime)) {
+      setShowerTime("");
+    }
+  }, [showerTime, availableShowerSlots]);
 
   const unitPrice = 12;
   const totalPrice = showers * unitPrice;
@@ -120,7 +158,7 @@ function BookShowerContent() {
             onChange={(e) => setShowerTime(e.target.value)}
           >
             <option value="">Choose time</option>
-            {showerSlots.map((slot) => (
+            {availableShowerSlots.map((slot) => (
               <option key={slot} value={slot}>
                 {slot}
               </option>
@@ -187,5 +225,3 @@ export default function BookShowerPage() {
     </Suspense>
   );
 }
-
-
