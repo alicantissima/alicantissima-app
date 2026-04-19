@@ -21,29 +21,37 @@ type HomeClientProps = {
 export default function HomeClient({ forcedSource }: HomeClientProps) {
   const sourceSuffix = forcedSource ? `?source=${forcedSource}` : "";
 
-  const products = [
-    {
-      title: "Store luggage",
-      price: "€8",
-      subtitle: "Safe luggage storage",
-      href: `/book-luggage${sourceSuffix}`,
-      image: "/images/products/luggage.jpg",
-    },
-    {
-      title: "Take a shower",
-      price: "€12",
-      subtitle: "Freshen up anytime",
-      href: `/book-shower${sourceSuffix}`,
-      image: "/images/products/shower.jpg",
-    },
-    {
-      title: "Luggage + shower",
-      price: "€18",
-      subtitle: "Comfort and convenience",
-      href: `/book-combo${sourceSuffix}`,
-      image: "/images/products/combo.jpg",
-    },
-  ];
+  const defaultProducts = [
+  {
+    title: "Store luggage",
+    price: "€8",
+    subtitle: "Safe luggage storage",
+    href: `/book-luggage${sourceSuffix}`,
+    image: "/images/products/luggage.jpg",
+  },
+  {
+    title: "Take a shower",
+    price: "€12",
+    subtitle: "Freshen up anytime",
+    href: `/book-shower${sourceSuffix}`,
+    image: "/images/products/shower.jpg",
+  },
+  {
+    title: "Luggage + shower",
+    price: "€18",
+    subtitle: "Comfort and convenience",
+    href: `/book-combo${sourceSuffix}`,
+    image: "/images/products/combo.jpg",
+  },
+];
+
+const walkinProducts = [
+  defaultProducts[0],
+  defaultProducts[2],
+  defaultProducts[1],
+];
+
+const products = forcedSource === "walkin" ? walkinProducts : defaultProducts;
 
   return (
     <>
