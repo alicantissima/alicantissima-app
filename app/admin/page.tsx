@@ -839,7 +839,6 @@ if (isUpcoming(date)) {
     0
   );
 
-  const visibleBookingsCount =
     const visibleBookingsCount =
   todayBookings.length +
   insideBookings.length +
