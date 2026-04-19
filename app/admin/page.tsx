@@ -738,8 +738,40 @@ export default async function AdminPage({
   const todayBookings: BookingRow[] = [];
   const insideBookings: BookingRow[] = [];
   const finishedBookings: BookingRow[] = [];
-  const upcomingBookings: BookingRow[] = [];
   const cancelledBookings: BookingRow[] = [];
+  const tomorrowBookings: BookingRow[] = [];
+  const upcomingBookings: BookingRow[] = [];
+
+function getTomorrowString() {
+  const now = new Date();
+  const madridNow = new Date(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Europe/Madrid",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now)
+  );
+
+  madridNow.setDate(madridNow.getDate() + 1);
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(madridNow);
+}
+
+function isTomorrow(date: string | null) {
+  if (!date) return false;
+  return date === getTomorrowString();
+}
+
+function isUpcoming(date: string | null) {
+  if (!date) return false;
+  return date > getTomorrowString();
+}
 
   for (const booking of sortedBookings) {
     const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
@@ -770,9 +802,15 @@ export default async function AdminPage({
       continue;
     }
 
-    if (isFuture(date)) {
-      upcomingBookings.push(booking);
-    }
+    if (isTomorrow(date)) {
+  tomorrowBookings.push(booking);
+  continue;
+}
+
+if (isUpcoming(date)) {
+  upcomingBookings.push(booking);
+  continue;
+}
   }
 
   insideBookings.sort((a, b) => {
@@ -802,11 +840,13 @@ export default async function AdminPage({
   );
 
   const visibleBookingsCount =
-    todayBookings.length +
-    insideBookings.length +
-    finishedBookings.length +
-    upcomingBookings.length +
-    cancelledBookings.length;
+    const visibleBookingsCount =
+  todayBookings.length +
+  insideBookings.length +
+  finishedBookings.length +
+  cancelledBookings.length +
+  tomorrowBookings.length +
+  upcomingBookings.length;
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
@@ -985,51 +1025,58 @@ export default async function AdminPage({
       </section>
 
       {renderSectionTable({
-        title: "Today",
-        bookings: todayBookings,
-        bookingMetaMap,
-        codeFilter,
-      })}
+  title: "Today",
+  bookings: todayBookings,
+  bookingMetaMap,
+  codeFilter,
+})}
 
-      {renderSectionTable({
-        title: "Inside",
-        bookings: insideBookings,
-        bookingMetaMap,
-        codeFilter,
-      })}
+{renderSectionTable({
+  title: "Inside",
+  bookings: insideBookings,
+  bookingMetaMap,
+  codeFilter,
+})}
 
-      {renderSectionTable({
-        title: "Finished",
-        bookings: finishedBookings,
-        bookingMetaMap,
-        codeFilter,
-      })}
+{renderSectionTable({
+  title: "Finished",
+  bookings: finishedBookings,
+  bookingMetaMap,
+  codeFilter,
+})}
 
-      {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
+{renderSectionTable({
+  title: "Cancelled / No show",
+  bookings: cancelledBookings,
+  bookingMetaMap,
+  codeFilter,
+  cancelled: true,
+})}
 
-      <div className="space-y-3">
-        <div className="flex justify-end">
-          <div className="rounded-xl border px-3 py-2 text-sm">
-            <span className="font-medium">Upcoming total:</span>{" "}
-            <span className="font-bold">€ {upcomingTotal.toFixed(2)}</span>
-          </div>
-        </div>
+{renderSectionTable({
+  title: "Tomorrow",
+  bookings: tomorrowBookings,
+  bookingMetaMap,
+  codeFilter,
+})}
 
-        {renderSectionTable({
-          title: "Upcoming",
-          bookings: upcomingBookings,
-          bookingMetaMap,
-          codeFilter,
-        })}
-      </div>
+{upcomingBookings.length > 0 && <div className="border-t pt-6" />}
 
-      {renderSectionTable({
-        title: "Cancelled / No show",
-        bookings: cancelledBookings,
-        bookingMetaMap,
-        codeFilter,
-        cancelled: true,
-      })}
+<div className="space-y-3">
+  <div className="flex justify-end">
+    <div className="rounded-xl border px-3 py-2 text-sm">
+      <span className="font-medium">Upcoming total:</span>{" "}
+      <span className="font-bold">€ {upcomingTotal.toFixed(2)}</span>
+    </div>
+  </div>
+
+  {renderSectionTable({
+    title: "Upcoming",
+    bookings: upcomingBookings,
+    bookingMetaMap,
+    codeFilter,
+  })}
+</div>
     </main>
   );
 }
