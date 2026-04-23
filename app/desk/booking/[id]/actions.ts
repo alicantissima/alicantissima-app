@@ -40,13 +40,14 @@ export async function updateBookingField({
   const cleanValue = value.trim();
 
   const { error } = await supabase
-    .from("bookings")
-    .update({ [field]: cleanValue || null })
-    .eq("id", bookingId);
+  .from("bookings")
+  .update({ [field]: cleanValue || null })
+  .eq("id", bookingId);
 
-  if (error) {
-    throw new Error(error.message);
-  }
+if (error) {
+  console.error("updateBookingField error:", error);
+  throw new Error(error.message);
+}
 
   revalidatePath(`/desk/booking/${bookingId}`);
 }
