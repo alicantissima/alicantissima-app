@@ -27,27 +27,38 @@ export async function updateBookingField({
     throw new Error("Not authenticated");
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single();
 
-  if (!profile || (profile.role !== "admin" && profile.role !== "desk")) {
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  if (!profile || !["admin", "desk"].includes(profile.role)) {
     throw new Error("Unauthorized");
   }
 
   const cleanValue = value.trim();
 
-  const { error } = await supabase
-  .from("bookings")
-  .update({ [field]: cleanValue || null })
-  .eq("id", bookingId);
+  const { data: updatedBooking, error } = await supabase
+    .from("bookings")
+    .update({ [field]: cleanValue || null })
+    .eq("id", bookingId)
+    .select("id")
+    .maybeSingle();
 
-if (error) {
-  console.error("updateBookingField error:", error);
-  throw new Error(error.message);
-}
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!updatedBooking) {
+    throw new Error(
+      "Field update blocked. Check bookings update policy for desk role."
+    );
+  }
 
   revalidatePath(`/desk/booking/${bookingId}`);
 }
