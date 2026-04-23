@@ -24,11 +24,31 @@ export default function InlineEditTime({
 }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? "");
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleCancel() {
     setDraft(value ?? "");
+    setError(null);
     setIsEditing(false);
+  }
+
+  function handleSave() {
+    setError(null);
+
+    startTransition(async () => {
+      try {
+        await updateBookingItemTime({
+          bookingId,
+          itemId,
+          field,
+          value: draft,
+        });
+        setIsEditing(false);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to save");
+      }
+    });
   }
 
   return (
@@ -68,17 +88,7 @@ export default function InlineEditTime({
             <button
               type="button"
               disabled={isPending}
-              onClick={() =>
-                startTransition(async () => {
-                  await updateBookingItemTime({
-                    bookingId,
-                    itemId,
-                    field,
-                    value: draft,
-                  });
-                  setIsEditing(false);
-                })
-              }
+              onClick={handleSave}
               className="rounded bg-blue-600 px-2 py-1 text-xs text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
@@ -93,6 +103,8 @@ export default function InlineEditTime({
               Cancel
             </button>
           </div>
+
+          {error ? <p className="text-xs text-red-600">{error}</p> : null}
         </div>
       )}
     </div>
