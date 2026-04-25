@@ -11,6 +11,7 @@ import Link from "next/link";
 import InlineEditBookingField from "@/components/inline-edit-booking-field";
 import InlineEditTime from "@/components/inline-edit-time";
 import ChangeBookingItemProductSelect from "@/components/change-booking-item-product-select";
+import UpdateBookingItemQuantity from "@/components/update-booking-item-quantity";
 
 
 type PageProps = {
@@ -223,9 +224,11 @@ export default async function DeskBookingPage({ params }: PageProps) {
                         <div className="text-lg font-semibold">
                           {item.title || item.product_type || "Item"}
                         </div>
-                        <div className="mt-1 text-sm text-gray-500">
-                          Quantity: {item.quantity}
-                        </div>
+                        <UpdateBookingItemQuantity
+  bookingId={booking.id}
+  itemId={item.id}
+  quantity={item.quantity}
+/>
 
 <ChangeBookingItemProductSelect
   bookingId={booking.id}

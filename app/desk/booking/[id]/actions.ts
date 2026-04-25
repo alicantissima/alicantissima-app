@@ -193,4 +193,76 @@ export async function changeBookingItemProduct({
   revalidatePath(`/desk/booking/${bookingId}`);
 }
 
+type UpdateQuantityInput = {
+  bookingId: string;
+  itemId: string;
+  quantity: number;
+};
+
+export async function updateBookingItemQuantity({
+  bookingId,
+  itemId,
+  quantity,
+}: UpdateQuantityInput) {
+  const supabase = await createClient();
+
+  if (quantity < 1) return;
+
+  const { data: item, error: itemError } = await supabase
+    .from("booking_items")
+    .select("*")
+    .eq("id", itemId)
+    .eq("booking_id", bookingId)
+    .single();
+
+  if (itemError) throw new Error(itemError.message);
+
+  const unitPrice = Number(item.unit_price || 0);
+  const newLineTotal = unitPrice * quantity;
+
+  let newMeta = item.meta || {};
+
+  // 👉 se for combo, atualizar breakdown
+  if (item.product_type === "combo") {
+    newMeta = {
+      ...newMeta,
+      breakdown: [
+        {
+          label: "Luggage + Shower",
+          quantity,
+          unitPrice: 18,
+          totalPrice: 18 * quantity,
+        },
+      ],
+    };
+  }
+
+  await supabase
+    .from("booking_items")
+    .update({
+      quantity,
+      line_total: newLineTotal,
+      meta: newMeta,
+    })
+    .eq("id", itemId)
+    .eq("booking_id", bookingId);
+
+  // 👉 recalcular booking total
+  const { data: items } = await supabase
+    .from("booking_items")
+    .select("line_total")
+    .eq("booking_id", bookingId);
+
+  const newTotal = (items || []).reduce(
+    (sum, i) => sum + Number(i.line_total || 0),
+    0
+  );
+
+  await supabase
+    .from("bookings")
+    .update({ total_amount: newTotal })
+    .eq("id", bookingId);
+
+  revalidatePath(`/desk/booking/${bookingId}`);
+}
 
