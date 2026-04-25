@@ -10,6 +10,7 @@ import FinishBookingButton from "@/components/finish-booking-button";
 import Link from "next/link";
 import InlineEditBookingField from "@/components/inline-edit-booking-field";
 import InlineEditTime from "@/components/inline-edit-time";
+import ChangeBookingItemProductSelect from "@/components/change-booking-item-product-select";
 
 
 type PageProps = {
@@ -225,6 +226,12 @@ export default async function DeskBookingPage({ params }: PageProps) {
                         <div className="mt-1 text-sm text-gray-500">
                           Quantity: {item.quantity}
                         </div>
+
+<ChangeBookingItemProductSelect
+  bookingId={booking.id}
+  itemId={item.id}
+  currentType={item.product_type}
+/>
                       </div>
 
                       <div className="text-right">
