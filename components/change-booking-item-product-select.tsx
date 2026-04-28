@@ -3,11 +3,9 @@
 
 "use client";
 
-import { useTransition } from "react";
-import { useTransition, useState } from "react";
+import { useState, useTransition } from "react";
 import { changeBookingItemProduct } from "@/app/desk/booking/[id]/actions";
 
-const [isEditing, setIsEditing] = useState(false);
 
 type ProductType = "luggage" | "shower" | "combo";
 
@@ -22,6 +20,7 @@ export default function ChangeBookingItemProductSelect({
   itemId,
   currentType,
 }: Props) {
+  const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const value =
