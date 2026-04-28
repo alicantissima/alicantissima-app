@@ -150,6 +150,26 @@ function cleanEmail(email: string | null) {
   return cleaned;
 }
 
+function mapProduct(product: string | null) {
+  if (!product) return "luggage";
+
+  const p = product.toLowerCase();
+
+  if (p.includes("shower") && p.includes("luggage")) {
+    return "combo";
+  }
+
+  if (p.includes("shower")) {
+    return "shower";
+  }
+
+  if (p.includes("luggage")) {
+    return "luggage";
+  }
+
+  return "luggage";
+}
+
 export function parseBokunEmail(text: string): ParsedBokunEmail {
   const normalizedText = text.replace(/\r/g, "");
 
@@ -174,7 +194,8 @@ export function parseBokunEmail(text: string): ParsedBokunEmail {
   const phone = cleanField(extract(normalizedText, /Customer phone\s+([^\n]+)/i));
   const dateRaw = cleanField(extract(normalizedText, /Date\s+([^\n]+)/i));
   const paxRaw = cleanField(extract(normalizedText, /PAX\s+([^\n]+)/i));
-  const product = parseProductTitle(normalizedText);
+  const productRaw = parseProductTitle(normalizedText);
+const product = mapProduct(productRaw);
 
   const amountRaw = extract(
     normalizedText,
