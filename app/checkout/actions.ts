@@ -5,6 +5,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
+import { sendPushToAll } from "@/lib/push/send-push";
 
 type CheckoutItem = {
   id: string;
@@ -941,6 +942,27 @@ try {
   });
 } catch (internalEmailError) {
   console.error("internal booking notification email error:", internalEmailError);
+}
+
+try {
+  const firstItem = items[0];
+
+  const time =
+    typeof firstItem?.meta?.dropOffTime === "string"
+      ? firstItem.meta.dropOffTime
+      : typeof firstItem?.meta?.showerTime === "string"
+        ? firstItem.meta.showerTime
+        : "";
+
+  await sendPushToAll({
+    title: "Nova reserva Alicantíssima 🔔",
+    body: `${booking.booking_code} · ${firstItem?.title || "Booking"}${
+      time ? ` · ${time}` : ""
+    } · €${totalAmount.toFixed(2)}`,
+    url: `/desk/booking/${booking.id}`,
+  });
+} catch (pushError) {
+  console.error("push notification error:", pushError);
 }
 
     return {
