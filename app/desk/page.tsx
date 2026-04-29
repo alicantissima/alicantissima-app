@@ -285,9 +285,10 @@ export default async function DeskPage() {
           )}
 
           <div className="flex items-center gap-2">
-  <EnablePushButton />
-  <LogoutButton />
-</div>
+            <EnablePushButton />
+            <LogoutButton />
+          </div>
+        </div>
       </div>
 
       <section className="rounded-3xl border p-6 shadow-sm">
