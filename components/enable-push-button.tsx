@@ -58,17 +58,23 @@ export default function EnablePushButton() {
         body: JSON.stringify(subscription),
       });
 
-      if (!res.ok) {
-        throw new Error("Erro ao guardar subscription");
-      }
+     if (!res.ok) {
+  const errorText = await res.text();
+  console.error("Push subscribe API error:", res.status, errorText);
+  throw new Error(`Erro ao guardar subscription: ${res.status}`);
+}
 
       setMessage("Notificações ativadas neste dispositivo ✅");
     } catch (error) {
-      console.error(error);
-      setMessage("Erro ao ativar notificações.");
-    } finally {
-      setLoading(false);
-    }
+  console.error("Enable push error:", error);
+  setMessage(
+    error instanceof Error
+      ? error.message
+      : "Erro ao ativar notificações."
+  );
+} finally {
+  setLoading(false);
+}
   }
 
   return (
