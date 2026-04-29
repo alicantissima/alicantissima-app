@@ -43,12 +43,19 @@ export default function EnablePushButton() {
 
       const registration = await navigator.serviceWorker.register("/sw.js");
 
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-        ),
-      });
+      const existingSubscription =
+  await registration.pushManager.getSubscription();
+
+if (existingSubscription) {
+  await existingSubscription.unsubscribe();
+}
+
+const subscription = await registration.pushManager.subscribe({
+  userVisibleOnly: true,
+  applicationServerKey: urlBase64ToUint8Array(
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+  ),
+});
 
       const res = await fetch("/api/push/subscribe", {
         method: "POST",
