@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DeskQrScanner from "@/components/desk-qr-scanner";
 import LogoutButton from "@/components/logout-button";
+import EnablePushButton from "@/components/enable-push-button";
 
 type BookingRow = {
   id: string;
@@ -283,8 +284,10 @@ export default async function DeskPage() {
             </Link>
           )}
 
-          <LogoutButton />
-        </div>
+          <div className="flex items-center gap-2">
+  <EnablePushButton />
+  <LogoutButton />
+</div>
       </div>
 
       <section className="rounded-3xl border p-6 shadow-sm">
