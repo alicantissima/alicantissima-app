@@ -30,9 +30,10 @@ export default function EnablePushButton() {
         await registration.pushManager.getSubscription();
 
       if (existingSubscription) {
-        setEnabled(true);
-        setMessage("Notificações ativas ✅");
-      }
+  setEnabled(true);
+  alert("Notificações já estão ativas ✅");
+  return;
+}
     }
 
     checkExistingSubscription();

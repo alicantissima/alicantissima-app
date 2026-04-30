@@ -275,19 +275,17 @@ export default async function DeskPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {profile.role === "admin" && (
-            <Link
-              href="/admin"
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
-            >
-              Open Admin
-            </Link>
-          )}
+  {profile.role === "admin" && (
+    <Link
+      href="/admin"
+      className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+    >
+      Open Admin
+    </Link>
+  )}
 
-          <div className="flex items-center gap-2">
-            <EnablePushButton />
-            <LogoutButton />
-          </div>
+  <LogoutButton />
+</div>
         </div>
       </div>
 
