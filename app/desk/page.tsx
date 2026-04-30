@@ -285,7 +285,6 @@ export default async function DeskPage() {
   )}
 
   <LogoutButton />
-</div>
         </div>
       </div>
 
