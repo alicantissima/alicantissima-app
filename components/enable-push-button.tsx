@@ -21,23 +21,21 @@ export default function EnablePushButton() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    async function checkExistingSubscription() {
-      if (!("serviceWorker" in navigator)) return;
-      if (!("PushManager" in window)) return;
+  async function checkExistingSubscription() {
+    if (!("serviceWorker" in navigator)) return;
+    if (!("PushManager" in window)) return;
 
-      const registration = await navigator.serviceWorker.register("/sw.js");
-      const existingSubscription =
-        await registration.pushManager.getSubscription();
+    const registration = await navigator.serviceWorker.register("/sw.js");
+    const existingSubscription =
+      await registration.pushManager.getSubscription();
 
-      if (existingSubscription) {
-  setEnabled(true);
-  alert("Notificações já estão ativas ✅");
-  return;
-}
+    if (existingSubscription) {
+      setEnabled(true);
     }
+  }
 
-    checkExistingSubscription();
-  }, []);
+  checkExistingSubscription();
+}, []);
 
   async function enablePush() {
     try {
