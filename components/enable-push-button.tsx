@@ -38,72 +38,53 @@ export default function EnablePushButton() {
 }, []);
 
   async function enablePush() {
-    try {
-      setLoading(true);
-      setMessage("");
+  try {
+    setLoading(true);
 
-      if (!("serviceWorker" in navigator)) {
-        setMessage("Este browser não suporta notificações.");
-        return;
-      }
+    if (!("serviceWorker" in navigator)) return;
+    if (!("PushManager" in window)) return;
 
-      if (!("PushManager" in window)) {
-        setMessage("Este dispositivo não suporta push notifications.");
-        return;
-      }
+    const registration = await navigator.serviceWorker.register("/sw.js");
 
-      const permission = await Notification.requestPermission();
+    const existingSubscription =
+      await registration.pushManager.getSubscription();
 
-      if (permission !== "granted") {
-        setMessage("Notificações não autorizadas.");
-        return;
-      }
-
-      const registration = await navigator.serviceWorker.register("/sw.js");
-
-      const existingSubscription =
-        await registration.pushManager.getSubscription();
-
-      if (existingSubscription) {
-        setEnabled(true);
-        setMessage("Notificações já estavam ativas ✅");
-        return;
-      }
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-        ),
-      });
-
-      const res = await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(subscription),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Push subscribe API error:", res.status, errorText);
-        throw new Error(`Erro ao guardar subscription: ${res.status}`);
-      }
-
-      setEnabled(true);
-      setMessage("Notificações ativadas ✅");
-    } catch (error) {
-      console.error("Enable push error:", error);
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Erro ao ativar notificações."
-      );
-    } finally {
-      setLoading(false);
+    // 👉 SE JÁ ESTÁ ATIVO → DESLIGA
+    if (existingSubscription) {
+      await existingSubscription.unsubscribe();
+      setEnabled(false);
+      setMessage("Notificações desligadas 🔕");
+      return;
     }
+
+    // 👉 SENÃO → ATIVA
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") return;
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+      ),
+    });
+
+    await fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(subscription),
+    });
+
+    setEnabled(true);
+    setMessage("Notificações ativadas 🔔");
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
   <button
