@@ -107,25 +107,20 @@ export default function EnablePushButton() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <button
-        type="button"
-        onClick={enablePush}
-        disabled={loading || enabled}
-        className="rounded-xl bg-black px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
-      >
-        {loading
-          ? "A ativar..."
-          : enabled
-            ? "Notificações ON"
-            : "Ativar notificações"}
-      </button>
-
-      {message && (
-        <p className="max-w-[130px] text-center text-xs text-slate-600">
-          {message}
-        </p>
-      )}
-    </div>
-  );
+  <button
+    type="button"
+    onClick={enablePush}
+    disabled={loading}
+    className={`flex items-center justify-center rounded-full px-3 py-1 text-xs transition
+      ${
+        enabled
+          ? "bg-gray-200 text-gray-700"
+          : "bg-black text-white hover:opacity-90"
+      }
+      disabled:opacity-60
+    `}
+  >
+    {loading ? "…" : enabled ? "🔔" : "Ativar 🔔"}
+  </button>
+);
 }

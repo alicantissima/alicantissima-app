@@ -334,6 +334,10 @@ export default async function DeskPage() {
           highlight={highlightTomorrow}
         />
       </section>
+
+<section className="mt-8 flex justify-center opacity-70">
+  <EnablePushButton />
+</section>
     </main>
   );
 }
