@@ -234,6 +234,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
   bookingId={booking.id}
   itemId={item.id}
   currentType={item.product_type}
+  title={item.title}
 />
                       </div>
 
@@ -275,7 +276,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
 {item.meta?.breakdown && item.meta.breakdown.length > 0 && (
                       <div className="mt-4 rounded-2xl bg-gray-50 p-4">
                         <div className="mb-2 text-sm font-semibold">
-                          Breakdown
+                          Details
                         </div>
                         <div className="space-y-2 text-sm">
                           {item.meta.breakdown.map((b, index) => (
