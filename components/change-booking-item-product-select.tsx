@@ -51,7 +51,7 @@ export default function ChangeBookingItemProductSelect({
   }
 
   return (
-  <div className="mt-3">
+<div className="mt-3 w-full sm:col-span-3">
     {!isEditing ? (
       <div className="w-full rounded-2xl bg-gray-100 px-4 py-3">
         <div className="flex items-center justify-between">

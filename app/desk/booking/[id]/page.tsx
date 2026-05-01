@@ -230,12 +230,6 @@ export default async function DeskBookingPage({ params }: PageProps) {
   quantity={item.quantity}
 />
 
-<ChangeBookingItemProductSelect
-  bookingId={booking.id}
-  itemId={item.id}
-  currentType={item.product_type}
-  title={item.title}
-/>
                       </div>
 
                       <div className="text-right">
@@ -248,6 +242,13 @@ export default async function DeskBookingPage({ params }: PageProps) {
 
 
 <div className="mt-4 grid gap-2 sm:grid-cols-3">
+<ChangeBookingItemProductSelect
+  bookingId={booking.id}
+  itemId={item.id}
+  currentType={item.product_type}
+  title={item.title}
+/>
+
   <InlineEditTime
     bookingId={booking.id}
     itemId={item.id}
