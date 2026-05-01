@@ -88,4 +88,5 @@ export default function ChangeBookingItemProductSelect({
       </select>
     )}
   </div>
-);
+  );
+}
