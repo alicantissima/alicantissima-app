@@ -53,21 +53,21 @@ export default function ChangeBookingItemProductSelect({
   return (
     <div className="mt-3">
   {!isEditing ? (
-    <div className="flex items-center justify-between rounded-xl border bg-gray-50 px-4 py-3">
-      <div className="text-sm font-medium">
-        {value === "combo"
-          ? "Luggage + Shower"
-          : value.charAt(0).toUpperCase() + value.slice(1)}
-      </div>
+    <div className="flex w-full items-center justify-between gap-4 rounded-xl border bg-gray-50 px-4 py-3">
+  <div className="min-w-0 flex-1 text-sm font-medium">
+    {value === "combo"
+      ? "Luggage + Shower"
+      : value.charAt(0).toUpperCase() + value.slice(1)}
+  </div>
 
-      <button
-        type="button"
-        onClick={() => setIsEditing(true)}
-        className="text-blue-600 text-sm font-medium hover:underline"
-      >
-        Edit
-      </button>
-    </div>
+  <button
+    type="button"
+    onClick={() => setIsEditing(true)}
+    className="shrink-0 text-sm font-medium text-blue-600 hover:underline"
+  >
+    Edit
+  </button>
+</div>
   ) : (
     <select
       value={value}
