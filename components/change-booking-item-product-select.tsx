@@ -60,7 +60,7 @@ export default function ChangeBookingItemProductSelect({
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="text-sm font-medium text-blue-600 hover:underline"
+            className="text-blue-600 hover:underline"
           >
             Edit
           </button>
