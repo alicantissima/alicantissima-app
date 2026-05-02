@@ -318,6 +318,26 @@ function renderSectionTable({
 }) {
   if (!bookings.length) return null;
 
+function renderRevenueBar(bookingsList: BookingRow[], label: string) {
+  const total = bookingsList.reduce(
+    (sum, booking) => sum + Number(booking.total_amount || 0),
+    0
+  );
+
+  if (!bookingsList.length) return null;
+
+  return (
+    <section className="rounded-xl border p-4">
+      <div className="flex items-center justify-between text-sm">
+        <div className="font-semibold text-gray-700">{label}</div>
+        <div className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-800">
+          {bookingsList.length} · {formatCurrency(total, "EUR")}
+        </div>
+      </div>
+    </section>
+  );
+}
+
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
@@ -1067,6 +1087,8 @@ if (isUpcoming(date)) {
   cancelled: true,
 })}
 
+{renderRevenueBar(tomorrowBookings, "Revenue tomorrow")}
+
 {renderSectionTable({
   title: "Tomorrow",
   bookings: tomorrowBookings,
@@ -1076,14 +1098,10 @@ if (isUpcoming(date)) {
 
 {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
 
-<div className="space-y-3">
-  <div className="flex justify-end">
-    <div className="rounded-xl border px-3 py-2 text-sm">
-      <span className="font-medium">Upcoming total:</span>{" "}
-      <span className="font-bold">€ {upcomingTotal.toFixed(2)}</span>
-    </div>
-  </div>
+{renderRevenueBar(upcomingBookings, "Revenue upcoming")}
 
+<div className="space-y-3">
+  
   {renderSectionTable({
     title: "Upcoming",
     bookings: upcomingBookings,
