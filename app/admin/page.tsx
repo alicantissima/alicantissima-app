@@ -959,34 +959,34 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
         )}
       </section>
 
+            {renderSectionTable({
+        title: "Today",
+        bookings: todayBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
+
       {renderSectionTable({
-  title: "Today",
-  bookings: todayBookings,
-  bookingMetaMap,
-  codeFilter,
-})}
+        title: "Inside",
+        bookings: insideBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
 
-{renderSectionTable({
-  title: "Inside",
-  bookings: insideBookings,
-  bookingMetaMap,
-  codeFilter,
-})}
+      {renderSectionTable({
+        title: "Finished",
+        bookings: finishedBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
 
-{renderSectionTable({
-  title: "Finished",
-  bookings: finishedBookings,
-  bookingMetaMap,
-  codeFilter,
-})}
-
-{renderSectionTable({
-  title: "Cancelled / No show",
-  bookings: cancelledBookings,
-  bookingMetaMap,
-  codeFilter,
-  cancelled: true,
-})}
+      {renderSectionTable({
+        title: "Cancelled / No show",
+        bookings: cancelledBookings,
+        bookingMetaMap,
+        codeFilter,
+        cancelled: true,
+      })}
 
       {renderRevenueBar(tomorrowBookings, "Results by source tomorrow")}
 
