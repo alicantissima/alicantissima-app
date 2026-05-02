@@ -864,180 +864,80 @@ if (isUpcoming(date)) {
   upcomingBookings.length;
 
 function renderRevenueBar(bookingsList: BookingRow[], label: string) {
-  const total = bookingsList.reduce(
-    (sum, booking) => sum + Number(booking.total_amount || 0),
-    0
-  );
-
   if (!bookingsList.length) return null;
+
+  const counts: Record<SourceKey, number> = {
+    choose: 0,
+    site: 0,
+    viator: 0,
+    walkin: 0,
+    turismo: 0,
+    hector: 0,
+    pilar: 0,
+    melia: 0,
+    other_host: 0,
+    other: 0,
+  };
+
+  const revenue: Record<SourceKey, number> = {
+    choose: 0,
+    site: 0,
+    viator: 0,
+    walkin: 0,
+    turismo: 0,
+    hector: 0,
+    pilar: 0,
+    melia: 0,
+    other_host: 0,
+    other: 0,
+  };
+
+  for (const booking of bookingsList) {
+    const source = (booking.source ?? "choose") as SourceKey;
+    const amount = Number(booking.total_amount || 0);
+
+    if (source in counts) {
+      counts[source]++;
+      revenue[source] += amount;
+    }
+  }
 
   return (
     <section className="rounded-xl border p-4">
-      <div className="flex items-center justify-between text-sm">
-        <div className="font-semibold text-gray-700">{label}</div>
-        <div className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-800">
-          {bookingsList.length} · {formatCurrency(total, "EUR")}
-        </div>
+      <div className="mb-3 text-sm font-semibold text-gray-700">{label}</div>
+
+      <div className="flex flex-wrap gap-2 text-sm">
+        {sourceKeys
+          .filter((key) => counts[key] > 0 || revenue[key] > 0)
+          .map((key) => {
+            const colorClass =
+              key === "choose"
+                ? "bg-zinc-100 text-zinc-800"
+                : key === "site"
+                ? "bg-pink-100 text-pink-800"
+                : key === "viator"
+                ? "bg-green-100 text-green-800"
+                : key === "walkin"
+                ? "bg-orange-100 text-orange-800"
+                : key === "turismo"
+                ? "bg-sky-100 text-sky-800"
+                : key === "hector" ||
+                  key === "pilar" ||
+                  key === "melia" ||
+                  key === "other_host"
+                ? "bg-yellow-100 text-yellow-800"
+                : "bg-purple-100 text-purple-800";
+
+            return (
+              <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+                {key}: {counts[key]} · {formatCurrency(revenue[key], "EUR")}
+              </span>
+            );
+          })}
       </div>
     </section>
   );
 }
-
-  return (
-    <main className="mx-auto max-w-7xl space-y-6 p-6">
-      <AdminAutoRefresh intervalMs={60000} />
-
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Admin · Reservas</h1>
-          <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
-        </div>
-
-        <div className="flex flex-col items-start gap-2 lg:items-end">
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <Link
-              href="/desk"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-            >
-              Abrir Desk
-            </Link>
-
-            <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <AdminQrScanner className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
-
-            <Link
-              href="/admin/history"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-            >
-              Histórico
-            </Link>
-
-            <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
-              Total visíveis:
-              <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {codeFilter && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-          Showing booking: <strong>{codeFilter}</strong>
-          <Link href="/admin" className="ml-3 underline">
-            Clear filter
-          </Link>
-        </div>
-      )}
-
-      <section className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        <div className="rounded-xl border px-4 py-3">
-          <div className="text-xs text-gray-500">Bags</div>
-          <div className="text-xl font-bold">{bagsToday}</div>
-        </div>
-
-        <div className="rounded-xl border px-4 py-3">
-          <div className="text-xs text-gray-500">Showers</div>
-          <div className="text-xl font-bold">{showersToday}</div>
-        </div>
-
-        <div className="rounded-xl border px-4 py-3">
-          <div className="text-xs text-gray-500">Combos</div>
-          <div className="text-xl font-bold">{combosToday}</div>
-        </div>
-
-        <div className="rounded-xl border px-4 py-3">
-          <div className="text-xs text-gray-500">Bags in</div>
-          <div className="text-xl font-bold">{bagsInside}</div>
-        </div>
-
-        <div className="rounded-xl border px-4 py-3">
-          <div className="text-xs text-gray-500">Showers in</div>
-          <div className="text-xl font-bold">{showersInside}</div>
-        </div>
-
-        <div className="rounded-xl border px-4 py-3 bg-green-50">
-          <div className="text-xs text-gray-500">Revenue today</div>
-          <div className="text-xl font-bold">
-            {formatCurrency(revenueToday, "EUR")}
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-xl border p-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="mb-3 text-sm font-semibold text-gray-700">
-              Results by source today
-            </div>
-
-            <div className="flex flex-wrap gap-2 text-sm">
-              {sourceKeys
-                .filter(
-                  (key) => sourceTodayCounts[key] > 0 || sourceTodayRevenue[key] > 0
-                )
-                .map((key) => {
-                  const colorClass =
-                    key === "choose"
-                      ? "bg-zinc-100 text-zinc-800"
-                      : key === "site"
-                      ? "bg-pink-100 text-pink-800"
-                      : key === "viator"
-                      ? "bg-green-100 text-green-800"
-                      : key === "walkin"
-                      ? "bg-orange-100 text-orange-800"
-                      : key === "turismo"
-                      ? "bg-sky-100 text-sky-800"
-                      : key === "hector" ||
-                        key === "pilar" ||
-                        key === "melia" ||
-                        key === "other_host"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-purple-100 text-purple-800";
-
-                  return (
-                    <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-                      {key}: {sourceTodayCounts[key]} ·{" "}
-                      {formatCurrency(sourceTodayRevenue[key], "EUR")}
-                    </span>
-                  );
-                })}
-            </div>
-          </div>
-
-          <div className="min-w-0 lg:text-right">
-            <div className="mb-3 text-sm font-semibold text-gray-700">
-              Payments today
-            </div>
-
-            <div className="flex flex-wrap gap-2 text-sm lg:justify-end">
-              {paymentKeys
-                .filter(
-                  (key) =>
-                    paymentTodayCounts[key] > 0 || paymentTodayRevenue[key] > 0
-                )
-                .map((key) => {
-                  const colorClass =
-                    key === "card"
-                      ? "bg-blue-100 text-blue-800"
-                      : key === "cash"
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-green-100 text-green-800";
-
-                  return (
-                    <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-                      {key}: {paymentTodayCounts[key]} ·{" "}
-                      {formatCurrency(paymentTodayRevenue[key], "EUR")}
-                    </span>
-                  );
-                })}
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="rounded-xl border p-4">
         <div className="mb-3 text-sm font-semibold text-gray-700">
           Cities today
@@ -1088,7 +988,7 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
   cancelled: true,
 })}
 
-      {renderRevenueBar(tomorrowBookings, "Revenue tomorrow")}
+      {renderRevenueBar(tomorrowBookings, "Results by source tomorrow")}
 
       {renderSectionTable({
         title: "Tomorrow",
@@ -1099,7 +999,7 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
 
       {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
 
-      {renderRevenueBar(upcomingBookings, "Revenue upcoming")}
+      {renderRevenueBar(upcomingBookings, "Results by source upcoming")}
 
       {renderSectionTable({
         title: "Upcoming",
