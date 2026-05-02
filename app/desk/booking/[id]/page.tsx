@@ -241,7 +241,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
                     </div>
 
 
-<div className="mt-4 grid gap-2 sm:grid-cols-3">
+<div className="mt-4 grid gap-2 sm:grid-cols-3 items-stretch">
 <ChangeBookingItemProductSelect
   bookingId={booking.id}
   itemId={item.id}

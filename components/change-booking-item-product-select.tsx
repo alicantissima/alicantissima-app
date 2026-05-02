@@ -53,10 +53,11 @@ export default function ChangeBookingItemProductSelect({
   return (
 <div className="mt-3 w-full sm:col-span-3">
   {!isEditing ? (
-    <div className="rounded-xl bg-gray-50 p-3 text-sm">
+    <div className="rounded-xl bg-gray-50 p-3 text-sm h-full flex flex-col justify-between">
+      
+      {/* header */}
       <div className="flex justify-between text-xs text-gray-500">
         <span>Product</span>
-
         <button
           type="button"
           onClick={() => setIsEditing(true)}
@@ -66,11 +67,13 @@ export default function ChangeBookingItemProductSelect({
         </button>
       </div>
 
-      <div className="font-medium">
+      {/* value */}
+      <div className="font-medium mt-1">
         {value === "combo"
           ? "Luggage + Shower"
           : value.charAt(0).toUpperCase() + value.slice(1)}
       </div>
+
     </div>
   ) : (
     <select
