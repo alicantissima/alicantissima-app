@@ -1099,8 +1099,6 @@ if (isUpcoming(date)) {
 {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
 
 {renderRevenueBar(upcomingBookings, "Revenue upcoming")}
-
-<div className="space-y-3">
   
   {renderSectionTable({
     title: "Upcoming",
