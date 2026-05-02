@@ -52,23 +52,26 @@ export default function InlineEditBookingField({
   }
 
   return (
-    <div className="rounded-xl bg-gray-50 p-3 text-sm h-full flex flex-col justify-between">
-  <div className="flex justify-between text-xs text-gray-500">
-    <span>{label}</span>
+  <div className="h-full">
+    {!isEditing ? (
+      <div className="rounded-xl bg-gray-50 p-3 text-sm h-full flex flex-col justify-between">
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>{label}</span>
 
-    <button
-      type="button"
-      onClick={() => setIsEditing(true)}
-      className="text-blue-600 hover:underline"
-    >
-      Edit
-    </button>
-  </div>
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="text-blue-600 hover:underline"
+          >
+            Edit
+          </button>
+        </div>
 
-  <div className="font-medium break-words">{value || "-"}</div>
-</div>
-      ) : (
-        <div className="mt-2 space-y-2">
+        <div className="font-medium break-words">{currentValue}</div>
+      </div>
+    ) : (
+      <div className="rounded-xl bg-gray-50 p-3 text-sm">
+        <div className="space-y-2">
           <input
             type={type}
             value={draft}
@@ -99,7 +102,7 @@ export default function InlineEditBookingField({
 
           {error ? <p className="text-xs text-red-600">{error}</p> : null}
         </div>
-      )}
-    </div>
-  );
-}
+      </div>
+    )}
+  </div>
+);
