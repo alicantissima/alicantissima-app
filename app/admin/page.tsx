@@ -903,6 +903,89 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
   }
 
   return (
+ <main className="mx-auto max-w-7xl space-y-6 p-6">
+          <AdminAutoRefresh intervalMs={60000} />
+
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Admin · Reservas</h1>
+          <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
+        </div>
+
+        <div className="flex flex-col items-start gap-2 lg:items-end">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <Link
+              href="/desk"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+            >
+              Abrir Desk
+            </Link>
+
+            <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <AdminQrScanner className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+
+            <Link
+              href="/admin/history"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+            >
+              Histórico
+            </Link>
+
+            <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
+              Total visíveis:
+              <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {codeFilter && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          Showing booking: <strong>{codeFilter}</strong>
+          <Link href="/admin" className="ml-3 underline">
+            Clear filter
+          </Link>
+        </div>
+      )}
+
+      <section className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Bags</div>
+          <div className="text-xl font-bold">{bagsToday}</div>
+        </div>
+
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Showers</div>
+          <div className="text-xl font-bold">{showersToday}</div>
+        </div>
+
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Combos</div>
+          <div className="text-xl font-bold">{combosToday}</div>
+        </div>
+
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Bags in</div>
+          <div className="text-xl font-bold">{bagsInside}</div>
+        </div>
+
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Showers in</div>
+          <div className="text-xl font-bold">{showersInside}</div>
+        </div>
+
+        <div className="rounded-xl border px-4 py-3 bg-green-50">
+          <div className="text-xs text-gray-500">Revenue today</div>
+          <div className="text-xl font-bold">
+            {formatCurrency(revenueToday, "EUR")}
+          </div>
+        </div>
+      </section>
+
+
     <section className="rounded-xl border p-4">
       <div className="mb-3 text-sm font-semibold text-gray-700">{label}</div>
 
