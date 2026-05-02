@@ -320,19 +320,19 @@ function renderSectionTable({
 
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">{title}</h2>
-        <div
-          className={`rounded-xl border px-3 py-1 text-sm ${
-            cancelled
-              ? "border-red-200 bg-red-50 text-red-700"
-              : "border-gray-200 bg-gray-50 text-gray-700"
-          }`}
-        >
-          {bookings.length}
-        </div>
-      </div>
+    <section className="space-y-2">
+      <div className="flex items-center gap-3">
+  <h2 className="text-lg font-bold">{title}</h2>
+  <div
+    className={`rounded-xl border px-3 py-1 text-sm ${
+      cancelled
+        ? "border-red-200 bg-red-50 text-red-700"
+        : "border-gray-200 bg-gray-50 text-gray-700"
+    }`}
+  >
+    {bookings.length}
+  </div>
+</div>
 
       <section
         className={`overflow-x-auto rounded-2xl border ${
