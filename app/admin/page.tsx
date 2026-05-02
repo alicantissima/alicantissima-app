@@ -1043,6 +1043,77 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
         )}
       </section>
 
+<section className="rounded-xl border p-4">
+  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div className="min-w-0">
+      <div className="mb-3 text-sm font-semibold text-gray-700">
+        Results by source today
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-sm">
+        {sourceKeys
+          .filter(
+            (key) => sourceTodayCounts[key] > 0 || sourceTodayRevenue[key] > 0
+          )
+          .map((key) => {
+            const colorClass =
+              key === "choose"
+                ? "bg-zinc-100 text-zinc-800"
+                : key === "site"
+                ? "bg-pink-100 text-pink-800"
+                : key === "viator"
+                ? "bg-green-100 text-green-800"
+                : key === "walkin"
+                ? "bg-orange-100 text-orange-800"
+                : key === "turismo"
+                ? "bg-sky-100 text-sky-800"
+                : key === "hector" ||
+                  key === "pilar" ||
+                  key === "melia" ||
+                  key === "other_host"
+                ? "bg-yellow-100 text-yellow-800"
+                : "bg-purple-100 text-purple-800";
+
+            return (
+              <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+                {key}: {sourceTodayCounts[key]} ·{" "}
+                {formatCurrency(sourceTodayRevenue[key], "EUR")}
+              </span>
+            );
+          })}
+      </div>
+    </div>
+
+    <div className="min-w-0 lg:text-right">
+      <div className="mb-3 text-sm font-semibold text-gray-700">
+        Payments today
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-sm lg:justify-end">
+        {paymentKeys
+          .filter(
+            (key) => paymentTodayCounts[key] > 0 || paymentTodayRevenue[key] > 0
+          )
+          .map((key) => {
+            const colorClass =
+              key === "card"
+                ? "bg-blue-100 text-blue-800"
+                : key === "cash"
+                ? "bg-amber-100 text-amber-800"
+                : "bg-green-100 text-green-800";
+
+            return (
+              <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+                {key}: {paymentTodayCounts[key]} ·{" "}
+                {formatCurrency(paymentTodayRevenue[key], "EUR")}
+              </span>
+            );
+          })}
+      </div>
+    </div>
+  </div>
+</section>
+
             {renderSectionTable({
         title: "Today",
         bookings: todayBookings,
