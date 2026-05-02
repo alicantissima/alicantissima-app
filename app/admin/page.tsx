@@ -338,19 +338,18 @@ function renderSectionTable({
           cancelled ? "border-red-200" : ""
         }`}
       >
-        <table className="w-full min-w-[1200px] text-sm">
+        <table className="w-full min-w-[1220px] text-sm">
           <thead className={cancelled ? "bg-red-50" : "bg-gray-50"}>
             <tr className="border-b text-left text-[13px]">
-              <th className="px-3 py-2">Código</th>
+              <th className="px-2 py-2">Date</th>
+              <th className="px-2 py-2">Client</th>
+              <th className="px-2 py-2">City</th>
               <th className="w-[108px] px-2 py-2">Source</th>
               <th className="w-[116px] px-2 py-2">Payment</th>
               <th className="w-[118px] px-2 py-2">Status</th>
-              <th className="px-2 py-2">Date</th>
-              <th className="px-2 py-2">Cliente</th>
-              <th className="px-2 py-2">City</th>
               <th className="px-2 py-2">Bags</th>
               <th className="px-2 py-2">Shws</th>
-              <th className="px-2 py-2">Lug+Shw</th>
+              <th className="px-2 py-2">Lug + Shw</th>
               <th className="px-2 py-2">In</th>
               <th className="px-2 py-2">Out</th>
               <th className="px-2 py-2">Total</th>
@@ -365,6 +364,7 @@ function renderSectionTable({
               const isFilteredMatch = codeFilter === booking.booking_code;
               const sourceRowClass = getSourceRowClass(booking.source ?? null);
               const isFinished = normalizedStatus === "completed";
+              const bookingHref = `/admin/booking/${booking.id}`;
 
               const rowClass = cancelled
                 ? "bg-red-50/40"
@@ -374,14 +374,37 @@ function renderSectionTable({
                 ? "bg-green-50 border-l-4 border-green-400"
                 : sourceRowClass;
 
+              const cellLinkClass =
+                "block h-full w-full px-2 py-2 hover:bg-black/[0.03]";
+
               return (
-                <tr key={booking.id} className={`border-b ${rowClass}`}>
-                  <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
-                    <Link
-                      href={`/admin/booking/${booking.id}`}
-                      className="underline hover:text-blue-600"
-                    >
-                      {booking.booking_code}
+                <tr
+                  key={booking.id}
+                  className={`border-b transition ${rowClass}`}
+                  title={`Open booking ${booking.booking_code}`}
+                >
+                  <td className="whitespace-nowrap text-[12px] align-top">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      {formatServiceDate(meta.date)}
+                    </Link>
+                  </td>
+
+                  <td className="align-top">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      <div className="max-w-[190px] text-[13px] leading-tight font-medium">
+                        {booking.customer_name}
+                      </div>
+                      <div className="text-[11px] leading-tight text-gray-500">
+                        {booking.source === "viator"
+                          ? "-"
+                          : booking.customer_email || "-"}
+                      </div>
+                    </Link>
+                  </td>
+
+                  <td className="align-top text-[12px] leading-tight max-w-[90px]">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      {booking.city ?? meta.city ?? "-"}
                     </Link>
                   </td>
 
@@ -406,51 +429,46 @@ function renderSectionTable({
                     />
                   </td>
 
-                  <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
-                    {formatServiceDate(meta.date)}
+                  <td className="align-top text-[12px]">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      {meta.bags || "-"}
+                    </Link>
                   </td>
 
-                  <td className="px-2 py-2 align-top">
-                    <div className="max-w-[170px] text-[13px] leading-tight font-medium">
-                      {booking.customer_name}
-                    </div>
-                    <div className="text-[11px] leading-tight text-gray-500">
-                      {booking.source === "viator" ? "-" : booking.customer_email || "-"}
-                    </div>
+                  <td className="align-top text-[12px]">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      {meta.showers || "-"}
+                    </Link>
                   </td>
 
-                  <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
-                    {booking.city ?? meta.city ?? "-"}
+                  <td className="align-top text-[12px]">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      {meta.combo || "-"}
+                    </Link>
                   </td>
 
-                  <td className="px-2 py-2 align-top text-[12px]">
-                    {meta.bags || "-"}
+                  <td className="align-top text-[12px] leading-tight whitespace-nowrap">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      {isFinished
+                        ? formatRealTime(booking.check_in_time)
+                        : getFirstTimeSlot(meta.time_in || meta.drop_off)}
+                    </Link>
                   </td>
 
-                  <td className="px-2 py-2 align-top text-[12px]">
-                    {meta.showers || "-"}
+                  <td className="align-top text-[12px] leading-tight whitespace-nowrap">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      {isFinished
+                        ? formatRealTime(booking.check_out_time)
+                        : getFirstTimeSlot(
+                            meta.time_out || meta.pick_up || meta.shower_time
+                          )}
+                    </Link>
                   </td>
 
-                  <td className="px-2 py-2 align-top text-[12px]">
-                    {meta.combo || "-"}
-                  </td>
-
-                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-                    {isFinished
-                      ? formatRealTime(booking.check_in_time)
-                      : getFirstTimeSlot(meta.time_in || meta.drop_off)}
-                  </td>
-
-                  <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-                    {isFinished
-                      ? formatRealTime(booking.check_out_time)
-                      : getFirstTimeSlot(
-                          meta.time_out || meta.pick_up || meta.shower_time
-                        )}
-                  </td>
-
-                  <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
-                    {formatCurrency(Number(booking.total_amount), booking.currency)}
+                  <td className="align-top text-[12px] font-medium whitespace-nowrap">
+                    <Link href={bookingHref} className={cellLinkClass}>
+                      {formatCurrency(Number(booking.total_amount), booking.currency)}
+                    </Link>
                   </td>
                 </tr>
               );
