@@ -1019,8 +1019,7 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
           })}
       </div>
     </section>
-  );
-}
+
       <section className="rounded-xl border p-4">
         <div className="mb-3 text-sm font-semibold text-gray-700">
           Cities today
