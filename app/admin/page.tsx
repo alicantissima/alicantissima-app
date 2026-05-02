@@ -903,40 +903,52 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
   }
 
   return (
-    <section className="rounded-xl border p-4">
-      <div className="mb-3 text-sm font-semibold text-gray-700">{label}</div>
+  <section className="rounded-xl border p-4">
+    <div className="flex items-center justify-between mb-3">
+      <div className="text-sm font-semibold text-gray-700">{label}</div>
 
-      <div className="flex flex-wrap gap-2 text-sm">
-        {sourceKeys
-          .filter((key) => counts[key] > 0 || revenue[key] > 0)
-          .map((key) => {
-            const colorClass =
-              key === "choose"
-                ? "bg-zinc-100 text-zinc-800"
-                : key === "site"
-                ? "bg-pink-100 text-pink-800"
-                : key === "viator"
-                ? "bg-green-100 text-green-800"
-                : key === "walkin"
-                ? "bg-orange-100 text-orange-800"
-                : key === "turismo"
-                ? "bg-sky-100 text-sky-800"
-                : key === "hector" ||
-                  key === "pilar" ||
-                  key === "melia" ||
-                  key === "other_host"
-                ? "bg-yellow-100 text-yellow-800"
-                : "bg-purple-100 text-purple-800";
-
-            return (
-              <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-                {key}: {counts[key]} · {formatCurrency(revenue[key], "EUR")}
-              </span>
-            );
-          })}
+      <div className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-800 text-sm">
+        {bookingsList.length} · {formatCurrency(
+          bookingsList.reduce(
+            (sum, b) => sum + Number(b.total_amount || 0),
+            0
+          ),
+          "EUR"
+        )}
       </div>
-    </section>
-  );
+    </div>
+
+    <div className="flex flex-wrap gap-2 text-sm">
+      {sourceKeys
+        .filter((key) => counts[key] > 0 || revenue[key] > 0)
+        .map((key) => {
+          const colorClass =
+            key === "choose"
+              ? "bg-zinc-100 text-zinc-800"
+              : key === "site"
+              ? "bg-pink-100 text-pink-800"
+              : key === "viator"
+              ? "bg-green-100 text-green-800"
+              : key === "walkin"
+              ? "bg-orange-100 text-orange-800"
+              : key === "turismo"
+              ? "bg-sky-100 text-sky-800"
+              : key === "hector" ||
+                key === "pilar" ||
+                key === "melia" ||
+                key === "other_host"
+              ? "bg-yellow-100 text-yellow-800"
+              : "bg-purple-100 text-purple-800";
+
+          return (
+            <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+              {key}: {counts[key]} · {formatCurrency(revenue[key], "EUR")}
+            </span>
+          );
+        })}
+    </div>
+  </section>
+);
 }
 
   return (
