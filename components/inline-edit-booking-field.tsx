@@ -54,14 +54,14 @@ export default function InlineEditBookingField({
   return (
   <div className="h-full">
     {!isEditing ? (
-      <div className="rounded-xl bg-gray-50 p-3 text-sm h-full flex flex-col justify-between">
+      <div className="rounded-xl bg-gray-50 p-3 text-sm h-full flex flex-col justify-between transition hover:bg-gray-100">
         <div className="flex justify-between text-xs text-gray-500">
           <span>{label}</span>
 
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="text-blue-600 hover:underline"
+            className="text-blue-600 hover:underline active:scale-95 transition"
           >
             Edit
           </button>
