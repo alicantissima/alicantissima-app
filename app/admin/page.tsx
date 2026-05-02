@@ -1087,26 +1087,25 @@ if (isUpcoming(date)) {
   cancelled: true,
 })}
 
-{renderRevenueBar(tomorrowBookings, "Revenue tomorrow")}
+      {renderRevenueBar(tomorrowBookings, "Revenue tomorrow")}
 
-{renderSectionTable({
-  title: "Tomorrow",
-  bookings: tomorrowBookings,
-  bookingMetaMap,
-  codeFilter,
-})}
+      {renderSectionTable({
+        title: "Tomorrow",
+        bookings: tomorrowBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
 
-{upcomingBookings.length > 0 && <div className="border-t pt-6" />}
+      {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
 
-{renderRevenueBar(upcomingBookings, "Revenue upcoming")}
-  
-  {renderSectionTable({
-    title: "Upcoming",
-    bookings: upcomingBookings,
-    bookingMetaMap,
-    codeFilter,
-  })}
-</div>
+      {renderRevenueBar(upcomingBookings, "Revenue upcoming")}
+
+      {renderSectionTable({
+        title: "Upcoming",
+        bookings: upcomingBookings,
+        bookingMetaMap,
+        codeFilter,
+      })}
     </main>
   );
 }
