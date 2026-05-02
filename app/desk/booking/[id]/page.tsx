@@ -92,11 +92,10 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border bg-white p-4">
-      <div className="text-xs text-gray-500">{label}</div>
-      <div className="mt-1 text-base font-semibold leading-tight break-words">
-        {value}
-      </div>
+    <div className="rounded-xl bg-gray-50 p-3 text-sm">
+  <div className="text-xs text-gray-500">Name</div>
+  <div className="font-medium">{booking.customer_name || "-"}</div>
+</div>
     </div>
   );
 }
@@ -303,7 +302,7 @@ export default async function DeskBookingPage({ params }: PageProps) {
                     <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
             <h2 className="text-2xl font-bold">Customer</h2>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 items-stretch">
               <InfoCard label="Name" value={booking.customer_name || "-"} />
 
               <InlineEditBookingField
