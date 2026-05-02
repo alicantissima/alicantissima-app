@@ -866,6 +866,11 @@ if (isUpcoming(date)) {
 function renderRevenueBar(bookingsList: BookingRow[], label: string) {
   if (!bookingsList.length) return null;
 
+const total = bookingsList.reduce(
+  (sum, booking) => sum + Number(booking.total_amount || 0),
+  0
+);
+
   const counts: Record<SourceKey, number> = {
     choose: 0,
     site: 0,
