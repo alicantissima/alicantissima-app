@@ -904,10 +904,10 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
 
   return (
   <section className="rounded-xl border p-4">
-    <div className="flex items-center justify-between mb-3">
-      <div className="text-sm font-semibold text-gray-700">{label}</div>
+    <div className="flex items-center justify-between">
+  <div className="text-sm font-semibold text-gray-700">{label}</div>
 
-      <div className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-800 text-sm">
+  <div className="text-sm font-semibold text-gray-700">
         {bookingsList.length} · {formatCurrency(
           bookingsList.reduce(
             (sum, b) => sum + Number(b.total_amount || 0),
@@ -918,7 +918,7 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
       </div>
     </div>
 
-    <div className="flex flex-wrap gap-2 text-sm">
+    <div className="mt-3 flex flex-wrap gap-2 text-sm">
       {sourceKeys
         .filter((key) => counts[key] > 0 || revenue[key] > 0)
         .map((key) => {
