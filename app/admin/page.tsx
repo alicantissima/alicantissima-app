@@ -903,11 +903,11 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
   }
 
   return (
-  <section className="rounded-xl border p-4">
+  <section className="rounded-xl border px-4 py-2.5">
     <div className="flex items-center justify-between">
   <div className="text-sm font-semibold text-gray-700">{label}</div>
 
-  <div className="text-sm font-semibold text-gray-700">
+  <div className="text-sm font-semibold text-gray-900">
         {bookingsList.length} · {formatCurrency(
           bookingsList.reduce(
             (sum, b) => sum + Number(b.total_amount || 0),
