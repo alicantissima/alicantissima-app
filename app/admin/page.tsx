@@ -318,25 +318,6 @@ function renderSectionTable({
 }) {
   if (!bookings.length) return null;
 
-function renderRevenueBar(bookingsList: BookingRow[], label: string) {
-  const total = bookingsList.reduce(
-    (sum, booking) => sum + Number(booking.total_amount || 0),
-    0
-  );
-
-  if (!bookingsList.length) return null;
-
-  return (
-    <section className="rounded-xl border p-4">
-      <div className="flex items-center justify-between text-sm">
-        <div className="font-semibold text-gray-700">{label}</div>
-        <div className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-800">
-          {bookingsList.length} · {formatCurrency(total, "EUR")}
-        </div>
-      </div>
-    </section>
-  );
-}
 
   return (
     <section className="space-y-3">
@@ -881,6 +862,26 @@ if (isUpcoming(date)) {
   cancelledBookings.length +
   tomorrowBookings.length +
   upcomingBookings.length;
+
+function renderRevenueBar(bookingsList: BookingRow[], label: string) {
+  const total = bookingsList.reduce(
+    (sum, booking) => sum + Number(booking.total_amount || 0),
+    0
+  );
+
+  if (!bookingsList.length) return null;
+
+  return (
+    <section className="rounded-xl border p-4">
+      <div className="flex items-center justify-between text-sm">
+        <div className="font-semibold text-gray-700">{label}</div>
+        <div className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-800">
+          {bookingsList.length} · {formatCurrency(total, "EUR")}
+        </div>
+      </div>
+    </section>
+  );
+}
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
