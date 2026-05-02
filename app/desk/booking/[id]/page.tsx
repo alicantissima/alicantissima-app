@@ -92,10 +92,9 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="rounded-xl bg-gray-50 p-3 text-sm">
-  <div className="text-xs text-gray-500">Name</div>
-  <div className="font-medium">{booking.customer_name || "-"}</div>
-</div>
+    <div className="rounded-xl bg-gray-50 p-3 text-sm h-full flex flex-col justify-between">
+      <div className="text-xs text-gray-500">{label}</div>
+      <div className="font-medium break-words">{value}</div>
     </div>
   );
 }
