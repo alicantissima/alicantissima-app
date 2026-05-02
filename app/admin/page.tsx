@@ -347,10 +347,9 @@ function renderSectionTable({
               <th className="w-[108px] px-2 py-2">Source</th>
               <th className="w-[116px] px-2 py-2">Payment</th>
               <th className="w-[118px] px-2 py-2">Status</th>
-              <th className="px-2 py-2">Bags</th>
-              <th className="px-2 py-2">Shws</th>
-              <th className="px-2 py-2">Lug + Shw</th>
-              <th className="px-2 py-2">In</th>
+<th className="px-2 py-2 text-center">Bags</th>
+<th className="px-2 py-2 text-center">Shws</th>
+<th className="px-2 py-2 text-center">Lug + Shw</th>              <th className="px-2 py-2">In</th>
               <th className="px-2 py-2">Out</th>
               <th className="px-2 py-2">Total</th>
             </tr>
@@ -429,20 +428,18 @@ function renderSectionTable({
                     />
                   </td>
 
-                  <td className="align-top text-[12px]">
+                  <td className="align-top text-center text-[12px]">
                     <Link href={bookingHref} className={cellLinkClass}>
                       {meta.bags || "-"}
                     </Link>
                   </td>
 
-                  <td className="align-top text-[12px]">
-                    <Link href={bookingHref} className={cellLinkClass}>
+<td className="align-top text-center text-[12px]">                    <Link href={bookingHref} className={cellLinkClass}>
                       {meta.showers || "-"}
                     </Link>
                   </td>
 
-                  <td className="align-top text-[12px]">
-                    <Link href={bookingHref} className={cellLinkClass}>
+<td className="align-top text-center text-[12px]">                    <Link href={bookingHref} className={cellLinkClass}>
                       {meta.combo || "-"}
                     </Link>
                   </td>
