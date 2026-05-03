@@ -27,20 +27,25 @@ type Location = {
 
 type MapProps = {
   locations: Location[];
+  googleMapsApiKey: string;
 };
 
-export default function Map({ locations }: MapProps) {
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-  });
-
+export default function Map({ locations, googleMapsApiKey }: MapProps) {
   const [active, setActive] = useState<Location | null>(null);
 
   const validLocations = locations.filter(
     (loc) => loc.latitude !== null && loc.longitude !== null
   );
 
-  if (!isLoaded) return <div>Loading map...</div>;
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey,
+  });
+
+  if (!googleMapsApiKey) {
+    return <div style={{ padding: 24 }}>Missing Google Maps API key</div>;
+  }
+
+  if (!isLoaded) return <div style={{ padding: 24 }}>Loading map...</div>;
 
   return (
     <GoogleMap

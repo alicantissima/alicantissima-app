@@ -12,5 +12,12 @@ export default async function Page() {
     .select("id, name, latitude, longitude")
     .eq("is_active", true);
 
-  return <Map locations={locations || []} />;
+  const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+
+  return (
+    <Map
+      locations={locations || []}
+      googleMapsApiKey={googleMapsApiKey}
+    />
+  );
 }
