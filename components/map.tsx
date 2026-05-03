@@ -31,6 +31,9 @@ type MapProps = {
 };
 
 export default function Map({ locations, googleMapsApiKey }: MapProps) {
+
+  console.log("LOCATIONS RAW:", locations); // 👈 METE AQUI
+
   const [active, setActive] = useState<Location | null>(null);
 
   // const validLocations = locations.filter(
