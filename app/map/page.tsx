@@ -14,6 +14,12 @@ export default async function Page() {
 
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
+console.log(
+  "MAPS KEY EXISTS:",
+  Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY),
+  process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.slice(0, 6)
+);
+
   return (
     <Map
       locations={locations || []}
