@@ -33,9 +33,18 @@ type MapProps = {
 export default function Map({ locations, googleMapsApiKey }: MapProps) {
   const [active, setActive] = useState<Location | null>(null);
 
-  const validLocations = locations.filter(
-    (loc) => loc.latitude !== null && loc.longitude !== null
-  );
+  // const validLocations = locations.filter(
+//   (loc) => loc.latitude !== null && loc.longitude !== null
+// );
+
+const validLocations = [
+  {
+    id: "1",
+    name: "Alicantissima Test",
+    latitude: 38.3452,
+    longitude: -0.481,
+  },
+];
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey,
