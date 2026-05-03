@@ -1,20 +1,50 @@
+
+
+
 "use client";
 
-import { GoogleMap, Marker, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  Marker,
+  InfoWindow,
+  useJsApiLoader,
+} from "@react-google-maps/api";
 import { useState } from "react";
 
-export default function Map({ locations }) {
+type Service = {
+  id: string;
+  name: string;
+  base_price: number | null;
+};
+
+type Location = {
+  id: string;
+  name: string;
+  latitude: number | null;
+  longitude: number | null;
+  services?: Service[] | null;
+};
+
+type MapProps = {
+  locations: Location[];
+};
+
+export default function Map({ locations }: MapProps) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
   });
 
-  const [active, setActive] = useState(null);
+  const [active, setActive] = useState<Location | null>(null);
+
+  const validLocations = locations.filter(
+    (loc) => loc.latitude !== null && loc.longitude !== null
+  );
 
   if (!isLoaded) return <div>Loading map...</div>;
 
   return (
     <GoogleMap
-      center={{ lat: 38.3452, lng: -0.4810 }}
+      center={{ lat: 38.3452, lng: -0.481 }}
       zoom={13}
       mapContainerStyle={{ width: "100%", height: "100vh" }}
       options={{
@@ -22,22 +52,37 @@ export default function Map({ locations }) {
         zoomControl: true,
       }}
     >
-      {locations.map((loc) => (
+      {validLocations.map((loc) => (
         <Marker
           key={loc.id}
-          position={{ lat: loc.latitude, lng: loc.longitude }}
+          position={{
+            lat: Number(loc.latitude),
+            lng: Number(loc.longitude),
+          }}
           onClick={() => setActive(loc)}
         />
       ))}
 
-      {active && (
+      {active && active.latitude !== null && active.longitude !== null && (
         <InfoWindow
-          position={{ lat: active.latitude, lng: active.longitude }}
+          position={{
+            lat: Number(active.latitude),
+            lng: Number(active.longitude),
+          }}
           onCloseClick={() => setActive(null)}
         >
-          <div style={{ minWidth: 160 }}>
+          <div style={{ minWidth: 180 }}>
             <strong>{active.name}</strong>
-            <p style={{ margin: "4px 0" }}>Luggage • Shower</p>
+
+            {(active.services || []).map((service) => (
+              <p key={service.id} style={{ margin: "4px 0" }}>
+                {service.name}
+                {service.base_price !== null
+                  ? ` from €${service.base_price}`
+                  : ""}
+              </p>
+            ))}
+
             <button
               style={{
                 marginTop: 6,
@@ -47,7 +92,9 @@ export default function Map({ locations }) {
                 background: "#fff",
                 cursor: "pointer",
               }}
-              onClick={() => window.location.href = `/location/${active.id}`}
+              onClick={() => {
+                window.location.href = `/location/${active.id}`;
+              }}
             >
               View details
             </button>
