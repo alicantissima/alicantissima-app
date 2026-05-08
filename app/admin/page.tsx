@@ -151,18 +151,24 @@ function getItemCode(item: BookingItemRow) {
   const text = [productCode, productType, title].filter(Boolean).join(" ");
 
   const hasBagWord =
-    text.includes("luggage") ||
-    text.includes("bag") ||
-    text.includes("bags") ||
-    text.includes("bagagem") ||
-    text.includes("mala") ||
-    text.includes("malas") ||
-    text.includes("maleta") ||
-    text.includes("bagagli") ||
-    text.includes("bagaglio") ||
-    text.includes("bagaż") ||
-    text.includes("bagaz") ||
-    text.includes("walizk");
+    const hasBagWord =
+const hasBagWord =
+  text.includes("equipaje") ||
+  text.includes("luggage") ||
+  text.includes("bag") ||
+  text.includes("bags") ||
+  text.includes("bagagem") ||
+  text.includes("mala") ||
+  text.includes("malas") ||
+  text.includes("maleta") ||
+  text.includes("maletas") ||
+  text.includes("valise") ||
+  text.includes("valises") ||
+  text.includes("bagagli") ||
+  text.includes("bagaglio") ||
+  text.includes("bagaż") ||
+  text.includes("bagaz") ||
+  text.includes("walizk");
 
   const hasShowerWord =
     text.includes("shower") ||
@@ -224,18 +230,23 @@ function getExtraCounts(item: BookingItemRow) {
       if (!qty) return acc;
 
       const hasBagWord =
-        label.includes("luggage") ||
-        label.includes("bag") ||
-        label.includes("bags") ||
-        label.includes("bagagem") ||
-        label.includes("mala") ||
-        label.includes("malas") ||
-        label.includes("maleta") ||
-        label.includes("bagagli") ||
-        label.includes("bagaglio") ||
-        label.includes("bagaż") ||
-        label.includes("bagaz") ||
-        label.includes("walizk");
+        const hasBagWord =
+  label.includes("luggage") ||
+  label.includes("bag") ||
+  label.includes("bags") ||
+  label.includes("bagagem") ||
+  label.includes("mala") ||
+  label.includes("malas") ||
+  label.includes("maleta") ||
+  label.includes("maletas") ||
+  label.includes("equipaje") ||
+  label.includes("valise") ||
+  label.includes("valises") ||
+  label.includes("bagagli") ||
+  label.includes("bagaglio") ||
+  label.includes("bagaż") ||
+  label.includes("bagaz") ||
+  label.includes("walizk");
 
       const hasShowerWord =
         label.includes("shower") ||
