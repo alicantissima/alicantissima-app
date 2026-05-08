@@ -81,13 +81,16 @@ zoom={5}
     >
       {validLocations.map((loc) => (
         <Marker
-          key={loc.id}
-          position={{
-            lat: Number(loc.latitude),
-            lng: Number(loc.longitude),
-          }}
-          onClick={() => setActive(loc)}
-        />
+  key={loc.id}
+  position={{
+    lat: Number(loc.latitude),
+    lng: Number(loc.longitude),
+  }}
+  icon={{
+    url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+  }}
+  onClick={() => setActive(loc)}
+/>
       ))}
 
       {active && active.latitude !== null && active.longitude !== null && (
