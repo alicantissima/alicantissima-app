@@ -214,37 +214,49 @@ function getBreakdown(item: BookingItemRow) {
 function getExtraCounts(item: BookingItemRow) {
   return getBreakdown(item).reduce(
     (acc, part) => {
-      const label = part.label?.toLowerCase().trim() ?? "";
+      const label = (part.label ?? "")
+        .toString()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
       const qty = Number(part.quantity || 0);
 
       if (!qty) return acc;
 
-      const isCombo =
-        label.includes("luggage + shower") ||
-        label.includes("lug+shw") ||
-        label.includes("combo");
+      const isExtra =
+        label.includes("additional") ||
+        label.includes("extra") ||
+        label.includes("adicional") ||
+        label.includes("supplementaire") ||
+        label.includes("suplementar") ||
+        label.includes("zusatz") ||
+        label.includes("dodatk");
 
-      const isExtraShower =
-        !isCombo &&
-        (label.includes("additional shower") ||
-          label.includes("extra shower") ||
-          label.includes("duche extra") ||
-          label.includes("ducha extra") ||
-          label.includes("doccia extra"));
+      const isBag =
+        label.includes("luggage") ||
+        label.includes("bag") ||
+        label.includes("bagagem") ||
+        label.includes("mala") ||
+        label.includes("maleta") ||
+        label.includes("equipaje") ||
+        label.includes("valise") ||
+        label.includes("bagag") ||
+        label.includes("baga") ||
+        label.includes("waliz");
 
-      const isExtraLuggage =
-        !isCombo &&
-        (label.includes("additional luggage") ||
-          label.includes("extra luggage") ||
-          label.includes("additional bag") ||
-          label.includes("extra bag") ||
-          label.includes("bag extra") ||
-          label.includes("bags extra") ||
-          label.includes("bagagem extra") ||
-          label.includes("mala extra"));
+      const isShower =
+        label.includes("shower") ||
+        label.includes("ducha") ||
+        label.includes("duche") ||
+        label.includes("doccia") ||
+        label.includes("douche") ||
+        label.includes("dusche") ||
+        label.includes("prysznic");
 
-      if (isExtraShower) acc.showers += qty;
-      if (isExtraLuggage) acc.bags += qty;
+      if (isExtra && isBag) acc.bags += qty;
+      if (isExtra && isShower) acc.showers += qty;
 
       return acc;
     },
