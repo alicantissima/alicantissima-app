@@ -228,7 +228,6 @@ function getExtraCounts(item: BookingItemRow) {
       if (!qty) return acc;
 
       const hasBagWord =
-        const hasBagWord =
   label.includes("luggage") ||
   label.includes("bag") ||
   label.includes("bags") ||
