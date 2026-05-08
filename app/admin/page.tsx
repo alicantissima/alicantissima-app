@@ -151,8 +151,6 @@ function getItemCode(item: BookingItemRow) {
   const text = [productCode, productType, title].filter(Boolean).join(" ");
 
   const hasBagWord =
-    const hasBagWord =
-const hasBagWord =
   text.includes("equipaje") ||
   text.includes("luggage") ||
   text.includes("bag") ||
