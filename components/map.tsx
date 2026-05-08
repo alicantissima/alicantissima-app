@@ -59,10 +59,26 @@ const validLocations = [
 
   if (!isLoaded) return <div style={{ padding: 24 }}>Loading map...</div>;
 
+const center =
+  validLocations.length > 0
+    ? {
+        lat:
+          validLocations.reduce(
+            (sum, loc) => sum + Number(loc.latitude),
+            0
+          ) / validLocations.length,
+        lng:
+          validLocations.reduce(
+            (sum, loc) => sum + Number(loc.longitude),
+            0
+          ) / validLocations.length,
+      }
+    : { lat: 38.3452, lng: -0.481 };
+
   return (
     <GoogleMap
-      center={{ lat: 38.3452, lng: -0.481 }}
-      zoom={13}
+      center={center}
+zoom={5}
       mapContainerStyle={{ width: "100%", height: "100vh" }}
       options={{
         disableDefaultUI: true,
