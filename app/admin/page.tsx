@@ -222,52 +222,52 @@ function getExtraCounts(item: BookingItemRow) {
 
   return breakdown.reduce(
     (acc, part) => {
-      const label = part.label?.toLowerCase().trim() ?? "";
-      const qty = Number(part.quantity || 0);
+      const label = (part.label ?? "")
+        .toString()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
 
+      const qty = Number(part.quantity || 0);
       if (!qty) return acc;
 
-      const hasBagWord =
-  label.includes("luggage") ||
-  label.includes("bag") ||
-  label.includes("bags") ||
-  label.includes("bagagem") ||
-  label.includes("mala") ||
-  label.includes("malas") ||
-  label.includes("maleta") ||
-  label.includes("maletas") ||
-  label.includes("equipaje") ||
-  label.includes("valise") ||
-  label.includes("valises") ||
-  label.includes("bagagli") ||
-  label.includes("bagaglio") ||
-  label.includes("bagaż") ||
-  label.includes("bagaz") ||
-  label.includes("walizk");
+      const isExtra =
+        label.includes("additional") ||
+        label.includes("extra") ||
+        label.includes("adicional") ||
+        label.includes("supplementaire") ||
+        label.includes("suplementar") ||
+        label.includes("zusatz") ||
+        label.includes("dodatk");
 
-      const hasShowerWord =
+      const isBag =
+        label.includes("luggage") ||
+        label.includes("bag") ||
+        label.includes("bagagem") ||
+        label.includes("mala") ||
+        label.includes("maleta") ||
+        label.includes("equipaje") ||
+        label.includes("valise") ||
+        label.includes("bagag") ||
+        label.includes("baga") ||
+        label.includes("waliz");
+
+      const isShower =
         label.includes("shower") ||
-        label.includes("showers") ||
         label.includes("ducha") ||
         label.includes("duche") ||
         label.includes("doccia") ||
-        label.includes("prysznic") ||
         label.includes("douche") ||
-        label.includes("dusche");
+        label.includes("dusche") ||
+        label.includes("prysznic");
 
-      const isCombo =
-        label.includes("combo") ||
-        label.includes("lug+shw") ||
-        (hasBagWord && hasShowerWord);
-
-      if (isCombo) {
-        return acc;
+      if (isExtra && isBag) {
+        acc.bags += qty;
       }
 
-      if (hasShowerWord) {
+      if (isExtra && isShower) {
         acc.showers += qty;
-      } else if (hasBagWord) {
-        acc.bags += qty;
       }
 
       return acc;
