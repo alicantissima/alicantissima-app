@@ -3,11 +3,11 @@
 
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useBookingStore } from "../../store/bookingStore";
-import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { TIME_SLOTS } from "@/lib/time-slots";
+import {
+  getShowerDurationMinutes,
+  getShowerEndTime,
+} from "@/lib/showers";
 
 function getTodayString() {
   const now = new Date();
@@ -39,6 +39,20 @@ function getSlotStart(slot: string) {
   return slot.split("-")[0];
 }
 
+function slotStartToTime(slotStart: string) {
+  return slotStart.replace("h", ":");
+}
+
+function timeToDisplay(time: string) {
+  return time.replace(":", "h");
+}
+
+function getDynamicShowerSlotLabel(startTime: string, quantity: number) {
+  const endTime = getShowerEndTime(startTime, quantity);
+
+  return `${timeToDisplay(startTime)}-${timeToDisplay(endTime)}`;
+}
+
 function BookShowerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -56,20 +70,35 @@ function BookShowerContent() {
   const [comments, setComments] = useState("");
 
   const availableShowerSlots = useMemo(() => {
-    if (!date) return showerSlots;
+  const baseSlots = showerSlots.map((slot) => {
+    const slotStart = getSlotStart(slot);
+    const startTime = slotStartToTime(slotStart);
 
-    const today = getTodayString();
-    if (date !== today) return showerSlots;
+    return {
+      value: startTime,
+      label: getDynamicShowerSlotLabel(startTime, showers),
+      slotStart,
+    };
+  });
 
-    const currentSlotStart = getCurrentMadridSlotStart();
-    return showerSlots.filter((slot) => getSlotStart(slot) >= currentSlotStart);
-  }, [date, showerSlots]);
+  if (!date) return baseSlots;
+
+  const today = getTodayString();
+  if (date !== today) return baseSlots;
+
+  const currentSlotStart = getCurrentMadridSlotStart();
+
+  return baseSlots.filter((slot) => slot.slotStart >= currentSlotStart);
+}, [date, showerSlots, showers]);
 
   useEffect(() => {
-    if (showerTime && !availableShowerSlots.includes(showerTime)) {
-      setShowerTime("");
-    }
-  }, [showerTime, availableShowerSlots]);
+  if (
+    showerTime &&
+    !availableShowerSlots.some((slot) => slot.value === showerTime)
+  ) {
+    setShowerTime("");
+  }
+}, [showerTime, availableShowerSlots]);
 
   const unitPrice = 12;
   const totalPrice = showers * unitPrice;
@@ -159,9 +188,10 @@ function BookShowerContent() {
           >
             <option value="">Choose time</option>
             {availableShowerSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
-              </option>
+  <option key={slot.value} value={slot.value}>
+    {slot.label}
+  </option>
+))}
             ))}
           </select>
         </div>
@@ -184,7 +214,7 @@ function BookShowerContent() {
 
             <button
               type="button"
-              onClick={() => setShowers(showers + 1)}
+              onClick={() => setShowers(Math.min(11, showers + 1))}
               className={qtyButtonClass}
             >
               +
