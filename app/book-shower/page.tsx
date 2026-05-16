@@ -45,7 +45,7 @@ function slotStartToTime(slotStart: string) {
 }
 
 function timeToDisplay(time: string) {
-  return time.replace(":", "h");
+  return time;
 }
 
 function getDynamicShowerSlotLabel(startTime: string, quantity: number) {
@@ -102,7 +102,9 @@ function BookShowerContent() {
 }, [showerTime, availableShowerSlots]);
 
   const unitPrice = 12;
-  const totalPrice = showers * unitPrice;
+  const unitPrice = 12;
+const totalPrice = showers * unitPrice;
+const canChooseTime = Boolean(date);
 
   const fieldClass =
     "mt-1 w-full rounded-xl border border-zinc-300 bg-white p-2 text-zinc-900 placeholder:text-zinc-400 dark:border-zinc-300 dark:bg-black dark:text-white dark:placeholder:text-zinc-400";
@@ -180,21 +182,32 @@ function BookShowerContent() {
           />
         </div>
 
-        <div>
-          <label className={labelClass}>{t.chooseShowerTime}</label>
-          <select
-            className={fieldClass}
-            value={showerTime}
-            onChange={(e) => setShowerTime(e.target.value)}
-          >
-            <option value="">Choose time</option>
-            {availableShowerSlots.map((slot) => (
-  <option key={slot.value} value={slot.value}>
-    {slot.label}
-  </option>
-            ))}
-          </select>
-        </div>
+        {canChooseTime ? (
+  <div>
+    <label className={labelClass}>{t.chooseShowerTime}</label>
+    <select
+      className={fieldClass}
+      value={showerTime}
+      onChange={(e) => setShowerTime(e.target.value)}
+    >
+      <option value="">Choose time</option>
+
+      {availableShowerSlots.map((slot) => (
+        <option key={slot.value} value={slot.value}>
+          {slot.label}
+        </option>
+      ))}
+    </select>
+
+    <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+      Available times are adjusted automatically according to the number of showers.
+    </p>
+  </div>
+) : (
+  <div className="rounded-xl border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+    Choose a date and number of showers to see available times.
+  </div>
+)}
 
         <div>
           <label className={labelClass}>{t.numberOfShowers}</label>
@@ -202,7 +215,10 @@ function BookShowerContent() {
           <div className="mt-1 flex items-center gap-4">
             <button
               type="button"
-              onClick={() => setShowers(Math.max(1, showers - 1))}
+              onClick={() => {
+  setShowers(Math.max(1, showers - 1));
+  setShowerTime("");
+}}
               className={qtyButtonClass}
             >
               -
@@ -214,7 +230,10 @@ function BookShowerContent() {
 
             <button
               type="button"
-              onClick={() => setShowers(Math.min(11, showers + 1))}
+              onClick={() => {
+  setShowers(Math.min(11, showers + 1));
+  setShowerTime("");
+}}
               className={qtyButtonClass}
             >
               +
