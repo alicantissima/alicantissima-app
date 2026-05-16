@@ -171,6 +171,20 @@ const canChooseTime = Boolean(date);
 
       <div className="space-y-4">
   <div>
+    <label className={labelClass}>{t.chooseDate}</label>
+    <input
+      type="date"
+      min={getTodayString()}
+      className={fieldClass}
+      value={date}
+      onChange={(e) => {
+        setDate(e.target.value);
+        setShowerTime("");
+      }}
+    />
+  </div>
+
+  <div>
     <label className={labelClass}>{t.numberOfShowers}</label>
 
     <div className="mt-1 flex items-center gap-4">
@@ -202,20 +216,6 @@ const canChooseTime = Boolean(date);
     </div>
   </div>
 
-  <div>
-    <label className={labelClass}>{t.chooseDate}</label>
-    <input
-      type="date"
-      min={getTodayString()}
-      className={fieldClass}
-      value={date}
-      onChange={(e) => {
-        setDate(e.target.value);
-        setShowerTime("");
-      }}
-    />
-  </div>
-
   {canChooseTime ? (
     <div>
       <label className={labelClass}>{t.chooseShowerTime}</label>
@@ -239,10 +239,9 @@ const canChooseTime = Boolean(date);
     </div>
   ) : (
     <div className="rounded-xl border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-      Choose the number of showers and a date to see available times.
+      Choose a date and number of showers to see available times.
     </div>
   )}
-
 </div>
 
       <div className={panelClass}>
