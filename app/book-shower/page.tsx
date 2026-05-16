@@ -3,11 +3,12 @@
 
 "use client";
 
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useBookingStore } from "../../store/bookingStore";
+import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { TIME_SLOTS } from "@/lib/time-slots";
-import {
-  getShowerDurationMinutes,
-  getShowerEndTime,
-} from "@/lib/showers";
+import { getShowerEndTime } from "@/lib/showers";
 
 function getTodayString() {
   const now = new Date();
