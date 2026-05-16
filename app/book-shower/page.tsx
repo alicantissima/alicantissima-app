@@ -191,7 +191,6 @@ function BookShowerContent() {
   <option key={slot.value} value={slot.value}>
     {slot.label}
   </option>
-))}
             ))}
           </select>
         </div>
