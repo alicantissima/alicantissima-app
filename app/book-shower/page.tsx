@@ -170,42 +170,79 @@ const canChooseTime = Boolean(date);
       <p className={mutedClass}>{t.bookShowerSubtitle}</p>
 
       <div className="space-y-4">
-        <div>
-          <label className={labelClass}>{t.chooseDate}</label>
-          <input
-            type="date"
-            min={getTodayString()}
-            className={fieldClass}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
-
-        {canChooseTime ? (
   <div>
-    <label className={labelClass}>{t.chooseShowerTime}</label>
-    <select
+    <label className={labelClass}>{t.numberOfShowers}</label>
+
+    <div className="mt-1 flex items-center gap-4">
+      <button
+        type="button"
+        onClick={() => {
+          setShowers(Math.max(1, showers - 1));
+          setShowerTime("");
+        }}
+        className={qtyButtonClass}
+      >
+        -
+      </button>
+
+      <span className="text-lg font-medium text-zinc-900 dark:text-white">
+        {showers}
+      </span>
+
+      <button
+        type="button"
+        onClick={() => {
+          setShowers(Math.min(11, showers + 1));
+          setShowerTime("");
+        }}
+        className={qtyButtonClass}
+      >
+        +
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <label className={labelClass}>{t.chooseDate}</label>
+    <input
+      type="date"
+      min={getTodayString()}
       className={fieldClass}
-      value={showerTime}
-      onChange={(e) => setShowerTime(e.target.value)}
-    >
-      <option value="">Choose time</option>
-
-      {availableShowerSlots.map((slot) => (
-        <option key={slot.value} value={slot.value}>
-          {slot.label}
-        </option>
-      ))}
-    </select>
-
-    <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-      Available times are adjusted automatically according to the number of showers.
-    </p>
+      value={date}
+      onChange={(e) => {
+        setDate(e.target.value);
+        setShowerTime("");
+      }}
+    />
   </div>
-) : (
-  <div className="rounded-xl border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-    Choose a date and number of showers to see available times.
-  </div>
+
+  {canChooseTime ? (
+    <div>
+      <label className={labelClass}>{t.chooseShowerTime}</label>
+      <select
+        className={fieldClass}
+        value={showerTime}
+        onChange={(e) => setShowerTime(e.target.value)}
+      >
+        <option value="">Choose time</option>
+
+        {availableShowerSlots.map((slot) => (
+          <option key={slot.value} value={slot.value}>
+            {slot.label}
+          </option>
+        ))}
+      </select>
+
+      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        Available times are adjusted automatically according to the number of showers.
+      </p>
+    </div>
+  ) : (
+    <div className="rounded-xl border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+      Choose the number of showers and a date to see available times.
+    </div>
+  )}
+</div>
 )}
 
         <div>
