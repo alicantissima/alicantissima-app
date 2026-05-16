@@ -242,41 +242,8 @@ const canChooseTime = Boolean(date);
       Choose the number of showers and a date to see available times.
     </div>
   )}
+
 </div>
-)}
-
-        <div>
-          <label className={labelClass}>{t.numberOfShowers}</label>
-
-          <div className="mt-1 flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => {
-  setShowers(Math.max(1, showers - 1));
-  setShowerTime("");
-}}
-              className={qtyButtonClass}
-            >
-              -
-            </button>
-
-            <span className="text-lg font-medium text-zinc-900 dark:text-white">
-              {showers}
-            </span>
-
-            <button
-              type="button"
-              onClick={() => {
-  setShowers(Math.min(11, showers + 1));
-  setShowerTime("");
-}}
-              className={qtyButtonClass}
-            >
-              +
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div className={panelClass}>
         <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
