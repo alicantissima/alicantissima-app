@@ -242,16 +242,19 @@ function getExtraCounts(item: BookingItemRow) {
         label.includes("dodatk");
 
       const isBag =
-        label.includes("luggage") ||
-        label.includes("bag") ||
-        label.includes("bagagem") ||
-        label.includes("mala") ||
-        label.includes("maleta") ||
-        label.includes("equipaje") ||
-        label.includes("valise") ||
-        label.includes("bagag") ||
-        label.includes("baga") ||
-        label.includes("waliz");
+        const isBag =
+  label.includes("luggage") ||
+  label.includes("bag") ||
+  label.includes("bagagem") ||
+  label.includes("mala") ||
+  label.includes("maleta") ||
+  label.includes("equipaje") ||
+  label.includes("valise") ||
+  label.includes("bagag") ||
+  label.includes("baga") ||
+  label.includes("waliz") ||
+  label.includes("gepack") ||
+  label.includes("gepaeck");
 
       const isShower =
         label.includes("shower") ||
