@@ -6,6 +6,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { sendPushToAll } from "@/lib/push/send-push";
+import {
+  getShowerDurationMinutes,
+  getShowerEndTime,
+} from "@/lib/showers";
 
 type CheckoutItem = {
   id: string;
@@ -816,15 +820,34 @@ export async function submitCheckout(payload: CheckoutPayload) {
         throw new Error(`Item ${index + 1} has invalid total price.`);
       }
 
-      return {
-        id: item.id,
-        title: item.title.trim(),
-        quantity,
-        unitPrice,
-        totalPrice,
-        productType: item.productType ?? "booking",
-        meta: item.meta ?? {},
-      };
+      const productType = item.productType ?? "booking";
+const currentMeta = item.meta ?? {};
+
+const showerTime =
+  typeof currentMeta.showerTime === "string"
+    ? currentMeta.showerTime
+    : "";
+
+const shouldApplyShowerDuration =
+  (productType === "shower" || productType === "combo") && showerTime;
+
+const meta = shouldApplyShowerDuration
+  ? {
+      ...currentMeta,
+      showerDurationMinutes: getShowerDurationMinutes(quantity),
+      showerEndTime: getShowerEndTime(showerTime, quantity),
+    }
+  : currentMeta;
+
+return {
+  id: item.id,
+  title: item.title.trim(),
+  quantity,
+  unitPrice,
+  totalPrice,
+  productType,
+  meta,
+};
     });
 
     const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
