@@ -242,7 +242,6 @@ function getExtraCounts(item: BookingItemRow) {
         label.includes("dodatk");
 
       const isBag =
-        const isBag =
   label.includes("luggage") ||
   label.includes("bag") ||
   label.includes("bagagem") ||
