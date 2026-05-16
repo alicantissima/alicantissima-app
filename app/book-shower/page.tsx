@@ -102,7 +102,6 @@ function BookShowerContent() {
 }, [showerTime, availableShowerSlots]);
 
   const unitPrice = 12;
-  const unitPrice = 12;
 const totalPrice = showers * unitPrice;
 const canChooseTime = Boolean(date);
 
