@@ -3,11 +3,32 @@
 
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { submitCheckout } from "@/app/checkout/actions";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
+import {
+  getShowerDurationMinutes,
+  getShowerEndTime,
+} from "@/lib/showers";
+
+function getShowerDurationLabel(quantity: number) {
+  const minutes = getShowerDurationMinutes(quantity);
+
+  if (minutes === 60) return "1 hour";
+
+  return `${minutes} minutes`;
+}
+
+function getCheckoutShowerTimeRange(params: {
+  showerTime?: string | null;
+  quantity: number;
+}) {
+  if (!params.showerTime) return "";
+
+  const endTime = getShowerEndTime(params.showerTime, params.quantity);
+
+  return `${params.showerTime}-${endTime}`;
+}
 
 export default function CheckoutClient() {
   const router = useRouter();
@@ -51,25 +72,41 @@ export default function CheckoutClient() {
       notes: "",
       language,
       source,
-      items: items.map((item) => ({
-        id: item.productCode,
-        title: item.productName,
-        quantity: Number(item.quantity || 1),
-        unitPrice:
-          item.quantity && Number(item.quantity) > 0
-            ? Number(item.totalPrice) / Number(item.quantity)
-            : Number(item.totalPrice),
-        totalPrice: Number(item.totalPrice),
-        productType: "booking",
-        meta: {
-          date: item.date,
-          dropOffTime: item.dropOffTime ?? null,
-          pickUpTime: item.pickUpTime ?? null,
-          showerTime: item.showerTime ?? null,
-          comments: item.comments ?? null,
-          breakdown: item.breakdown ?? [],
-        },
-      })),
+      items: items.map((item) => {
+  const quantity = Number(item.quantity || 1);
+  const productType = item.productCode;
+  const showerTime = item.showerTime ?? null;
+
+  const showerDurationMinutes = showerTime
+    ? getShowerDurationMinutes(quantity)
+    : null;
+
+  const showerEndTime = showerTime
+    ? getShowerEndTime(showerTime, quantity)
+    : null;
+
+  return {
+    id: item.productCode,
+    title: item.productName,
+    quantity,
+    unitPrice:
+      item.quantity && Number(item.quantity) > 0
+        ? Number(item.totalPrice) / Number(item.quantity)
+        : Number(item.totalPrice),
+    totalPrice: Number(item.totalPrice),
+    productType,
+    meta: {
+      date: item.date,
+      dropOffTime: item.dropOffTime ?? null,
+      pickUpTime: item.pickUpTime ?? null,
+      showerTime,
+      showerEndTime,
+      showerDurationMinutes,
+      comments: item.comments ?? null,
+      breakdown: item.breakdown ?? [],
+    },
+  };
+}),
     };
 
     startTransition(async () => {
@@ -236,10 +273,20 @@ export default function CheckoutClient() {
                   )}
 
                   {item.showerTime && (
-                    <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                      {t.showerTimeLabel} {item.showerTime}
-                    </p>
-                  )}
+  <>
+    <p className="text-sm text-zinc-600 dark:text-zinc-300">
+      {t.showerTimeLabel}{" "}
+      {getCheckoutShowerTimeRange({
+        showerTime: item.showerTime,
+        quantity: Number(item.quantity || 1),
+      })}
+    </p>
+
+    <p className="text-sm text-zinc-600 dark:text-zinc-300">
+      Duration: {getShowerDurationLabel(Number(item.quantity || 1))}
+    </p>
+  </>
+)}
 
                   {item.comments && (
                     <p className="text-sm text-zinc-600 dark:text-zinc-300">
