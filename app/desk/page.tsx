@@ -269,8 +269,7 @@ function DeskTable({
                   +
                 </th>
                 <th className="px-2 py-2 font-medium">Customer</th>
-                <th className="w-[74px] px-2 py-2 font-medium">City</th>
-                <th className="w-[116px] px-2 py-2 font-medium">Items</th>
+                <th className="w-[38%] px-2 py-2 font-medium">City</th>
               </tr>
             </thead>
 
@@ -287,46 +286,35 @@ function DeskTable({
                     <td className="p-0 align-top">
                       <Link
                         href={`/desk/booking/${booking.id}`}
-                        className="flex h-full min-h-[56px] w-full items-start justify-center px-1 py-2 text-base font-black leading-none text-gray-700 hover:opacity-80"
+                        className="flex h-full min-h-[64px] w-full items-start justify-center px-1 py-3 text-base font-black leading-none text-gray-700 hover:opacity-80"
                         title={booking.booking_code}
                       >
                         +
                       </Link>
                     </td>
 
-                    <td className="p-0 align-top">
+                    <td className="p-0 align-top" colSpan={2}>
                       <Link
                         href={`/desk/booking/${booking.id}`}
-                        className="block h-full min-h-[56px] w-full px-2 py-2 hover:opacity-80"
+                        className="block h-full min-h-[64px] w-full px-2 py-2 hover:opacity-80"
                         title={booking.customer_name}
                       >
-                        <div className="truncate text-sm font-medium leading-tight text-gray-950">
-                          {booking.customer_name}
+                        <div className="grid grid-cols-[1fr_38%] gap-3">
+                          <div className="break-words text-sm font-semibold leading-snug text-gray-950">
+                            {booking.customer_name}
+                          </div>
+
+                          <div
+                            className="break-words text-sm font-medium leading-snug text-gray-600"
+                            title={booking.city || ""}
+                          >
+                            {booking.city || "-"}
+                          </div>
                         </div>
 
-                        <div className="mt-1">{getSourceBadge(booking.source)}</div>
-                      </Link>
-                    </td>
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                          {getSourceBadge(booking.source)}
 
-                    <td className="p-0 align-top">
-                      <Link
-                        href={`/desk/booking/${booking.id}`}
-                        className="block h-full min-h-[56px] w-full px-2 py-2 text-xs font-medium text-gray-600 hover:opacity-80"
-                        title={booking.city || ""}
-                      >
-                        <span className="line-clamp-2 break-words">
-                          {booking.city || "-"}
-                        </span>
-                      </Link>
-                    </td>
-
-                    <td className="p-0 align-top">
-                      <Link
-                        href={`/desk/booking/${booking.id}`}
-                        className="block h-full min-h-[56px] w-full px-2 py-2 hover:opacity-80"
-                        title={`${bagSummary} ${showerSummary}`.trim()}
-                      >
-                        <div className="flex flex-wrap items-center gap-1.5">
                           {bagSummary && (
                             <span className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
                               {bagSummary}
