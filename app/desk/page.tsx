@@ -8,6 +8,21 @@ import DeskQrScanner from "@/components/desk-qr-scanner";
 import LogoutButton from "@/components/logout-button";
 import EnablePushButton from "@/components/enable-push-button";
 
+type BookingItemRow = {
+  quantity: number;
+  product_type?: string | null;
+  title?: string | null;
+  meta?: {
+    showerTime?: string | null;
+    showerEndTime?: string | null;
+    showerDurationMinutes?: number | null;
+    breakdown?: Array<{
+      label?: string;
+      quantity?: number;
+    }>;
+  } | null;
+};
+
 type BookingRow = {
   id: string;
   booking_code: string;
@@ -18,7 +33,8 @@ type BookingRow = {
   created_at: string;
   service_date?: string | null;
   source?: string | null;
-};
+  booking_items?: BookingItemRow[] | null;
+};;
 
 function getMadridDatePlusDays(days = 0) {
   const now = new Date();
@@ -87,6 +103,74 @@ function getSourceBadge(source?: string | null) {
       {s}
     </span>
   );
+}
+
+function formatDeskTime(value?: string | null) {
+  if (!value) return "";
+
+  return value.replace("h", ":");
+}
+
+function getDeskShowerSummary(booking: BookingRow) {
+  const items = booking.booking_items ?? [];
+
+  const showerItems = items.filter((item) => {
+    const meta = item.meta ?? {};
+    const title = item.title?.toLowerCase() ?? "";
+    const productType = item.product_type?.toLowerCase() ?? "";
+
+    return (
+      Boolean(meta.showerTime) ||
+      productType === "shower" ||
+      productType === "combo" ||
+      title.includes("shower") ||
+      title.includes("combo")
+    );
+  });
+
+  if (!showerItems.length) return "";
+
+  let totalShowers = 0;
+  let showerStart = "";
+  let showerEnd = "";
+
+  showerItems.forEach((item) => {
+    const quantity = Number(item.quantity || 0);
+    const meta = item.meta ?? {};
+
+    if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
+      const showerBreakdown = meta.breakdown.find((part) =>
+        String(part.label || "").toLowerCase().includes("shower")
+      );
+
+      if (showerBreakdown) {
+        totalShowers += Number(showerBreakdown.quantity || 0);
+      } else {
+        totalShowers += quantity;
+      }
+    } else {
+      totalShowers += quantity;
+    }
+
+    if (!showerStart && meta.showerTime) {
+      showerStart = formatDeskTime(meta.showerTime);
+    }
+
+    if (!showerEnd && meta.showerEndTime) {
+      showerEnd = formatDeskTime(meta.showerEndTime);
+    }
+  });
+
+  if (!totalShowers) return "";
+
+  const timeLabel =
+    showerStart && showerEnd
+      ? `${showerStart}–${showerEnd}`
+      : showerStart
+        ? showerStart
+        : "";
+
+  return `${timeLabel ? `${timeLabel} · ` : ""}${totalShowers} shw`;
 }
 
 function DeskTable({
@@ -167,7 +251,15 @@ function DeskTable({
                           {booking.customer_name}
                         </div>
 
-                        <div className="mt-1">{getSourceBadge(booking.source)}</div>
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+  {getSourceBadge(booking.source)}
+
+  {getDeskShowerSummary(booking) && (
+    <span className="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+      {getDeskShowerSummary(booking)}
+    </span>
+  )}
+</div>
                       </div>
                     </Link>
                   </td>
@@ -212,7 +304,24 @@ export default async function DeskPage() {
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date, source"
+  `
+  id,
+  booking_code,
+  customer_name,
+  status,
+  check_in_time,
+  check_out_time,
+  created_at,
+  service_date,
+  source,
+  booking_items (
+    quantity,
+    product_type,
+    title,
+    meta
+  )
+  `
+)
         )
         .eq("service_date", todayMadrid)
         .eq("status", "inside")
@@ -221,7 +330,24 @@ export default async function DeskPage() {
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date, source"
+  `
+  id,
+  booking_code,
+  customer_name,
+  status,
+  check_in_time,
+  check_out_time,
+  created_at,
+  service_date,
+  source,
+  booking_items (
+    quantity,
+    product_type,
+    title,
+    meta
+  )
+  `
+)
         )
         .eq("service_date", todayMadrid)
         .eq("status", "booked")
@@ -230,7 +356,24 @@ export default async function DeskPage() {
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date, source"
+  `
+  id,
+  booking_code,
+  customer_name,
+  status,
+  check_in_time,
+  check_out_time,
+  created_at,
+  service_date,
+  source,
+  booking_items (
+    quantity,
+    product_type,
+    title,
+    meta
+  )
+  `
+)
         )
         .eq("service_date", todayMadrid)
         .eq("status", "completed")
@@ -240,7 +383,24 @@ export default async function DeskPage() {
       supabase
         .from("bookings")
         .select(
-          "id, booking_code, customer_name, status, check_in_time, check_out_time, created_at, service_date, source"
+  `
+  id,
+  booking_code,
+  customer_name,
+  status,
+  check_in_time,
+  check_out_time,
+  created_at,
+  service_date,
+  source,
+  booking_items (
+    quantity,
+    product_type,
+    title,
+    meta
+  )
+  `
+)
         )
         .eq("service_date", tomorrowMadrid)
         .in("status", ["booked", "inside"])
