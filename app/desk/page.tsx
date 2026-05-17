@@ -109,7 +109,10 @@ function getSourceBadge(source?: string | null) {
 function formatDeskTime(value?: string | null) {
   if (!value) return "";
 
-  return value.replace("h", ":");
+  return value
+    .trim()
+    .replace("H", "h")
+    .replace("h", ":");
 }
 
 function getDeskShowerSummary(booking: BookingRow) {
@@ -265,11 +268,9 @@ function DeskTable({
           <table className="w-full table-fixed text-sm">
             <thead>
               <tr className="border-b text-left text-gray-500">
-                <th className="w-[34px] px-1 py-2 text-center font-medium">
-                  +
-                </th>
+                <th className="w-[34px] px-1 py-2 text-center font-medium" />
                 <th className="px-2 py-2 font-medium">Customer</th>
-                <th className="w-[38%] px-2 py-2 font-medium">City</th>
+                <th className="w-1/3 px-2 py-2 font-medium">City</th>
               </tr>
             </thead>
 
@@ -286,7 +287,7 @@ function DeskTable({
                     <td className="p-0 align-top">
                       <Link
                         href={`/desk/booking/${booking.id}`}
-                        className="flex h-full min-h-[64px] w-full items-start justify-center px-1 py-3 text-base font-black leading-none text-gray-700 hover:opacity-80"
+                        className="flex h-full min-h-[58px] w-full items-start justify-center px-1 py-3 text-base font-black leading-none text-gray-700 hover:opacity-80"
                         title={booking.booking_code}
                       >
                         +
@@ -296,16 +297,16 @@ function DeskTable({
                     <td className="p-0 align-top" colSpan={2}>
                       <Link
                         href={`/desk/booking/${booking.id}`}
-                        className="block h-full min-h-[64px] w-full px-2 py-2 hover:opacity-80"
+                        className="block h-full min-h-[58px] w-full px-2 py-2 hover:opacity-80"
                         title={booking.customer_name}
                       >
-                        <div className="grid grid-cols-[1fr_38%] gap-3">
-                          <div className="break-words text-sm font-semibold leading-snug text-gray-950">
+                        <div className="grid grid-cols-[2fr_1fr] gap-3">
+                          <div className="truncate text-sm font-semibold leading-snug text-gray-950">
                             {booking.customer_name}
                           </div>
 
                           <div
-                            className="break-words text-sm font-medium leading-snug text-gray-600"
+                            className="truncate text-sm font-medium leading-snug text-gray-600"
                             title={booking.city || ""}
                           >
                             {booking.city || "-"}
@@ -431,19 +432,23 @@ export default async function DeskPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {profile.role === "admin" && (
-            <Link
-              href="/admin"
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
-            >
-              Open Admin
-            </Link>
-          )}
+  {profile.role === "admin" && (
+    <Link
+      href="/admin"
+      className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+    >
+      Open Admin
+    </Link>
+  )}
 
-          <DeskQrScanner />
+  <div className="[&_button]:h-11 [&_button]:rounded-xl [&_button]:border [&_button]:border-gray-300 [&_button]:bg-white [&_button]:px-5 [&_button]:text-sm [&_button]:font-semibold [&_button]:text-gray-900 [&_button]:shadow-sm [&_button:hover]:bg-gray-50">
+    <DeskQrScanner />
+  </div>
 
-          <LogoutButton />
-        </div>
+  <div className="[&_button]:h-11 [&_button]:rounded-xl [&_button]:border [&_button]:border-gray-300 [&_button]:bg-white [&_button]:px-5 [&_button]:text-sm [&_button]:font-semibold [&_button]:text-gray-900 [&_button]:shadow-sm [&_button:hover]:bg-gray-50">
+    <LogoutButton />
+  </div>
+</div>
       </div>
 
       <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
