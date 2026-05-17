@@ -313,13 +313,10 @@ disabled={availabilityLoading || availabilitySlots.length === 0}
   </p>
 )}
 
-      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-        Available times are adjusted automatically according to the number of showers.
-      </p>
     </div>
   ) : (
     <div className="rounded-xl border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-      Choose a date and number of showers to see available times.
+      Choose a date to see available shower times.
     </div>
   )}
 </div>
