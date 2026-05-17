@@ -52,12 +52,22 @@ function getDynamicShowerSlotLabel(startTime: string, quantity: number) {
   const endTime = getShowerEndTime(startTime, quantity);
 
   return `${timeToDisplay(startTime)}-${timeToDisplay(endTime)}`;
+
+type ShowerAvailabilitySlot = {
+  value: string;
+  label: string;
+  startTime: string;
+  endTime: string;
+  available: boolean;
+};
+
 }
 
 function BookShowerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const addItem = useBookingStore((state) => state.addItem);
+
 
   const language = normalizeLanguage(searchParams.get("lang"));
   const source = searchParams.get("source") === "walkin" ? "walkin" : "";
@@ -69,6 +79,11 @@ function BookShowerContent() {
   const [showerTime, setShowerTime] = useState("");
   const [showers, setShowers] = useState(1);
   const [comments, setComments] = useState("");
+const [availabilitySlots, setAvailabilitySlots] = useState<
+  ShowerAvailabilitySlot[]
+>([]);
+const [availabilityLoading, setAvailabilityLoading] = useState(false);
+const [availabilityError, setAvailabilityError] = useState("");
 
   const availableShowerSlots = useMemo(() => {
   const baseSlots = showerSlots.map((slot) => {
@@ -95,11 +110,57 @@ function BookShowerContent() {
   useEffect(() => {
   if (
     showerTime &&
-    !availableShowerSlots.some((slot) => slot.value === showerTime)
+    availabilitySlots.length > 0 &&
+    !availabilitySlots.some((slot) => slot.value === showerTime)
   ) {
     setShowerTime("");
   }
-}, [showerTime, availableShowerSlots]);
+}, [showerTime, availabilitySlots]);
+
+useEffect(() => {
+  async function loadAvailability() {
+    if (!date) {
+      setAvailabilitySlots([]);
+      setAvailabilityError("");
+      setAvailabilityLoading(false);
+      return;
+    }
+
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
+
+    try {
+      const params = new URLSearchParams();
+      params.set("date", date);
+      params.set("quantity", String(showers));
+
+      const response = await fetch(
+        `/api/showers/availability?${params.toString()}`,
+        { cache: "no-store" }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Could not load availability.");
+      }
+
+      setAvailabilitySlots(data.slots || []);
+    } catch (error) {
+      console.error("availability error:", error);
+      setAvailabilitySlots([]);
+      setAvailabilityError(
+        error instanceof Error
+          ? error.message
+          : "Could not load available times."
+      );
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  }
+
+  loadAvailability();
+}, [date, showers]);
 
   const unitPrice = 12;
 const totalPrice = showers * unitPrice;
@@ -223,15 +284,34 @@ const canChooseTime = Boolean(date);
         className={fieldClass}
         value={showerTime}
         onChange={(e) => setShowerTime(e.target.value)}
+disabled={availabilityLoading || availabilitySlots.length === 0}
       >
         <option value="">Choose time</option>
 
-        {availableShowerSlots.map((slot) => (
+        {availabilitySlots.map((slot) => (
           <option key={slot.value} value={slot.value}>
             {slot.label}
           </option>
         ))}
       </select>
+
+{availabilityLoading ? (
+  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+    Loading available times...
+  </p>
+) : availabilityError ? (
+  <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+    {availabilityError}
+  </p>
+) : availabilitySlots.length === 0 ? (
+  <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+    No shower times available for this date and number of showers.
+  </p>
+) : (
+  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+    Available times are adjusted automatically according to the number of showers.
+  </p>
+)}
 
       <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
         Available times are adjusted automatically according to the number of showers.
