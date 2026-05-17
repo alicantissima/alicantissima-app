@@ -8,17 +8,8 @@ import {
   getShowerEndTime,
   timeToMinutes,
 } from "@/lib/showers";
-import { TIME_SLOTS } from "@/lib/time-slots";
 
 export const dynamic = "force-dynamic";
-
-function getSlotStart(slot: string) {
-  return slot.split("-")[0];
-}
-
-function slotStartToTime(slotStart: string) {
-  return slotStart.replace("h", ":");
-}
 
 function timeToDisplay(time: string) {
   return time;
@@ -27,6 +18,30 @@ function timeToDisplay(time: string) {
 function getDynamicShowerSlotLabel(startTime: string, quantity: number) {
   const endTime = getShowerEndTime(startTime, quantity);
   return `${timeToDisplay(startTime)}-${timeToDisplay(endTime)}`;
+}
+function minutesToTime(totalMinutes: number) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function generateShowerStartTimes(durationMinutes: number) {
+  const openingMinutes = timeToMinutes("10:00");
+  const closingMinutes = timeToMinutes("19:00");
+  const stepMinutes = 15;
+
+  const times: string[] = [];
+
+  for (
+    let start = openingMinutes;
+    start + durationMinutes <= closingMinutes;
+    start += stepMinutes
+  ) {
+    times.push(minutesToTime(start));
+  }
+
+  return times;
 }
 
 function rangesOverlap(
@@ -136,26 +151,28 @@ const { data, error } = await supabase
 
     const requestedDuration = getShowerDurationMinutes(quantity);
 
-    const slots = TIME_SLOTS.map((slot) => {
-      const slotStart = getSlotStart(slot);
-      const startTime = slotStartToTime(slotStart);
-      const endTime = getShowerEndTime(startTime, quantity);
+    const startTimes = generateShowerStartTimes(requestedDuration);
 
-      const requestedStart = timeToMinutes(startTime);
-      const requestedEnd = requestedStart + requestedDuration;
+const slots = startTimes.map((startTime) => {
+  const endTime = getShowerEndTime(startTime, quantity);
 
-      const isBlocked = existingRanges.some((range) =>
-        rangesOverlap(requestedStart, requestedEnd, range.start, range.end)
-      );
+  const requestedStart = timeToMinutes(startTime);
+  const requestedEnd = requestedStart + requestedDuration;
 
-      return {
-        value: startTime,
-        label: getDynamicShowerSlotLabel(startTime, quantity),
-        startTime,
-        endTime,
-        available: !isBlocked,
-      };
-    }).filter((slot) => slot.available);
+  const isBlocked = existingRanges.some((range) =>
+    rangesOverlap(requestedStart, requestedEnd, range.start, range.end)
+  );
+
+  const baseLabel = getDynamicShowerSlotLabel(startTime, quantity);
+
+  return {
+    value: startTime,
+    label: isBlocked ? `${baseLabel} · Reserved` : baseLabel,
+    startTime,
+    endTime,
+    available: !isBlocked,
+  };
+});
 
     return NextResponse.json({
       ok: true,

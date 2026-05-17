@@ -289,10 +289,10 @@ disabled={availabilityLoading || availabilitySlots.length === 0}
         <option value="">Choose time</option>
 
         {availabilitySlots.map((slot) => (
-          <option key={slot.value} value={slot.value}>
-            {slot.label}
-          </option>
-        ))}
+  <option key={slot.value} value={slot.value} disabled={!slot.available}>
+    {slot.label}
+  </option>
+))}
       </select>
 
 {availabilityLoading ? (
