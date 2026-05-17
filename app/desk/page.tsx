@@ -27,6 +27,7 @@ type BookingRow = {
   id: string;
   booking_code: string;
   customer_name: string;
+  city?: string | null;
   status: string;
   check_in_time: string | null;
   check_out_time: string | null;
@@ -34,7 +35,7 @@ type BookingRow = {
   service_date?: string | null;
   source?: string | null;
   booking_items?: BookingItemRow[] | null;
-};;
+};
 
 function getMadridDatePlusDays(days = 0) {
   const now = new Date();
@@ -173,17 +174,60 @@ function getDeskShowerSummary(booking: BookingRow) {
   return `${timeLabel ? `${timeLabel} · ` : ""}${totalShowers} shw`;
 }
 
+function getDeskBagSummary(booking: BookingRow) {
+  const items = booking.booking_items ?? [];
+
+  let totalBags = 0;
+
+  items.forEach((item) => {
+    const quantity = Number(item.quantity || 0);
+    const meta = item.meta ?? {};
+    const title = item.title?.toLowerCase() ?? "";
+    const productType = item.product_type?.toLowerCase() ?? "";
+
+    if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
+      const bagBreakdown = meta.breakdown.find((part) => {
+        const label = String(part.label || "").toLowerCase();
+
+        return (
+          label.includes("luggage") ||
+          label.includes("bag") ||
+          label.includes("malas") ||
+          label.includes("mala")
+        );
+      });
+
+      if (bagBreakdown) {
+        totalBags += Number(bagBreakdown.quantity || 0);
+        return;
+      }
+    }
+
+    if (
+      productType === "luggage" ||
+      productType === "combo" ||
+      title.includes("luggage") ||
+      title.includes("bag") ||
+      title.includes("combo")
+    ) {
+      totalBags += quantity;
+    }
+  });
+
+  if (!totalBags) return "";
+
+  return `${totalBags} bag`;
+}
+
 function DeskTable({
   title,
   rows,
   emptyText,
-  timeField = "check_in_time",
   highlight = false,
 }: {
   title: string;
   rows: BookingRow[];
   emptyText: string;
-  timeField?: "check_in_time" | "check_out_time";
   highlight?: boolean;
 }) {
   return (
@@ -196,6 +240,7 @@ function DeskTable({
         <h2 className={`text-lg font-bold ${highlight ? "text-blue-700" : ""}`}>
           {title}
         </h2>
+
         <span
           className={`rounded-full border px-2 py-0.5 text-xs font-medium ${
             highlight
@@ -220,51 +265,85 @@ function DeskTable({
           <table className="w-full table-fixed text-sm">
             <thead>
               <tr className="border-b text-left text-gray-500">
-                <th className="w-[96px] px-2 py-2 font-medium">Code</th>
+                <th className="w-[34px] px-1 py-2 text-center font-medium">
+                  +
+                </th>
                 <th className="px-2 py-2 font-medium">Customer</th>
+                <th className="w-[74px] px-2 py-2 font-medium">City</th>
+                <th className="w-[116px] px-2 py-2 font-medium">Items</th>
               </tr>
             </thead>
-            <tbody>
-              {rows.map((booking) => (
-                <tr
-                  key={booking.id}
-                  className="border-b last:border-b-0 hover:bg-gray-50"
-                >
-                  <td className="p-0 align-top">
-                    <Link
-                      href={`/desk/booking/${booking.id}`}
-                      className="block h-full w-full break-all px-2 py-2 text-xs font-semibold leading-tight underline hover:opacity-80"
-                      title={booking.booking_code}
-                    >
-                      {booking.booking_code}
-                    </Link>
-                  </td>
 
-                  <td className="p-0 align-top">
-                    <Link
-                      href={`/desk/booking/${booking.id}`}
-                      className="block h-full w-full px-2 py-2 hover:opacity-80"
-                      title={booking.customer_name}
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate text-sm leading-tight">
+            <tbody>
+              {rows.map((booking) => {
+                const bagSummary = getDeskBagSummary(booking);
+                const showerSummary = getDeskShowerSummary(booking);
+
+                return (
+                  <tr
+                    key={booking.id}
+                    className="border-b last:border-b-0 hover:bg-gray-50"
+                  >
+                    <td className="p-0 align-top">
+                      <Link
+                        href={`/desk/booking/${booking.id}`}
+                        className="flex h-full min-h-[56px] w-full items-start justify-center px-1 py-2 text-base font-black leading-none text-gray-700 hover:opacity-80"
+                        title={booking.booking_code}
+                      >
+                        +
+                      </Link>
+                    </td>
+
+                    <td className="p-0 align-top">
+                      <Link
+                        href={`/desk/booking/${booking.id}`}
+                        className="block h-full min-h-[56px] w-full px-2 py-2 hover:opacity-80"
+                        title={booking.customer_name}
+                      >
+                        <div className="truncate text-sm font-medium leading-tight text-gray-950">
                           {booking.customer_name}
                         </div>
 
-                        <div className="mt-1 flex flex-wrap items-center gap-2">
-  {getSourceBadge(booking.source)}
+                        <div className="mt-1">{getSourceBadge(booking.source)}</div>
+                      </Link>
+                    </td>
 
-  {getDeskShowerSummary(booking) && (
-    <span className="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
-      {getDeskShowerSummary(booking)}
-    </span>
-  )}
-</div>
-                      </div>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                    <td className="p-0 align-top">
+                      <Link
+                        href={`/desk/booking/${booking.id}`}
+                        className="block h-full min-h-[56px] w-full px-2 py-2 text-xs font-medium text-gray-600 hover:opacity-80"
+                        title={booking.city || ""}
+                      >
+                        <span className="line-clamp-2 break-words">
+                          {booking.city || "-"}
+                        </span>
+                      </Link>
+                    </td>
+
+                    <td className="p-0 align-top">
+                      <Link
+                        href={`/desk/booking/${booking.id}`}
+                        className="block h-full min-h-[56px] w-full px-2 py-2 hover:opacity-80"
+                        title={`${bagSummary} ${showerSummary}`.trim()}
+                      >
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {bagSummary && (
+                            <span className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+                              {bagSummary}
+                            </span>
+                          )}
+
+                          {showerSummary && (
+                            <span className="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                              {showerSummary}
+                            </span>
+                          )}
+                        </div>
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -299,79 +378,44 @@ export default async function DeskPage() {
   const madridHour = getMadridHour();
   const highlightTomorrow = madridHour >= 18;
 
+  const selectFields = `
+    id,
+    booking_code,
+    customer_name,
+    city,
+    status,
+    check_in_time,
+    check_out_time,
+    created_at,
+    service_date,
+    source,
+    booking_items (
+      quantity,
+      product_type,
+      title,
+      meta
+    )
+  `;
+
   const [insideQuery, todayQuery, finishedQuery, tomorrowQuery] =
     await Promise.all([
       supabase
         .from("bookings")
-        .select(
-  `
-  id,
-  booking_code,
-  customer_name,
-  status,
-  check_in_time,
-  check_out_time,
-  created_at,
-  service_date,
-  source,
-  booking_items (
-    quantity,
-    product_type,
-    title,
-    meta
-  )
-  `
-)
+        .select(selectFields)
         .eq("service_date", todayMadrid)
         .eq("status", "inside")
         .order("check_in_time", { ascending: true }),
 
       supabase
         .from("bookings")
-        .select(
-  `
-  id,
-  booking_code,
-  customer_name,
-  status,
-  check_in_time,
-  check_out_time,
-  created_at,
-  service_date,
-  source,
-  booking_items (
-    quantity,
-    product_type,
-    title,
-    meta
-  )
-  `
-)
+        .select(selectFields)
         .eq("service_date", todayMadrid)
         .eq("status", "booked")
         .order("created_at", { ascending: true }),
 
       supabase
         .from("bookings")
-        .select(
-  `
-  id,
-  booking_code,
-  customer_name,
-  status,
-  check_in_time,
-  check_out_time,
-  created_at,
-  service_date,
-  source,
-  booking_items (
-    quantity,
-    product_type,
-    title,
-    meta
-  )
-  `
-)
+        .select(selectFields)
         .eq("service_date", todayMadrid)
         .eq("status", "completed")
         .order("check_out_time", { ascending: false })
@@ -379,25 +423,7 @@ export default async function DeskPage() {
 
       supabase
         .from("bookings")
-        .select(
-  `
-  id,
-  booking_code,
-  customer_name,
-  status,
-  check_in_time,
-  check_out_time,
-  created_at,
-  service_date,
-  source,
-  booking_items (
-    quantity,
-    product_type,
-    title,
-    meta
-  )
-  `
-)
+        .select(selectFields)
         .eq("service_date", tomorrowMadrid)
         .in("status", ["booked", "inside"])
         .order("created_at", { ascending: true }),
@@ -408,20 +434,6 @@ export default async function DeskPage() {
   const finished = (finishedQuery.data ?? []) as BookingRow[];
   const tomorrow = (tomorrowQuery.data ?? []) as BookingRow[];
 
-  const debugItems = [
-    `role: ${profile.role}`,
-    `todayMadrid: ${todayMadrid}`,
-    `tomorrowMadrid: ${tomorrowMadrid}`,
-    `inside rows: ${inside.length}`,
-    `today rows: ${today.length}`,
-    `finished rows: ${finished.length}`,
-    `tomorrow rows: ${tomorrow.length}`,
-    `inside error: ${insideQuery.error?.message ?? "none"}`,
-    `today error: ${todayQuery.error?.message ?? "none"}`,
-    `finished error: ${finishedQuery.error?.message ?? "none"}`,
-    `tomorrow error: ${tomorrowQuery.error?.message ?? "none"}`,
-  ];
-
   return (
     <main className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col gap-6 p-4 md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -430,67 +442,52 @@ export default async function DeskPage() {
           <p className="text-sm text-gray-500">Session: {profile.email}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-  {profile.role === "admin" && (
-    <Link
-      href="/admin"
-      className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
-    >
-      Open Admin
-    </Link>
-  )}
+        <div className="flex flex-wrap items-center gap-3">
+          {profile.role === "admin" && (
+            <Link
+              href="/admin"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+            >
+              Open Admin
+            </Link>
+          )}
 
-  <LogoutButton />
+          <DeskQrScanner />
+
+          <LogoutButton />
         </div>
       </div>
-
-      <section className="rounded-3xl border p-6 shadow-sm">
-        <div className="mb-5">
-          <h2 className="text-2xl font-bold">Scan QR</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Scan the QR code to open the booking. The action is chosen later inside the booking page.
-          </p>
-        </div>
-
-        <div className="flex justify-center">
-          <DeskQrScanner />
-        </div>
-      </section>
 
       <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
         <DeskTable
           title="Inside"
           rows={inside}
           emptyText="No bookings currently inside."
-          timeField="check_in_time"
         />
 
         <DeskTable
           title="Today"
           rows={today}
           emptyText="No pending arrivals for today."
-          timeField="check_in_time"
         />
 
         <DeskTable
           title="Finished"
           rows={finished}
           emptyText="No finished bookings today."
-          timeField="check_out_time"
         />
 
         <DeskTable
           title="Tomorrow"
           rows={tomorrow}
           emptyText="No bookings for tomorrow."
-          timeField="check_in_time"
           highlight={highlightTomorrow}
         />
       </section>
 
-<section className="mt-8 flex justify-center opacity-70">
-  <EnablePushButton />
-</section>
+      <section className="mt-8 flex justify-center opacity-70">
+        <EnablePushButton />
+      </section>
     </main>
   );
 }
