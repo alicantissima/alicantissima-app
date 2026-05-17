@@ -52,6 +52,7 @@ function getDynamicShowerSlotLabel(startTime: string, quantity: number) {
   const endTime = getShowerEndTime(startTime, quantity);
 
   return `${timeToDisplay(startTime)}-${timeToDisplay(endTime)}`;
+}
 
 type ShowerAvailabilitySlot = {
   value: string;
@@ -61,7 +62,6 @@ type ShowerAvailabilitySlot = {
   available: boolean;
 };
 
-}
 
 function BookShowerContent() {
   const router = useRouter();
