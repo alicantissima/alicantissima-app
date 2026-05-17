@@ -85,13 +85,15 @@ export async function GET(req: NextRequest) {
     }
 
     if (!Number.isFinite(quantity) || quantity <= 0) {
-      return NextResponse.json(
-        { ok: false, error: "Invalid quantity." },
-        { status: 400 }
-      );
-    }
+  return NextResponse.json(
+    { ok: false, error: "Invalid quantity." },
+    { status: 400 }
+  );
+}
 
-    const { data, error } = await supabase
+const supabase = createAdminClient();
+
+const { data, error } = await supabase
   .from("booking_items")
   .select(
     `
