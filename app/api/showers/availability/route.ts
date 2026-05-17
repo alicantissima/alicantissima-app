@@ -91,26 +91,24 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const supabase = createAdminClient();
-
     const { data, error } = await supabase
-      .from("booking_items")
-      .select(
-        `
-        id,
-        quantity,
-        product_type,
-        meta,
-        bookings!inner (
-          id,
-          status,
-          service_date
-        )
-      `
-      )
-      .in("product_type", ["shower", "combo"])
-      .eq("bookings.service_date", date)
-      .not("bookings.status", "in", '("cancelled","no_show")');
+  .from("booking_items")
+  .select(
+    `
+    id,
+    quantity,
+    product_type,
+    title,
+    meta,
+    bookings!inner (
+      id,
+      status,
+      service_date
+    )
+  `
+  )
+  .eq("bookings.service_date", date)
+  .not("bookings.status", "in", '("cancelled","no_show")');
 
     if (error) {
       console.error("showers availability error:", error);
@@ -121,14 +119,18 @@ export async function GET(req: NextRequest) {
     }
 
     const existingRanges =
-      data
-        ?.map((item) =>
-          getExistingShowerRange({
-            quantity: item.quantity,
-            meta: item.meta as Record<string, unknown> | null,
-          })
-        )
-        .filter((value) => value !== null) ?? [];
+  data
+    ?.filter((item) => {
+      const meta = item.meta as Record<string, unknown> | null;
+      return typeof meta?.showerTime === "string" && meta.showerTime;
+    })
+    .map((item) =>
+      getExistingShowerRange({
+        quantity: item.quantity,
+        meta: item.meta as Record<string, unknown> | null,
+      })
+    )
+    .filter((value) => value !== null) ?? [];
 
     const requestedDuration = getShowerDurationMinutes(quantity);
 
