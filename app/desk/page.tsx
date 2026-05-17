@@ -322,7 +322,6 @@ export default async function DeskPage() {
   )
   `
 )
-        )
         .eq("service_date", todayMadrid)
         .eq("status", "inside")
         .order("check_in_time", { ascending: true }),
@@ -348,7 +347,6 @@ export default async function DeskPage() {
   )
   `
 )
-        )
         .eq("service_date", todayMadrid)
         .eq("status", "booked")
         .order("created_at", { ascending: true }),
@@ -374,7 +372,6 @@ export default async function DeskPage() {
   )
   `
 )
-        )
         .eq("service_date", todayMadrid)
         .eq("status", "completed")
         .order("check_out_time", { ascending: false })
@@ -401,7 +398,6 @@ export default async function DeskPage() {
   )
   `
 )
-        )
         .eq("service_date", tomorrowMadrid)
         .in("status", ["booked", "inside"])
         .order("created_at", { ascending: true }),
