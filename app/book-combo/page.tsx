@@ -8,6 +8,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { TIME_SLOTS } from "@/lib/time-slots";
+import {
+  getShowerDurationMinutes,
+  getShowerEndTime,
+} from "@/lib/showers";
 
 function getTodayString() {
   const now = new Date();
@@ -15,6 +19,50 @@ function getTodayString() {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function getCurrentMadridMinutesPlusBuffer(bufferMinutes = 30) {
+  const now = new Date();
+
+  const madrid = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+
+  const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
+  const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
+
+  return hour * 60 + minute + bufferMinutes;
+}
+
+function timeToMinutes(value?: string | null) {
+  if (!value) return 0;
+
+  const normalized = value
+    .trim()
+    .replace("H", "h")
+    .replace("h", ":");
+
+  const start = normalized.split("-")[0].trim();
+  const [hourRaw, minuteRaw] = start.split(":");
+
+  const hour = Number(hourRaw);
+  const minute = Number(minuteRaw);
+
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return 0;
+
+  return hour * 60 + minute;
+}
+
+function formatComboTime(value?: string | null) {
+  if (!value) return "";
+
+  return value
+    .trim()
+    .replace("H", "h")
+    .replace("h", ":");
 }
 
 function getCurrentMadridSlotStart() {
@@ -43,10 +91,19 @@ function getSlotIndex(slot: string, slots: string[]) {
   return slots.indexOf(slot);
 }
 
+type ShowerAvailabilitySlot = {
+  value: string;
+  label: string;
+  startTime: string;
+  endTime: string;
+  available: boolean;
+};
+
 function BookComboContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const addItem = useBookingStore((state) => state.addItem);
+const addItem = useBookingStore((state) => state.addItem);
+const clearItems = useBookingStore((state) => state.clearItems);
 
   const language = normalizeLanguage(searchParams.get("lang"));
   const source = searchParams.get("source") === "walkin" ? "walkin" : "";
@@ -64,26 +121,91 @@ function BookComboContent() {
 
   const [comments, setComments] = useState("");
 
+const [availabilitySlots, setAvailabilitySlots] = useState<
+  ShowerAvailabilitySlot[]
+>([]);
+const [availabilityLoading, setAvailabilityLoading] = useState(false);
+const [availabilityError, setAvailabilityError] = useState("");
+
+
   const baseAvailableSlots = useMemo(() => {
-    if (!date) return timeSlots;
+  if (!date) return timeSlots;
 
-    const today = getTodayString();
-    if (date !== today) return timeSlots;
+  const today = getTodayString();
 
-    const currentSlotStart = getCurrentMadridSlotStart();
-    return timeSlots.filter((slot) => getSlotStart(slot) >= currentSlotStart);
-  }, [date, timeSlots]);
+  if (date !== today) return timeSlots;
+
+  const minAllowedMinutes = getCurrentMadridMinutesPlusBuffer(30);
+
+  return timeSlots.filter((slot) => {
+    const slotMinutes = timeToMinutes(getSlotStart(slot));
+
+    return slotMinutes >= minAllowedMinutes;
+  });
+}, [date, timeSlots]);
 
   const availableShowerSlots = useMemo(() => {
-    if (!dropOffTime) return baseAvailableSlots;
+  if (!date || !dropOffTime) return [];
 
-    const dropOffIndex = timeSlots.indexOf(dropOffTime);
-    if (dropOffIndex === -1) return baseAvailableSlots;
+  const dropOffMinutes = timeToMinutes(getSlotStart(dropOffTime));
+  const today = getTodayString();
+  const minAllowedMinutes =
+    date === today ? getCurrentMadridMinutesPlusBuffer(30) : 0;
 
-    return baseAvailableSlots.filter(
-      (slot) => timeSlots.indexOf(slot) >= dropOffIndex
+  return availabilitySlots.filter((slot) => {
+    const showerMinutes = timeToMinutes(slot.startTime || slot.value);
+
+    return (
+      showerMinutes >= dropOffMinutes &&
+      showerMinutes >= minAllowedMinutes
     );
-  }, [dropOffTime, baseAvailableSlots, timeSlots]);
+  });
+}, [availabilitySlots, date, dropOffTime]);
+
+useEffect(() => {
+  async function loadAvailability() {
+    if (!date) {
+      setAvailabilitySlots([]);
+      setAvailabilityError("");
+      setAvailabilityLoading(false);
+      return;
+    }
+
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
+
+    try {
+      const params = new URLSearchParams();
+      params.set("date", date);
+      params.set("quantity", String(totalShowerPeople));
+
+      const response = await fetch(
+        `/api/showers/availability?${params.toString()}`,
+        { cache: "no-store" }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Could not load availability.");
+      }
+
+      setAvailabilitySlots(data.slots || []);
+    } catch (error) {
+      console.error("combo shower availability error:", error);
+      setAvailabilitySlots([]);
+      setAvailabilityError(
+        error instanceof Error
+          ? error.message
+          : "Could not load available shower times."
+      );
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  }
+
+  loadAvailability();
+}, [date, totalShowerPeople]);
 
   useEffect(() => {
     if (dropOffTime && !baseAvailableSlots.includes(dropOffTime)) {
@@ -92,14 +214,25 @@ function BookComboContent() {
   }, [dropOffTime, baseAvailableSlots]);
 
   useEffect(() => {
-    if (showerTime && !availableShowerSlots.includes(showerTime)) {
-      setShowerTime("");
-    }
-  }, [showerTime, availableShowerSlots]);
+  if (
+    showerTime &&
+    availableShowerSlots.length > 0 &&
+    !availableShowerSlots.some((slot) => slot.value === showerTime)
+  ) {
+    setShowerTime("");
+  }
+}, [showerTime, availableShowerSlots]);
+
+useEffect(() => {
+  setShowerTime("");
+}, [totalShowerPeople]);
+
 
   const comboPrice = 18;
   const extraLuggagePrice = 8;
   const extraShowerPrice = 12;
+
+const totalShowerPeople = comboQty + extraShowerQty;
 
   const totalPrice =
     comboQty * comboPrice +
@@ -137,10 +270,12 @@ function BookComboContent() {
       return;
     }
 
-    if (getSlotIndex(showerTime, timeSlots) < getSlotIndex(dropOffTime, timeSlots)) {
-      alert("Shower time must be after drop-off time.");
-      return;
-    }
+    if (timeToMinutes(showerTime) < timeToMinutes(getSlotStart(dropOffTime))) {
+  alert("Shower time must be after drop-off time.");
+  return;
+}
+
+clearItems();
 
     addItem({
       productCode: "combo",
@@ -255,18 +390,33 @@ function BookComboContent() {
         <div>
           <label className={labelClass}>{t.chooseApproxShowerTime}</label>
           <select
-            className={fieldClass}
-            value={showerTime}
-            onChange={(e) => setShowerTime(e.target.value)}
-          >
-            <option value="">Choose time</option>
-            {availableShowerSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
-              </option>
-            ))}
-          </select>
-          <p className={helpClass}>{t.comboShowerHelpText}</p>
+  className={fieldClass}
+  value={showerTime}
+  onChange={(e) => setShowerTime(e.target.value)}
+  disabled={!dropOffTime || availabilityLoading || availableShowerSlots.length === 0}
+>
+  <option value="">Choose time</option>
+
+  {availableShowerSlots.map((slot) => (
+    <option key={slot.value} value={slot.value} disabled={!slot.available}>
+      {slot.label}
+    </option>
+  ))}
+</select>
+
+{availabilityLoading ? (
+  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+    Loading available shower times...
+  </p>
+) : availabilityError ? (
+  <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+    {availabilityError}
+  </p>
+) : dropOffTime && availableShowerSlots.length === 0 ? (
+  <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+    No shower times available for this date and number of showers.
+  </p>
+) : null}
         </div>
 
         <div className={boxClass}>
