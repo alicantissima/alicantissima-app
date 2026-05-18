@@ -131,22 +131,15 @@ const [availabilityError, setAvailabilityError] = useState("");
 
 
   const baseAvailableSlots = useMemo(() => {
-
-  const slotsWithEnoughTimeForShower = timeSlots.filter((slot) => {
-    const slotMinutes = timeToMinutes(getSlotStart(slot));
-
-    return slotMinutes <= latestComboDropOffMinutes;
-  });
-
-  if (!date) return slotsWithEnoughTimeForShower;
+  if (!date) return timeSlots;
 
   const today = getTodayString();
 
-  if (date !== today) return slotsWithEnoughTimeForShower;
+  if (date !== today) return timeSlots;
 
   const minAllowedMinutes = getCurrentMadridMinutesPlusBuffer(30);
 
-  return slotsWithEnoughTimeForShower.filter((slot) => {
+  return timeSlots.filter((slot) => {
     const slotMinutes = timeToMinutes(getSlotStart(slot));
 
     return slotMinutes >= minAllowedMinutes;
