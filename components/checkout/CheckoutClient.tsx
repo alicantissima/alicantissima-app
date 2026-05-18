@@ -44,8 +44,8 @@ function getCheckoutShowerTimeRange(params: {
   return `${startTime} – ${endTime}`;
 }
 
-function labelLooksLikeShower(label: string) {
-  const normalized = label.toLowerCase();
+function labelLooksLikeShower(label: unknown) {
+  const normalized = String(label || "").toLowerCase();
 
   return (
     normalized.includes("shower") ||
@@ -59,18 +59,20 @@ function labelLooksLikeShower(label: string) {
 
 function getCheckoutShowerQuantity(item: {
   quantity?: number | string;
-  breakdown?: Array<{
-    label?: string;
-    quantity?: number;
-  }>;
+  breakdown?: unknown;
 }) {
   if (Array.isArray(item.breakdown) && item.breakdown.length > 0) {
     const totalFromBreakdown = item.breakdown.reduce((sum, part) => {
-      const label = String(part.label || "");
+      if (!part || typeof part !== "object") return sum;
 
-      if (!labelLooksLikeShower(label)) return sum;
+      const breakdownPart = part as {
+        label?: unknown;
+        quantity?: unknown;
+      };
 
-      return sum + Number(part.quantity || 0);
+      if (!labelLooksLikeShower(breakdownPart.label)) return sum;
+
+      return sum + Number(breakdownPart.quantity || 0);
     }, 0);
 
     if (totalFromBreakdown > 0) return totalFromBreakdown;
