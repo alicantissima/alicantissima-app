@@ -429,44 +429,43 @@ clearItems();
         </div>
 
         <div className={boxClass}>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="font-semibold text-zinc-900 dark:text-white">
-                {t.comboExtraLuggageLabel}
-              </p>
-              <p className={mutedClass}>{t.comboExtraLuggagePriceLabel}</p>
-            </div>
+  <div className="flex items-center justify-between gap-4">
+    <div>
+      <p className="font-semibold text-zinc-900 dark:text-white">
+        {t.comboExtraShowerLabel}
+      </p>
+      <p className={mutedClass}>{t.comboExtraShowerPriceLabel}</p>
+    </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => decrease(extraLuggageQty, setExtraLuggageQty)}
-                className={qtyButtonClass}
-              >
-                -
-              </button>
-              <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
-                {extraLuggageQty}
-              </span>
-              <button
-                type="button"
-                onClick={() => increase(extraLuggageQty, setExtraLuggageQty)}
-                className={qtyButtonClass}
-              >
-                +
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={() => {
+          decrease(extraShowerQty, setExtraShowerQty);
+          setShowerTime("");
+        }}
+        className={qtyButtonClass}
+      >
+        -
+      </button>
 
-        <div className={boxClass}>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="font-semibold text-zinc-900 dark:text-white">
-                {t.comboExtraShowerLabel}
-              </p>
-              <p className={mutedClass}>{t.comboExtraShowerPriceLabel}</p>
-            </div>
+      <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
+        {extraShowerQty}
+      </span>
+
+      <button
+        type="button"
+        onClick={() => {
+          increase(extraShowerQty, setExtraShowerQty);
+          setShowerTime("");
+        }}
+        className={qtyButtonClass}
+      >
+        +
+      </button>
+    </div>
+  </div>
+</div>
 
 {date && dropOffTime ? (
   <div>
@@ -501,11 +500,7 @@ clearItems();
       </p>
     ) : null}
   </div>
-) : (
-  <div className="rounded-xl border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-    Choose a date and luggage drop-off time to see available shower times.
-  </div>
-)}
+) : null}
 
             <div className="flex items-center gap-3">
               <button
