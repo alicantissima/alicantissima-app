@@ -81,6 +81,19 @@ function getCheckoutShowerQuantity(item: {
   return Number(item.quantity || 1);
 }
 
+function formatCheckoutTimeRange(value?: string | null) {
+  if (!value) return "";
+
+  return value
+    .trim()
+    .replace(/H/g, "h")
+    .replace(/h/g, ":")
+    .replace(
+      /(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/,
+      "$1:$2 – $3:$4"
+    );
+}
+
 function getReservedForPeopleLabel(quantity: number) {
   return quantity === 1 ? "1 person" : `${quantity} people`;
 }
@@ -322,10 +335,10 @@ const showerEndTime = showerTime
                   </p>
 
                   {item.dropOffTime && (
-                    <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                      {t.dropOffLabel} {item.dropOffTime}
-                    </p>
-                  )}
+  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+    {t.dropOffLabel} {formatCheckoutTimeRange(item.dropOffTime)}
+  </p>
+)}
 
                   {item.pickUpTime && (
                     <p className="text-sm text-zinc-600 dark:text-zinc-300">
