@@ -155,18 +155,17 @@ const [availabilityError, setAvailabilityError] = useState("");
 
   const dropOffMinutes = timeToMinutes(getSlotStart(dropOffTime));
   const today = getTodayString();
-const currentMinutes = date === today ? getCurrentMadridMinutes() : 0;
+  const currentMinutes = date === today ? getCurrentMadridMinutes() : 0;
 
   return availabilitySlots.filter((slot) => {
     const showerMinutes = timeToMinutes(slot.startTime || slot.value);
-
     const showerEndMinutes = timeToMinutes(slot.endTime);
 
-return (
-  showerMinutes >= dropOffMinutes &&
-  showerEndMinutes > currentMinutes
+    return (
+      showerMinutes >= dropOffMinutes &&
+      showerEndMinutes > currentMinutes
+    );
   });
- });
 }, [availabilitySlots, date, dropOffTime]);
 
 useEffect(() => {
