@@ -48,6 +48,36 @@ function timeToDisplay(time: string) {
   return time;
 }
 
+function getCurrentMadridMinutesPlusBuffer(bufferMinutes = 30) {
+  const now = new Date();
+
+  const madrid = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+
+  const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
+  const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
+
+  return hour * 60 + minute + bufferMinutes;
+}
+
+function timeToMinutes(value?: string | null) {
+  if (!value) return 0;
+
+  const normalized = value.trim().replace("H", "h").replace("h", ":");
+  const [hourRaw, minuteRaw] = normalized.split(":");
+
+  const hour = Number(hourRaw);
+  const minute = Number(minuteRaw);
+
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return 0;
+
+  return hour * 60 + minute;
+}
+
 function getDynamicShowerSlotLabel(startTime: string, quantity: number) {
   const endTime = getShowerEndTime(startTime, quantity);
 
@@ -85,6 +115,22 @@ const [availabilitySlots, setAvailabilitySlots] = useState<
 const [availabilityLoading, setAvailabilityLoading] = useState(false);
 const [availabilityError, setAvailabilityError] = useState("");
 
+const visibleAvailabilitySlots = useMemo(() => {
+  if (!date) return availabilitySlots;
+
+  const today = getTodayString();
+
+  if (date !== today) return availabilitySlots;
+
+  const minAllowedMinutes = getCurrentMadridMinutesPlusBuffer(30);
+
+  return availabilitySlots.filter((slot) => {
+    const slotMinutes = timeToMinutes(slot.startTime || slot.value);
+
+    return slotMinutes >= minAllowedMinutes;
+  });
+}, [availabilitySlots, date]);
+
   const availableShowerSlots = useMemo(() => {
   const baseSlots = showerSlots.map((slot) => {
     const slotStart = getSlotStart(slot);
@@ -110,12 +156,12 @@ const [availabilityError, setAvailabilityError] = useState("");
   useEffect(() => {
   if (
     showerTime &&
-    availabilitySlots.length > 0 &&
-    !availabilitySlots.some((slot) => slot.value === showerTime)
+    visibleAvailabilitySlots.length > 0 &&
+    !visibleAvailabilitySlots.some((slot) => slot.value === showerTime)
   ) {
     setShowerTime("");
   }
-}, [showerTime, availabilitySlots]);
+}, [showerTime, visibleAvailabilitySlots]);
 
 useEffect(() => {
   async function loadAvailability() {
@@ -284,11 +330,11 @@ const canChooseTime = Boolean(date);
         className={fieldClass}
         value={showerTime}
         onChange={(e) => setShowerTime(e.target.value)}
-disabled={availabilityLoading || availabilitySlots.length === 0}
+disabled={availabilityLoading || visibleAvailabilitySlots.length === 0}
       >
         <option value="">Choose time</option>
 
-        {availabilitySlots.map((slot) => (
+        {visibleAvailabilitySlots.map((slot) => (
   <option key={slot.value} value={slot.value} disabled={!slot.available}>
     {slot.label}
   </option>
@@ -303,7 +349,7 @@ disabled={availabilityLoading || availabilitySlots.length === 0}
   <p className="mt-2 text-xs text-red-600 dark:text-red-400">
     {availabilityError}
   </p>
-) : availabilitySlots.length === 0 ? (
+) : visibleAvailabilitySlots.length === 0 ? (
   <p className="mt-2 text-xs text-red-600 dark:text-red-400">
     No shower times available for this date and number of showers.
   </p>
