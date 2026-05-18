@@ -21,7 +21,7 @@ function getTodayString() {
   return `${year}-${month}-${day}`;
 }
 
-function getCurrentMadridMinutesPlusBuffer(bufferMinutes = 30) {
+function getCurrentMadridMinutes() {
   const now = new Date();
 
   const madrid = new Intl.DateTimeFormat("en-GB", {
@@ -34,7 +34,7 @@ function getCurrentMadridMinutesPlusBuffer(bufferMinutes = 30) {
   const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
   const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
 
-  return hour * 60 + minute + bufferMinutes;
+  return hour * 60 + minute;
 }
 
 function timeToMinutes(value?: string | null) {
@@ -54,6 +54,10 @@ function timeToMinutes(value?: string | null) {
   if (!Number.isFinite(hour) || !Number.isFinite(minute)) return 0;
 
   return hour * 60 + minute;
+}
+
+function getSlotEnd(slot: string) {
+  return slot.split("-")[1] || "";
 }
 
 function formatComboTime(value?: string | null) {
@@ -137,12 +141,12 @@ const [availabilityError, setAvailabilityError] = useState("");
 
   if (date !== today) return timeSlots;
 
-  const minAllowedMinutes = getCurrentMadridMinutesPlusBuffer(30);
+  const currentMinutes = getCurrentMadridMinutes();
 
   return timeSlots.filter((slot) => {
-    const slotMinutes = timeToMinutes(getSlotStart(slot));
+    const slotEndMinutes = timeToMinutes(getSlotEnd(slot));
 
-    return slotMinutes >= minAllowedMinutes;
+    return slotEndMinutes > currentMinutes;
   });
 }, [date, timeSlots]);
 
@@ -151,17 +155,18 @@ const [availabilityError, setAvailabilityError] = useState("");
 
   const dropOffMinutes = timeToMinutes(getSlotStart(dropOffTime));
   const today = getTodayString();
-  const minAllowedMinutes =
-    date === today ? getCurrentMadridMinutesPlusBuffer(30) : 0;
+const currentMinutes = date === today ? getCurrentMadridMinutes() : 0;
 
   return availabilitySlots.filter((slot) => {
     const showerMinutes = timeToMinutes(slot.startTime || slot.value);
 
-    return (
-      showerMinutes >= dropOffMinutes &&
-      showerMinutes >= minAllowedMinutes
-    );
+    const showerEndMinutes = timeToMinutes(slot.endTime);
+
+return (
+  showerMinutes >= dropOffMinutes &&
+  showerEndMinutes > currentMinutes
   });
+ });
 }, [availabilitySlots, date, dropOffTime]);
 
 useEffect(() => {
