@@ -119,6 +119,8 @@ const clearItems = useBookingStore((state) => state.clearItems);
   const [extraLuggageQty, setExtraLuggageQty] = useState(0);
   const [extraShowerQty, setExtraShowerQty] = useState(0);
 
+const totalShowerPeople = comboQty + extraShowerQty;
+
   const [comments, setComments] = useState("");
 
 const [availabilitySlots, setAvailabilitySlots] = useState<
@@ -231,8 +233,6 @@ useEffect(() => {
   const comboPrice = 18;
   const extraLuggagePrice = 8;
   const extraShowerPrice = 12;
-
-const totalShowerPeople = comboQty + extraShowerQty;
 
   const totalPrice =
     comboQty * comboPrice +
