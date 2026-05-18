@@ -48,7 +48,7 @@ function timeToDisplay(time: string) {
   return time;
 }
 
-function getCurrentMadridMinutesPlusBuffer(bufferMinutes = 30) {
+function getCurrentMadridMinutes() {
   const now = new Date();
 
   const madrid = new Intl.DateTimeFormat("en-GB", {
@@ -61,7 +61,7 @@ function getCurrentMadridMinutesPlusBuffer(bufferMinutes = 30) {
   const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
   const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
 
-  return hour * 60 + minute + bufferMinutes;
+  return hour * 60 + minute;
 }
 
 function timeToMinutes(value?: string | null) {
@@ -127,13 +127,13 @@ const visibleAvailabilitySlots = useMemo(() => {
 
   if (date !== today) return availabilitySlots;
 
-  const minAllowedMinutes = getCurrentMadridMinutesPlusBuffer(30);
+  const currentMinutes = getCurrentMadridMinutes();
 
-  return availabilitySlots.filter((slot) => {
-    const slotMinutes = timeToMinutes(slot.startTime || slot.value);
+return availabilitySlots.filter((slot) => {
+  const slotEndMinutes = timeToMinutes(slot.endTime);
 
-    return slotMinutes >= minAllowedMinutes;
-  });
+  return slotEndMinutes > currentMinutes;
+});
 }, [availabilitySlots, date]);
 
   const availableShowerSlots = useMemo(() => {
