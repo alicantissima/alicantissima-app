@@ -459,44 +459,7 @@ clearItems();
     </div>
   </div>
 
-  <div className={boxClass}>
-    <div className="flex items-center justify-between gap-4">
-      <div>
-        <p className="font-semibold text-zinc-900 dark:text-white">
-          {t.comboExtraShowerLabel}
-        </p>
-        <p className={mutedClass}>{t.comboExtraShowerPriceLabel}</p>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => {
-            decrease(extraShowerQty, setExtraShowerQty);
-            setShowerTime("");
-          }}
-          className={qtyButtonClass}
-        >
-          -
-        </button>
-        <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
-          {extraShowerQty}
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            increase(extraShowerQty, setExtraShowerQty);
-            setShowerTime("");
-          }}
-          className={qtyButtonClass}
-        >
-          +
-        </button>
-      </div>
-    </div>
-  </div>
-
-  {date && dropOffTime ? (
+    {date && dropOffTime ? (
     <div>
       <label className={labelClass}>{t.chooseApproxShowerTime}</label>
 
@@ -532,117 +495,14 @@ clearItems();
   ) : null}
 </div>
 
-        <div className={boxClass}>
-  <div className="flex items-center justify-between gap-4">
-    <div>
-      <p className="font-semibold text-zinc-900 dark:text-white">
-        {t.comboExtraShowerLabel}
-      </p>
-      <p className={mutedClass}>{t.comboExtraShowerPriceLabel}</p>
-    </div>
-
-    <div className="flex items-center gap-3">
-      <button
-        type="button"
-        onClick={() => {
-          decrease(extraShowerQty, setExtraShowerQty);
-          setShowerTime("");
-        }}
-        className={qtyButtonClass}
-      >
-        -
-      </button>
-
-      <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
-        {extraShowerQty}
-      </span>
-
-      <button
-        type="button"
-        onClick={() => {
-          increase(extraShowerQty, setExtraShowerQty);
-          setShowerTime("");
-        }}
-        className={qtyButtonClass}
-      >
-        +
-      </button>
-    </div>
-  </div>
+<div className={boxClass}>
+  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+    {t.totalPrice}
+  </p>
+  <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+    € {totalPrice}
+  </p>
 </div>
-
-{date && dropOffTime ? (
-  <div>
-    <label className={labelClass}>{t.chooseApproxShowerTime}</label>
-
-    <select
-      className={fieldClass}
-      value={showerTime}
-      onChange={(e) => setShowerTime(e.target.value)}
-      disabled={availabilityLoading || availableShowerSlots.length === 0}
-    >
-      <option value="">Choose time</option>
-
-      {availableShowerSlots.map((slot) => (
-        <option key={slot.value} value={slot.value} disabled={!slot.available}>
-          {slot.label}
-        </option>
-      ))}
-    </select>
-
-    {availabilityLoading ? (
-      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-        Loading available shower times...
-      </p>
-    ) : availabilityError ? (
-      <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-        {availabilityError}
-      </p>
-    ) : availableShowerSlots.length === 0 ? (
-      <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-        No shower times available for this date and number of showers.
-      </p>
-    ) : null}
-  </div>
-) : null}
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-  decrease(extraShowerQty, setExtraShowerQty);
-  setShowerTime("");
-}}
-                className={qtyButtonClass}
-              >
-                -
-              </button>
-              <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
-                {extraShowerQty}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-  increase(extraShowerQty, setExtraShowerQty);
-  setShowerTime("");
-}}
-                className={qtyButtonClass}
-              >
-                +
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className={boxClass}>
-        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-          {t.totalPrice}
-        </p>
-        <p className="text-2xl font-bold text-zinc-900 dark:text-white">
-          € {totalPrice}
-        </p>
-      </div>
 
       <button type="button" onClick={handleAddToBooking} className={ctaClass}>
         {t.bookNow}
