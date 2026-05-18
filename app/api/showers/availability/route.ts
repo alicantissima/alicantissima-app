@@ -28,7 +28,7 @@ function minutesToTime(totalMinutes: number) {
 
 function generateShowerStartTimes(durationMinutes: number) {
   const openingMinutes = timeToMinutes("10:00");
-  const closingMinutes = timeToMinutes("19:00");
+  const closingMinutes = timeToMinutes("22:00");
   const stepMinutes = 15;
 
   const times: string[] = [];

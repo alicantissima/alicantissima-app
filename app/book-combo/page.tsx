@@ -131,7 +131,6 @@ const [availabilityError, setAvailabilityError] = useState("");
 
 
   const baseAvailableSlots = useMemo(() => {
-  const latestComboDropOffMinutes = timeToMinutes("18h30");
 
   const slotsWithEnoughTimeForShower = timeSlots.filter((slot) => {
     const slotMinutes = timeToMinutes(getSlotStart(slot));
