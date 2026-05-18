@@ -21,7 +21,7 @@ function getSlotIndex(slot: string, slots: string[]) {
   return slots.indexOf(slot);
 }
 
-function getCurrentMadridSlotStart() {
+function getCurrentMadridMinutes() {
   const now = new Date();
 
   const madrid = new Intl.DateTimeFormat("en-GB", {
@@ -34,13 +34,34 @@ function getCurrentMadridSlotStart() {
   const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
   const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
 
-  if (minute === 0) return `${String(hour).padStart(2, "0")}h00`;
-  if (minute <= 30) return `${String(hour).padStart(2, "0")}h30`;
-  return `${String(hour + 1).padStart(2, "0")}h00`;
+  return hour * 60 + minute;
+}
+
+function timeToMinutes(value?: string | null) {
+  if (!value) return 0;
+
+  const normalized = value
+    .trim()
+    .replace("H", "h")
+    .replace("h", ":");
+
+  const start = normalized.split("-")[0].trim();
+  const [hourRaw, minuteRaw] = start.split(":");
+
+  const hour = Number(hourRaw);
+  const minute = Number(minuteRaw);
+
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return 0;
+
+  return hour * 60 + minute;
 }
 
 function getSlotStart(slot: string) {
   return slot.split("-")[0];
+}
+
+function getSlotEnd(slot: string) {
+  return slot.split("-")[1] || "";
 }
 
 function BookLuggageContent() {
@@ -60,14 +81,20 @@ function BookLuggageContent() {
   const [comments, setComments] = useState("");
 
   const baseAvailableSlots = useMemo(() => {
-    if (!date) return timeSlots;
+  if (!date) return timeSlots;
 
-    const today = getTodayString();
-    if (date !== today) return timeSlots;
+  const today = getTodayString();
 
-    const currentSlotStart = getCurrentMadridSlotStart();
-    return timeSlots.filter((slot) => getSlotStart(slot) >= currentSlotStart);
-  }, [date, timeSlots]);
+  if (date !== today) return timeSlots;
+
+  const currentMinutes = getCurrentMadridMinutes();
+
+  return timeSlots.filter((slot) => {
+    const slotEndMinutes = timeToMinutes(getSlotEnd(slot));
+
+    return slotEndMinutes > currentMinutes;
+  });
+}, [date, timeSlots]);
 
   const availablePickUpSlots = useMemo(() => {
     if (!dropOff) return baseAvailableSlots;
@@ -158,8 +185,9 @@ function BookLuggageContent() {
   }
 
   function handleBack() {
-    router.back();
-  }
+  clearItems();
+  router.back();
+}
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6 text-zinc-900 dark:text-white">
