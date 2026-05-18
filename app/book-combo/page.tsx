@@ -82,9 +82,11 @@ function getCurrentMadridSlotStart() {
   const hour = Number(madrid.find((p) => p.type === "hour")?.value ?? "0");
   const minute = Number(madrid.find((p) => p.type === "minute")?.value ?? "0");
 
-  if (minute === 0) return `${String(hour).padStart(2, "0")}h00`;
-  if (minute <= 30) return `${String(hour).padStart(2, "0")}h30`;
-  return `${String(hour + 1).padStart(2, "0")}h00`;
+  if (minute < 30) {
+    return `${String(hour).padStart(2, "0")}h00`;
+  }
+
+  return `${String(hour).padStart(2, "0")}h30`;
 }
 
 function getSlotStart(slot: string) {
