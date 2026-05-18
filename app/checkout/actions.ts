@@ -85,6 +85,29 @@ function formatShowerDuration(value: unknown) {
   return `${minutes} minutes`;
 }
 
+function getReservedForPeople(item: {
+  quantity: number;
+  meta?: Record<string, unknown>;
+}) {
+  const breakdown = getBreakdown(item.meta);
+
+  if (breakdown.length > 0) {
+    const showerPart = breakdown.find((part) =>
+      part.label.toLowerCase().includes("shower")
+    );
+
+    if (showerPart) return showerPart.quantity;
+  }
+
+  return item.quantity;
+}
+
+function formatReservedForPeople(quantity: number) {
+  if (!Number.isFinite(quantity) || quantity <= 0) return "";
+
+  return quantity === 1 ? "1 person" : `${quantity} people`;
+}
+
 function formatShowerTimeRange(meta?: Record<string, unknown>) {
   const showerStart = formatTimeRange(meta?.showerTime);
   const showerEnd = formatTimeRange(meta?.showerEndTime);
@@ -185,6 +208,9 @@ function buildBookingLines(params: {
     const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
     const showerTime = formatShowerTimeRange(item.meta);
 const showerDuration = formatShowerDuration(item.meta?.showerDurationMinutes);
+const reservedForPeople = showerTime
+  ? formatReservedForPeople(getReservedForPeople(item))
+  : "";
 const comments = item.meta?.comments;
 
     if (date) {
@@ -203,8 +229,12 @@ const comments = item.meta?.comments;
   lines.push(`Shower time: ${showerTime}`);
 }
 
+if (reservedForPeople) {
+  lines.push(`Reserved for: ${reservedForPeople}`);
+}
+
 if (showerDuration) {
-  lines.push(`Duration: ${showerDuration}`);
+  lines.push(`Total group duration: ${showerDuration}`);
 }
 
     if (typeof comments === "string" && comments.trim()) {
@@ -261,6 +291,9 @@ function buildConfirmationEmailText(params: {
   const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
   const showerTime = formatShowerTimeRange(item.meta);
 const showerDuration = formatShowerDuration(item.meta?.showerDurationMinutes);
+const reservedForPeople = showerTime
+  ? formatReservedForPeople(getReservedForPeople(item))
+  : "";
 const comments = item.meta?.comments;
 
   if (breakdown.length > 0) {
@@ -277,7 +310,8 @@ const comments = item.meta?.comments;
   if (dropOffTime) lines.push(`${t.dropOffLabel} ${dropOffTime}`);
   if (pickUpTime) lines.push(`${t.estimatedPickUpLabel} ${pickUpTime}`);
   if (showerTime) lines.push(`${t.showerTimeLabel} ${showerTime}`);
-if (showerDuration) lines.push(`Duration: ${showerDuration}`);
+if (reservedForPeople) lines.push(`Reserved for: ${reservedForPeople}`);
+if (showerDuration) lines.push(`Total group duration: ${showerDuration}`);
 
   if (typeof comments === "string" && comments.trim()) {
     lines.push(`${t.commentsLabel}: ${comments.trim()}`);
@@ -357,6 +391,9 @@ function buildConfirmationEmailHtml(params: {
       const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
       const showerTime = formatShowerTimeRange(item.meta);
 const showerDuration = formatShowerDuration(item.meta?.showerDurationMinutes);
+const reservedForPeople = showerTime
+  ? formatReservedForPeople(getReservedForPeople(item))
+  : "";
 const comments =
         typeof item.meta?.comments === "string"
           ? item.meta.comments.trim()
@@ -407,7 +444,8 @@ const comments =
           ${dropOffTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.dropOffLabel}</strong> ${dropOffTime}</p>` : ""}
           ${pickUpTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.estimatedPickUpLabel}</strong> ${pickUpTime}</p>` : ""}
           ${showerTime ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.showerTimeLabel}</strong> ${showerTime}</p>` : ""}
-${showerDuration ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>Duration:</strong> ${showerDuration}</p>` : ""}
+${reservedForPeople ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>Reserved for:</strong> ${reservedForPeople}</p>` : ""}
+${showerDuration ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>Total group duration:</strong> ${showerDuration}</p>` : ""}
 ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; color:#111827;"><strong>${t.commentsLabel}:</strong> ${comments}</p>` : ""}
         </div>
       `;
@@ -593,6 +631,9 @@ function buildInternalEmailHtml(params: {
     const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
     const showerTime = formatShowerTimeRange(item.meta);
 const showerDuration = formatShowerDuration(item.meta?.showerDurationMinutes);
+const reservedForPeople = showerTime
+  ? formatReservedForPeople(getReservedForPeople(item))
+  : "";
 const comments =
       typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
     const breakdown = getBreakdown(item.meta);
@@ -621,7 +662,8 @@ const comments =
         ${dropOffTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Drop-off: ${dropOffTime}</p>` : ""}
         ${pickUpTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Estimated pick-up: ${pickUpTime}</p>` : ""}
         ${showerTime ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Shower time: ${showerTime}</p>` : ""}
-${showerDuration ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Duration: ${showerDuration}</p>` : ""}
+${reservedForPeople ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Reserved for: ${reservedForPeople}</p>` : ""}
+${showerDuration ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Total group duration: ${showerDuration}</p>` : ""}
 ${comments ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Comments: ${comments}</p>` : ""}
       </div>
     `;

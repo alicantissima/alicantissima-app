@@ -307,11 +307,7 @@ disabled={availabilityLoading || availabilitySlots.length === 0}
   <p className="mt-2 text-xs text-red-600 dark:text-red-400">
     No shower times available for this date and number of showers.
   </p>
-) : (
-  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-    Available times are adjusted automatically according to the number of showers.
-  </p>
-)}
+) : null}
 
     </div>
   ) : (
