@@ -150,8 +150,9 @@ export default function CheckoutClient() {
   }
 
   function handleBack() {
-    router.back();
-  }
+  clearItems();
+  router.back();
+}
 
   if (!items.length) {
     return (

@@ -97,6 +97,11 @@ function BookShowerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const addItem = useBookingStore((state) => state.addItem);
+const clearItems = useBookingStore((state) => state.clearItems);
+
+useEffect(() => {
+  clearItems();
+}, [clearItems]);
 
 
   const language = normalizeLanguage(searchParams.get("lang"));
