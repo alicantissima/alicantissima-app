@@ -44,6 +44,41 @@ function getCheckoutShowerTimeRange(params: {
   return `${startTime} – ${endTime}`;
 }
 
+function labelLooksLikeShower(label: string) {
+  const normalized = label.toLowerCase();
+
+  return (
+    normalized.includes("shower") ||
+    normalized.includes("ducha") ||
+    normalized.includes("duche") ||
+    normalized.includes("douche") ||
+    normalized.includes("doccia") ||
+    normalized.includes("dusche")
+  );
+}
+
+function getCheckoutShowerQuantity(item: {
+  quantity?: number | string;
+  breakdown?: Array<{
+    label?: string;
+    quantity?: number;
+  }>;
+}) {
+  if (Array.isArray(item.breakdown) && item.breakdown.length > 0) {
+    const totalFromBreakdown = item.breakdown.reduce((sum, part) => {
+      const label = String(part.label || "");
+
+      if (!labelLooksLikeShower(label)) return sum;
+
+      return sum + Number(part.quantity || 0);
+    }, 0);
+
+    if (totalFromBreakdown > 0) return totalFromBreakdown;
+  }
+
+  return Number(item.quantity || 1);
+}
+
 function getReservedForPeopleLabel(quantity: number) {
   return quantity === 1 ? "1 person" : `${quantity} people`;
 }
@@ -95,13 +130,17 @@ export default function CheckoutClient() {
   const productType = item.productCode;
   const showerTime = item.showerTime ?? null;
 
-  const showerDurationMinutes = showerTime
-    ? getShowerDurationMinutes(quantity)
-    : null;
+  const showerPeople = showerTime
+  ? getCheckoutShowerQuantity(item)
+  : quantity;
 
-  const showerEndTime = showerTime
-    ? getShowerEndTime(showerTime, quantity)
-    : null;
+const showerDurationMinutes = showerTime
+  ? getShowerDurationMinutes(showerPeople)
+  : null;
+
+const showerEndTime = showerTime
+  ? getShowerEndTime(showerTime, showerPeople)
+  : null;
 
   return {
     id: item.productCode,
@@ -119,6 +158,7 @@ export default function CheckoutClient() {
       pickUpTime: item.pickUpTime ?? null,
       showerTime,
       showerEndTime,
+      showerPeople,
       showerDurationMinutes,
       comments: item.comments ?? null,
       breakdown: item.breakdown ?? [],
@@ -297,18 +337,18 @@ export default function CheckoutClient() {
       {t.showerTimeLabel}{" "}
       {getCheckoutShowerTimeRange({
         showerTime: item.showerTime,
-        quantity: Number(item.quantity || 1),
+        quantity: getCheckoutShowerQuantity(item),
       })}
     </p>
 
     <p className="text-sm text-zinc-600 dark:text-zinc-300">
       Reserved for:{" "}
-      {getReservedForPeopleLabel(Number(item.quantity || 1))}
+      {getReservedForPeopleLabel(getCheckoutShowerQuantity(item))}
     </p>
 
     <p className="text-sm text-zinc-600 dark:text-zinc-300">
       Total group duration:{" "}
-      {getShowerDurationLabel(Number(item.quantity || 1))}
+      {getShowerDurationLabel(getCheckoutShowerQuantity(item))}
     </p>
   </>
 )}
