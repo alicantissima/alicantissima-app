@@ -350,83 +350,187 @@ clearItems();
       <p className={mutedClass}>{t.bookComboSubtitle}</p>
 
       <div className="space-y-4">
-        <div>
-          <label className={labelClass}>{t.chooseComboDate}</label>
-          <input
-            type="date"
-            min={getTodayString()}
-            className={fieldClass}
-            value={date}
-            onChange={(e) => {
-  setDate(e.target.value);
-  setDropOffTime("");
-  setShowerTime("");
-}}
-          />
-        </div>
+  <div>
+    <label className={labelClass}>{t.chooseComboDate}</label>
+    <input
+      type="date"
+      min={getTodayString()}
+      className={fieldClass}
+      value={date}
+      onChange={(e) => {
+        setDate(e.target.value);
+        setDropOffTime("");
+        setShowerTime("");
+      }}
+    />
+  </div>
 
-        <div>
-          <label className={labelClass}>{t.chooseLuggageDropOffTime}</label>
-          <select
-            className={fieldClass}
-            value={dropOffTime}
-            onChange={(e) => {
-              const newDropOff = e.target.value;
-              setDropOffTime(newDropOff);
+  <div>
+    <label className={labelClass}>{t.chooseLuggageDropOffTime}</label>
+    <select
+      className={fieldClass}
+      value={dropOffTime}
+      onChange={(e) => {
+        const newDropOff = e.target.value;
+        setDropOffTime(newDropOff);
 
-              if (
-                showerTime &&
-                timeSlots.indexOf(showerTime) < timeSlots.indexOf(newDropOff)
-              ) {
-                setShowerTime("");
-              }
-            }}
-          >
-            <option value="">Choose time</option>
-            {baseAvailableSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
-              </option>
-            ))}
-          </select>
-        </div>
+        if (
+          showerTime &&
+          timeToMinutes(showerTime) < timeToMinutes(getSlotStart(newDropOff))
+        ) {
+          setShowerTime("");
+        }
+      }}
+    >
+      <option value="">Choose time</option>
+      {baseAvailableSlots.map((slot) => (
+        <option key={slot} value={slot}>
+          {slot}
+        </option>
+      ))}
+    </select>
+  </div>
 
-        <div className={boxClass}>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="font-semibold text-zinc-900 dark:text-white">
-                {t.comboMainLabel}
-              </p>
-              <p className={mutedClass}>{t.comboMainPriceLabel}</p>
-            </div>
+  <div className={boxClass}>
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="font-semibold text-zinc-900 dark:text-white">
+          {t.comboMainLabel}
+        </p>
+        <p className={mutedClass}>{t.comboMainPriceLabel}</p>
+      </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-  decrease(comboQty, setComboQty, 1);
-  setShowerTime("");
-}}
-                className={qtyButtonClass}
-              >
-                -
-              </button>
-              <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
-                {comboQty}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-  increase(comboQty, setComboQty);
-  setShowerTime("");
-}}
-                className={qtyButtonClass}
-              >
-                +
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => {
+            decrease(comboQty, setComboQty, 1);
+            setShowerTime("");
+          }}
+          className={qtyButtonClass}
+        >
+          -
+        </button>
+        <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
+          {comboQty}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            increase(comboQty, setComboQty);
+            setShowerTime("");
+          }}
+          className={qtyButtonClass}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div className={boxClass}>
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="font-semibold text-zinc-900 dark:text-white">
+          {t.comboExtraLuggageLabel}
+        </p>
+        <p className={mutedClass}>{t.comboExtraLuggagePriceLabel}</p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => decrease(extraLuggageQty, setExtraLuggageQty)}
+          className={qtyButtonClass}
+        >
+          -
+        </button>
+        <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
+          {extraLuggageQty}
+        </span>
+        <button
+          type="button"
+          onClick={() => increase(extraLuggageQty, setExtraLuggageQty)}
+          className={qtyButtonClass}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div className={boxClass}>
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="font-semibold text-zinc-900 dark:text-white">
+          {t.comboExtraShowerLabel}
+        </p>
+        <p className={mutedClass}>{t.comboExtraShowerPriceLabel}</p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => {
+            decrease(extraShowerQty, setExtraShowerQty);
+            setShowerTime("");
+          }}
+          className={qtyButtonClass}
+        >
+          -
+        </button>
+        <span className="min-w-[1.5rem] text-center text-lg font-medium text-zinc-900 dark:text-white">
+          {extraShowerQty}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            increase(extraShowerQty, setExtraShowerQty);
+            setShowerTime("");
+          }}
+          className={qtyButtonClass}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {date && dropOffTime ? (
+    <div>
+      <label className={labelClass}>{t.chooseApproxShowerTime}</label>
+
+      <select
+        className={fieldClass}
+        value={showerTime}
+        onChange={(e) => setShowerTime(e.target.value)}
+        disabled={availabilityLoading || availableShowerSlots.length === 0}
+      >
+        <option value="">Choose time</option>
+
+        {availableShowerSlots.map((slot) => (
+          <option key={slot.value} value={slot.value} disabled={!slot.available}>
+            {slot.label}
+          </option>
+        ))}
+      </select>
+
+      {availabilityLoading ? (
+        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+          Loading available shower times...
+        </p>
+      ) : availabilityError ? (
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+          {availabilityError}
+        </p>
+      ) : availableShowerSlots.length === 0 ? (
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+          No shower times available for this date and number of showers.
+        </p>
+      ) : null}
+    </div>
+  ) : null}
+</div>
 
         <div className={boxClass}>
   <div className="flex items-center justify-between gap-4">
