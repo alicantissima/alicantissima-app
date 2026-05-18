@@ -21,15 +21,31 @@ function getShowerDurationLabel(quantity: number) {
   return `${minutes} minutes`;
 }
 
+function formatCheckoutTime(value?: string | null) {
+  if (!value) return "";
+
+  return value
+    .trim()
+    .replace("H", "h")
+    .replace("h", ":");
+}
+
 function getCheckoutShowerTimeRange(params: {
   showerTime?: string | null;
   quantity: number;
 }) {
   if (!params.showerTime) return "";
 
-  const endTime = getShowerEndTime(params.showerTime, params.quantity);
+  const startTime = formatCheckoutTime(params.showerTime);
+  const endTime = formatCheckoutTime(
+    getShowerEndTime(params.showerTime, params.quantity)
+  );
 
-  return `${params.showerTime}-${endTime}`;
+  return `${startTime} – ${endTime}`;
+}
+
+function getReservedForPeopleLabel(quantity: number) {
+  return quantity === 1 ? "1 person" : `${quantity} people`;
 }
 
 export default function CheckoutClient() {
@@ -285,7 +301,13 @@ export default function CheckoutClient() {
     </p>
 
     <p className="text-sm text-zinc-600 dark:text-zinc-300">
-      Duration: {getShowerDurationLabel(Number(item.quantity || 1))}
+      Reserved for:{" "}
+      {getReservedForPeopleLabel(Number(item.quantity || 1))}
+    </p>
+
+    <p className="text-sm text-zinc-600 dark:text-zinc-300">
+      Total group duration:{" "}
+      {getShowerDurationLabel(Number(item.quantity || 1))}
     </p>
   </>
 )}
