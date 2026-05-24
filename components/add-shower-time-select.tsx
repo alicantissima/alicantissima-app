@@ -11,31 +11,17 @@ type Props = {
   itemId: string;
 };
 
-const SHOWER_SLOTS = [
-  "10h00-10h30",
-  "10h30-11h00",
-  "11h00-11h30",
-  "11h30-12h00",
-  "12h00-12h30",
-  "12h30-13h00",
-  "13h00-13h30",
-  "13h30-14h00",
-  "14h00-14h30",
-  "14h30-15h00",
-  "15h00-15h30",
-  "15h30-16h00",
-  "16h00-16h30",
-  "16h30-17h00",
-  "17h00-17h30",
-  "17h30-18h00",
-  "18h00-18h30",
-  "18h30-19h00",
-];
+type Props = {
+  bookingId: string;
+  itemId: string;
+  slots: string[];
+};
 
-export default function AddShowerTimeSelect({ bookingId, itemId }: Props) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [showerTime, setShowerTime] = useState("");
-  const [isPending, startTransition] = useTransition();
+export default function AddShowerTimeSelect({
+  bookingId,
+  itemId,
+  slots,
+}: Props) {
 
   function handleSave() {
     if (!showerTime) return;
@@ -71,11 +57,11 @@ export default function AddShowerTimeSelect({ bookingId, itemId }: Props) {
         className="w-full rounded-xl border bg-white px-3 py-2 text-sm"
       >
         <option value="">Choose shower time</option>
-        {SHOWER_SLOTS.map((slot) => (
-          <option key={slot} value={slot}>
-            {slot}
-          </option>
-        ))}
+        {slots.map((slot) => (
+  <option key={slot} value={slot}>
+    {slot}
+  </option>
+))}
       </select>
 
       <div className="flex gap-2">
