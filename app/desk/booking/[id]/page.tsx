@@ -15,10 +15,12 @@ import UpdateBookingItemQuantity from "@/components/update-booking-item-quantity
 import AddShowerTimeSelect from "@/components/add-shower-time-select";
 import { TIME_SLOTS } from "@/lib/time-slots";
 
-
 type PageProps = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams: Promise<{
+    back?: string;
   }>;
 };
 
@@ -101,9 +103,11 @@ function InfoCard({
   );
 }
 
-export default async function DeskBookingPage({ params }: PageProps) {
+export default async function DeskBookingPage({ params, searchParams }: PageProps) {
   const supabase = await createClient();
   const { id } = await params;
+const query = await searchParams;
+const cameFromAdmin = query.back === "admin";
 
   const {
     data: { user },
@@ -137,8 +141,8 @@ export default async function DeskBookingPage({ params }: PageProps) {
 
   const bookingItems = (bookingItemsData ?? []) as BookingItem[];
 
-const backHref = profile.role === "admin" ? "/admin" : "/desk";
-const backLabel = profile.role === "admin"
+const backHref = cameFromAdmin ? "/admin" : "/desk";
+const backLabel = cameFromAdmin
   ? "← Back to Admin"
   : "← Back to Desk";
 
