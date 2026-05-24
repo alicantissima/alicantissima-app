@@ -137,17 +137,22 @@ export default async function DeskBookingPage({ params }: PageProps) {
 
   const bookingItems = (bookingItemsData ?? []) as BookingItem[];
 
+const backHref = profile.role === "admin" ? "/admin" : "/desk";
+const backLabel = profile.role === "admin"
+  ? "← Back to Admin"
+  : "← Back to Desk";
+
   return (
     <main className="mx-auto max-w-6xl space-y-4 p-4 md:p-6">
       <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3">
             <Link
-              href="/desk"
-              className="inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium hover:bg-gray-50"
-            >
-              ← Back to Desk
-            </Link>
+  href={backHref}
+  className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
+>
+  {backLabel}
+</Link>
 
             <div className="space-y-2">
   <div className="flex flex-wrap items-center gap-3">
