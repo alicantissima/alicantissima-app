@@ -57,6 +57,61 @@ if (bookingError || !booking) {
   );
 }
 
+const productType =
+  data.product === "combo" || data.product === "shower" || data.product === "luggage"
+    ? data.product
+    : "luggage";
+
+const productTitle =
+  productType === "combo"
+    ? "Luggage + Shower"
+    : productType === "shower"
+    ? "Shower"
+    : "Luggage Storage";
+
+const quantity = data.quantity || 1;
+const lineTotal = data.viatorAmount ?? 0;
+
+const meta =
+  productType === "combo"
+    ? {
+        date: data.serviceDate,
+        showerTime: null,
+        dropOffTime: null,
+        pickUpTime: null,
+        breakdown: [
+          {
+            label: "Luggage + Shower",
+            quantity,
+            unitPrice: quantity > 0 ? lineTotal / quantity : lineTotal,
+            totalPrice: lineTotal,
+          },
+        ],
+      }
+    : {
+        date: data.serviceDate,
+        showerTime: null,
+        dropOffTime: null,
+        pickUpTime: null,
+      };
+
+const { error: itemError } = await supabase.from("booking_items").insert({
+  booking_id: booking.id,
+  title: productTitle,
+  quantity,
+  unit_price: quantity > 0 ? lineTotal / quantity : lineTotal,
+  line_total: lineTotal,
+  product_type: productType,
+  meta,
+});
+
+if (itemError) {
+  return NextResponse.json(
+    { error: itemError.message },
+    { status: 500 }
+  );
+}
+
 await sendPushToAll({
   title: "Nova reserva Viator 🔔",
   body: `${booking.booking_code} · ${booking.customer_name || "Cliente Viator"} · ${
