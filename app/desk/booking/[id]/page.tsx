@@ -228,7 +228,8 @@ export default async function DeskBookingPage({ params }: PageProps) {
   <AddShowerTimeSelect
   bookingId={booking.id}
   itemId={item.id}
-  slots={TIME_SLOTS}
+  serviceDate={booking.service_date}
+  quantity={item.quantity || 1}
 />
 ) : null}
                         </div>
