@@ -93,9 +93,9 @@ export default function AddShowerTimeSelect({
       <button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="mt-3 text-xs font-medium text-blue-600 hover:underline"
+        className="mt-3 inline-flex rounded-xl border px-3 py-2 text-xs font-medium text-blue-600 hover:bg-blue-50"
       >
-        Add shower time
+        Shower time
       </button>
     );
   }
