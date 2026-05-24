@@ -13,6 +13,7 @@ import InlineEditTime from "@/components/inline-edit-time";
 import ChangeBookingItemProductSelect from "@/components/change-booking-item-product-select";
 import UpdateBookingItemQuantity from "@/components/update-booking-item-quantity";
 import AddShowerTimeSelect from "@/components/add-shower-time-select";
+import { TIME_SLOTS } from "@/lib/time-slots";
 
 
 type PageProps = {
@@ -225,9 +226,10 @@ export default async function DeskBookingPage({ params }: PageProps) {
 {(item.product_type === "combo" || item.product_type === "shower") &&
 !item.meta?.showerTime ? (
   <AddShowerTimeSelect
-    bookingId={booking.id}
-    itemId={item.id}
-  />
+  bookingId={booking.id}
+  itemId={item.id}
+  slots={TIME_SLOTS}
+/>
 ) : null}
                         </div>
                         <UpdateBookingItemQuantity
