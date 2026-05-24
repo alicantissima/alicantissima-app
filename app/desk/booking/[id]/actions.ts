@@ -266,3 +266,44 @@ export async function updateBookingItemQuantity({
   revalidatePath(`/desk/booking/${bookingId}`);
 }
 
+type UpdateShowerTimeInput = {
+  bookingId: string;
+  itemId: string;
+  showerTime: string;
+};
+
+export async function updateBookingItemShowerTime({
+  bookingId,
+  itemId,
+  showerTime,
+}: UpdateShowerTimeInput) {
+  const supabase = await createClient();
+
+  const { data: item, error: itemError } = await supabase
+    .from("booking_items")
+    .select("meta")
+    .eq("id", itemId)
+    .eq("booking_id", bookingId)
+    .single();
+
+  if (itemError) {
+    throw new Error(itemError.message);
+  }
+
+  const newMeta = {
+    ...(item?.meta || {}),
+    showerTime: showerTime || null,
+  };
+
+  const { error: updateError } = await supabase
+    .from("booking_items")
+    .update({ meta: newMeta })
+    .eq("id", itemId)
+    .eq("booking_id", bookingId);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
+
+  revalidatePath(`/desk/booking/${bookingId}`);
+}
