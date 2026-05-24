@@ -233,13 +233,14 @@ function getExtraCounts(item: BookingItemRow) {
       if (!qty) return acc;
 
       const isExtra =
-        label.includes("additional") ||
-        label.includes("extra") ||
-        label.includes("adicional") ||
-        label.includes("supplementaire") ||
-        label.includes("suplementar") ||
-        label.includes("zusatz") ||
-        label.includes("dodatk");
+  label.includes("additional") ||
+  label.includes("extra") ||
+  label.includes("adicional") ||
+  label.includes("supplementaire") ||
+  label.includes("suplementar") ||
+  label.includes("zusatz") ||
+  label.includes("dodatk") ||
+  label.includes("lisas");
 
       const isBag =
   label.includes("luggage") ||
@@ -256,13 +257,14 @@ function getExtraCounts(item: BookingItemRow) {
   label.includes("gepaeck");
 
       const isShower =
-        label.includes("shower") ||
-        label.includes("ducha") ||
-        label.includes("duche") ||
-        label.includes("doccia") ||
-        label.includes("douche") ||
-        label.includes("dusche") ||
-        label.includes("prysznic");
+  label.includes("shower") ||
+  label.includes("ducha") ||
+  label.includes("duche") ||
+  label.includes("doccia") ||
+  label.includes("douche") ||
+  label.includes("dusche") ||
+  label.includes("prysznic") ||
+  label.includes("suihku");
 
       if (isExtra && isBag) {
         acc.bags += qty;
