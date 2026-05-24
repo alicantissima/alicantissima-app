@@ -147,8 +147,8 @@ const backLabel = cameFromAdmin
   : "← Back to Desk";
 
   return (
-    <main className="mx-auto max-w-6xl space-y-4 p-4 md:p-6">
-      <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
+    <main className="mx-auto max-w-5xl space-y-4 p-3 md:p-6">
+      <section className="rounded-2xl border bg-white p-3 shadow-sm md:p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3">
             <Link
