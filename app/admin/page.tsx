@@ -376,7 +376,7 @@ function renderSectionTable({
               const isFilteredMatch = codeFilter === booking.booking_code;
               const sourceRowClass = getSourceRowClass(booking.source ?? null);
               const isFinished = normalizedStatus === "completed";
-              const bookingHref = `/admin/booking/${booking.id}`;
+              const bookingHref = `/desk/booking/${booking.id}`;
 
               const rowClass = cancelled
                 ? "bg-red-50/40"
