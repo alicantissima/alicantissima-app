@@ -153,7 +153,7 @@ const backLabel = cameFromAdmin
           <div className="space-y-3">
             <Link
   href={backHref}
-  className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
+  className="inline-flex text-sm font-medium text-gray-600 hover:text-gray-900"
 >
   {backLabel}
 </Link>
