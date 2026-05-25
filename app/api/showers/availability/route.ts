@@ -64,7 +64,7 @@ function getExistingShowerRange(item: {
 
   if (!showerTime) return null;
 
-  const quantity = Number(item.quantity || 1);
+  const quantity = Number(meta.showerQuantity || item.quantity || 1);
 
   const showerEndTime =
     typeof meta.showerEndTime === "string" && meta.showerEndTime

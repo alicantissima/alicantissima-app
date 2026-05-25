@@ -89,30 +89,6 @@ function labelLooksLikeShower(label: unknown) {
   );
 }
 
-function getCheckoutShowerQuantity(item: {
-  quantity?: number | string;
-  breakdown?: unknown;
-}) {
-  if (Array.isArray(item.breakdown) && item.breakdown.length > 0) {
-    const totalFromBreakdown = item.breakdown.reduce((sum, part) => {
-      if (!part || typeof part !== "object") return sum;
-
-      const breakdownPart = part as {
-        label?: unknown;
-        quantity?: unknown;
-      };
-
-      if (!labelLooksLikeShower(breakdownPart.label)) return sum;
-
-      return sum + Number(breakdownPart.quantity || 0);
-    }, 0);
-
-    if (totalFromBreakdown > 0) return totalFromBreakdown;
-  }
-
-  return Number(item.quantity || 1);
-}
-
 function formatCheckoutTimeRange(value?: string | null) {
   if (!value) return "";
 
