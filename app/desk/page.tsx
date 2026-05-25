@@ -189,25 +189,30 @@ function getDeskBagSummary(booking: BookingRow) {
     const productType = item.product_type?.toLowerCase() ?? "";
 
     if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
-      const bagBreakdown = meta.breakdown.find((part) => {
+      let breakdownBags = 0;
+
+      meta.breakdown.forEach((part) => {
         const label = String(part.label || "").toLowerCase();
 
-        return (
+        if (
           label.includes("luggage") ||
           label.includes("bag") ||
           label.includes("malas") ||
           label.includes("mala")
-        );
+        ) {
+          breakdownBags += Number(part.quantity || 0);
+        }
       });
 
-      if (bagBreakdown) {
-        totalBags += Number(bagBreakdown.quantity || 0);
+      if (breakdownBags > 0) {
+        totalBags += breakdownBags;
         return;
       }
     }
 
     if (
       productType === "luggage" ||
+      productType === "booking" ||
       productType === "combo" ||
       title.includes("luggage") ||
       title.includes("bag") ||
