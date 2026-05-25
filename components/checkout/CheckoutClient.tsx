@@ -30,6 +30,38 @@ function formatCheckoutTime(value?: string | null) {
     .replace("h", ":");
 }
 
+function getCheckoutShowerQuantity(item: {
+  quantity?: number | string;
+  productCode?: string;
+  productName?: string;
+  breakdown?: Array<{
+    label?: string;
+    quantity?: number;
+  }>;
+}) {
+  const breakdown = item.breakdown ?? [];
+
+  if (Array.isArray(breakdown) && breakdown.length > 0) {
+    let totalShowers = 0;
+
+    breakdown.forEach((part) => {
+      const label = String(part.label || "").toLowerCase();
+
+      if (
+        label.includes("shower") ||
+        label.includes("duche") ||
+        label.includes("ducha")
+      ) {
+        totalShowers += Number(part.quantity || 0);
+      }
+    });
+
+    if (totalShowers > 0) return totalShowers;
+  }
+
+  return Number(item.quantity || 1);
+}
+
 function getCheckoutShowerTimeRange(params: {
   showerTime?: string | null;
   quantity: number;
@@ -145,17 +177,17 @@ export default function CheckoutClient() {
   const productType = item.productCode;
   const showerTime = item.showerTime ?? null;
 
-  const showerPeople = showerTime
-  ? getCheckoutShowerQuantity(item)
-  : quantity;
+  const showerQuantity = showerTime
+    ? getCheckoutShowerQuantity(item)
+    : quantity;
 
-const showerDurationMinutes = showerTime
-  ? getShowerDurationMinutes(showerPeople)
-  : null;
+  const showerDurationMinutes = showerTime
+    ? getShowerDurationMinutes(showerQuantity)
+    : null;
 
-const showerEndTime = showerTime
-  ? getShowerEndTime(showerTime, showerPeople)
-  : null;
+  const showerEndTime = showerTime
+    ? getShowerEndTime(showerTime, showerQuantity)
+    : null;
 
   return {
     id: item.productCode,
@@ -173,8 +205,8 @@ const showerEndTime = showerTime
       pickUpTime: item.pickUpTime ?? null,
       showerTime,
       showerEndTime,
-      showerPeople,
       showerDurationMinutes,
+      showerQuantity,
       comments: item.comments ?? null,
       breakdown: item.breakdown ?? [],
     },
@@ -357,13 +389,7 @@ const showerEndTime = showerTime
     </p>
 
     <p className="text-sm text-zinc-600 dark:text-zinc-300">
-      Reserved for:{" "}
-      {getReservedForPeopleLabel(getCheckoutShowerQuantity(item))}
-    </p>
-
-    <p className="text-sm text-zinc-600 dark:text-zinc-300">
-      Total group duration:{" "}
-      {getShowerDurationLabel(getCheckoutShowerQuantity(item))}
+      Duration: {getShowerDurationLabel(getCheckoutShowerQuantity(item))}
     </p>
   </>
 )}
