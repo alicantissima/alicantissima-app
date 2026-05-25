@@ -5,6 +5,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getShowerDurationMinutes,
+  getShowerEndTime,
+} from "@/lib/showers";
 
 type UpdateTimeInput = {
   bookingId: string;
@@ -12,6 +16,47 @@ type UpdateTimeInput = {
   field: "dropOffTime" | "pickUpTime" | "showerTime";
   value: string;
 };
+
+function getShowerQuantityFromItem(item: {
+  quantity?: number | null;
+  meta?: Record<string, unknown> | null;
+}) {
+  const meta = item.meta ?? {};
+
+  const storedShowerQuantity = Number(meta.showerQuantity);
+  if (Number.isFinite(storedShowerQuantity) && storedShowerQuantity > 0) {
+    return storedShowerQuantity;
+  }
+
+  const breakdown = meta.breakdown;
+
+  if (Array.isArray(breakdown)) {
+    let totalShowers = 0;
+
+    breakdown.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+
+      const part = entry as {
+        label?: unknown;
+        quantity?: unknown;
+      };
+
+      const label = String(part.label || "").toLowerCase();
+
+      if (
+        label.includes("shower") ||
+        label.includes("duche") ||
+        label.includes("ducha")
+      ) {
+        totalShowers += Number(part.quantity || 0);
+      }
+    });
+
+    if (totalShowers > 0) return totalShowers;
+  }
+
+  return Number(item.quantity || 1);
+}
 
 export async function updateBookingItemTime({
   bookingId,
@@ -45,7 +90,7 @@ export async function updateBookingItemTime({
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
-    .select("id, booking_id, meta")
+    .select("id, booking_id, quantity, meta")
     .eq("id", itemId)
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -60,13 +105,38 @@ export async function updateBookingItemTime({
 
   const currentMeta =
     item.meta && typeof item.meta === "object" && !Array.isArray(item.meta)
-      ? item.meta
+      ? (item.meta as Record<string, unknown>)
       : {};
 
-  const newMeta = {
+  const cleanValue = value.trim() || null;
+
+  let newMeta: Record<string, unknown> = {
     ...currentMeta,
-    [field]: value.trim() || null,
+    [field]: cleanValue,
   };
+
+  if (field === "showerTime") {
+    if (cleanValue) {
+      const showerQuantity = getShowerQuantityFromItem({
+        quantity: item.quantity,
+        meta: currentMeta,
+      });
+
+      newMeta = {
+        ...newMeta,
+        showerQuantity,
+        showerDurationMinutes: getShowerDurationMinutes(showerQuantity),
+        showerEndTime: getShowerEndTime(cleanValue, showerQuantity),
+      };
+    } else {
+      newMeta = {
+        ...newMeta,
+        showerQuantity: null,
+        showerDurationMinutes: null,
+        showerEndTime: null,
+      };
+    }
+  }
 
   const { data: updatedItem, error: updateError } = await supabase
     .from("booking_items")
@@ -87,4 +157,7 @@ export async function updateBookingItemTime({
   }
 
   revalidatePath(`/desk/booking/${bookingId}`);
+  revalidatePath(`/admin/booking/${bookingId}`);
+  revalidatePath("/desk");
+  revalidatePath("/admin");
 }

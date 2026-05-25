@@ -3,9 +3,14 @@
 
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { updateBookingItemTime } from "@/app/desk/booking/[id]/actions-items";
 import { TIME_SLOTS } from "@/lib/time-slots";
+import {
+  getShowerDurationMinutes,
+  getShowerEndTime,
+  timeToMinutes,
+} from "@/lib/showers";
 
 type Props = {
   bookingId: string;
@@ -13,7 +18,49 @@ type Props = {
   label: string;
   field: "dropOffTime" | "pickUpTime" | "showerTime";
   value: string | null | undefined;
+  showerQuantity?: number;
 };
+
+function minutesToTime(totalMinutes: number) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function generateShowerStartTimes(quantity: number) {
+  const durationMinutes = getShowerDurationMinutes(quantity);
+  const openingMinutes = timeToMinutes("10:00");
+  const closingMinutes = timeToMinutes("19:00");
+  const stepMinutes = 15;
+
+  const times: string[] = [];
+
+  for (
+    let start = openingMinutes;
+    start + durationMinutes <= closingMinutes;
+    start += stepMinutes
+  ) {
+    times.push(minutesToTime(start));
+  }
+
+  return times;
+}
+
+function normalizeTimeValue(value?: string | null) {
+  if (!value) return "";
+
+  if (value.includes("-")) {
+    return value.split("-")[0].replace("h", ":").trim();
+  }
+
+  return value.replace("h", ":").trim();
+}
+
+function formatShowerOption(startTime: string, quantity: number) {
+  const endTime = getShowerEndTime(startTime, quantity);
+  return `${startTime}-${endTime}`;
+}
 
 export default function InlineEditTime({
   bookingId,
@@ -21,14 +68,33 @@ export default function InlineEditTime({
   label,
   field,
   value,
+  showerQuantity = 1,
 }: Props) {
   const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(value ?? "");
+  const [draft, setDraft] = useState(normalizeTimeValue(value));
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const isShowerField = field === "showerTime";
+
+  const options = useMemo(() => {
+    if (!isShowerField) {
+      return TIME_SLOTS.map((slot) => ({
+        value: slot,
+        label: slot,
+      }));
+    }
+
+    const quantity = Math.max(1, Number(showerQuantity || 1));
+
+    return generateShowerStartTimes(quantity).map((startTime) => ({
+      value: startTime,
+      label: formatShowerOption(startTime, quantity),
+    }));
+  }, [isShowerField, showerQuantity]);
+
   function handleCancel() {
-    setDraft(value ?? "");
+    setDraft(normalizeTimeValue(value));
     setError(null);
     setIsEditing(false);
   }
@@ -44,12 +110,18 @@ export default function InlineEditTime({
           field,
           value: draft,
         });
+
         setIsEditing(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to save");
       }
     });
   }
+
+  const displayValue =
+    isShowerField && value
+      ? formatShowerOption(normalizeTimeValue(value), Math.max(1, Number(showerQuantity || 1)))
+      : value || "-";
 
   return (
     <div className="rounded-xl bg-gray-50 p-3 text-sm">
@@ -68,7 +140,7 @@ export default function InlineEditTime({
       </div>
 
       {!isEditing ? (
-        <div className="font-medium">{value || "-"}</div>
+        <div className="font-medium">{displayValue}</div>
       ) : (
         <div className="mt-2 space-y-2">
           <select
@@ -77,9 +149,10 @@ export default function InlineEditTime({
             className="w-full rounded-lg border px-2 py-2 text-sm"
           >
             <option value="">Select time</option>
-            {TIME_SLOTS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

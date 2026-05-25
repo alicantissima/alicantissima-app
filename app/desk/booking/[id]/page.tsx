@@ -103,6 +103,40 @@ function InfoCard({
   );
 }
 
+function getRealShowerQuantity(item: BookingItem) {
+  const meta = item.meta ?? {};
+
+  const storedShowerQuantity = Number(
+    (meta as { showerQuantity?: unknown }).showerQuantity
+  );
+
+  if (Number.isFinite(storedShowerQuantity) && storedShowerQuantity > 0) {
+    return storedShowerQuantity;
+  }
+
+  const breakdown = meta.breakdown;
+
+  if (Array.isArray(breakdown) && breakdown.length > 0) {
+    let totalShowers = 0;
+
+    breakdown.forEach((part) => {
+      const label = String(part.label || "").toLowerCase();
+
+      if (
+        label.includes("shower") ||
+        label.includes("duche") ||
+        label.includes("ducha")
+      ) {
+        totalShowers += Number(part.quantity || 0);
+      }
+    });
+
+    if (totalShowers > 0) return totalShowers;
+  }
+
+  return Number(item.quantity || 1);
+}
+
 export default async function DeskBookingPage({ params, searchParams }: PageProps) {
   const supabase = await createClient();
   const { id } = await params;
@@ -238,7 +272,7 @@ const backLabel = cameFromAdmin
   bookingId={booking.id}
   itemId={item.id}
   serviceDate={booking.service_date}
-  quantity={item.quantity || 1}
+  quantity={getRealShowerQuantity(item)}
 />
 ) : null}
                         </div>
@@ -268,12 +302,13 @@ const backLabel = cameFromAdmin
 />
 
   <InlineEditTime
-    bookingId={booking.id}
-    itemId={item.id}
-    label="Drop-off"
-    field="dropOffTime"
-    value={item.meta?.dropOffTime}
-  />
+  bookingId={booking.id}
+  itemId={item.id}
+  label="Shower"
+  field="showerTime"
+  value={item.meta?.showerTime}
+  showerQuantity={getRealShowerQuantity(item)}
+/>
 
   <InlineEditTime
     bookingId={booking.id}
