@@ -34,17 +34,21 @@ function getCheckoutShowerQuantity(item: {
   quantity?: number | string;
   productCode?: string;
   productName?: string;
-  breakdown?: Array<{
-    label?: string;
-    quantity?: number;
-  }>;
+  breakdown?: unknown;
 }) {
-  const breakdown = item.breakdown ?? [];
+  const breakdown = item.breakdown;
 
   if (Array.isArray(breakdown) && breakdown.length > 0) {
     let totalShowers = 0;
 
-    breakdown.forEach((part) => {
+    breakdown.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+
+      const part = entry as {
+        label?: unknown;
+        quantity?: unknown;
+      };
+
       const label = String(part.label || "").toLowerCase();
 
       if (
