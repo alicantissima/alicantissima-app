@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { updateBookingItemTime } from "@/app/desk/booking/[id]/actions-items";
 import { TIME_SLOTS } from "@/lib/time-slots";
 import {
@@ -12,6 +12,14 @@ import {
   timeToMinutes,
 } from "@/lib/showers";
 
+type AvailabilitySlot = {
+  value: string;
+  label: string;
+  startTime: string;
+  endTime: string;
+  available: boolean;
+};
+
 type Props = {
   bookingId: string;
   itemId: string;
@@ -19,6 +27,7 @@ type Props = {
   field: "dropOffTime" | "pickUpTime" | "showerTime";
   value: string | null | undefined;
   showerQuantity?: number;
+  serviceDate?: string | null;
 };
 
 function minutesToTime(totalMinutes: number) {
@@ -69,29 +78,99 @@ export default function InlineEditTime({
   field,
   value,
   showerQuantity = 1,
+  serviceDate,
 }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(normalizeTimeValue(value));
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+
   const isShowerField = field === "showerTime";
+  const quantity = Math.max(1, Number(showerQuantity || 1));
+  const normalizedValue = normalizeTimeValue(value);
+
+  useEffect(() => {
+    setDraft(normalizeTimeValue(value));
+  }, [value]);
+
+  useEffect(() => {
+    async function loadAvailability() {
+      if (!isShowerField || !serviceDate || !isEditing) {
+        return;
+      }
+
+      setAvailabilityLoading(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams();
+        params.set("date", serviceDate);
+        params.set("quantity", String(quantity));
+
+        const response = await fetch(
+          `/api/showers/availability?${params.toString()}`,
+          { cache: "no-store" }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Could not load shower availability.");
+        }
+
+        setAvailabilitySlots(data.slots || []);
+      } catch (err) {
+        setAvailabilitySlots([]);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Could not load shower availability."
+        );
+      } finally {
+        setAvailabilityLoading(false);
+      }
+    }
+
+    loadAvailability();
+  }, [isShowerField, serviceDate, quantity, isEditing]);
 
   const options = useMemo(() => {
     if (!isShowerField) {
       return TIME_SLOTS.map((slot) => ({
         value: slot,
         label: slot,
+        available: true,
       }));
     }
 
-    const quantity = Math.max(1, Number(showerQuantity || 1));
+    if (availabilitySlots.length > 0) {
+      const hasCurrentValue = availabilitySlots.some(
+        (slot) => slot.value === normalizedValue
+      );
+
+      if (normalizedValue && !hasCurrentValue) {
+        return [
+          {
+            value: normalizedValue,
+            label: `${formatShowerOption(normalizedValue, quantity)} · Current`,
+            available: true,
+          },
+          ...availabilitySlots,
+        ];
+      }
+
+      return availabilitySlots;
+    }
 
     return generateShowerStartTimes(quantity).map((startTime) => ({
       value: startTime,
       label: formatShowerOption(startTime, quantity),
+      available: true,
     }));
-  }, [isShowerField, showerQuantity]);
+  }, [isShowerField, availabilitySlots, normalizedValue, quantity]);
 
   function handleCancel() {
     setDraft(normalizeTimeValue(value));
@@ -120,7 +199,7 @@ export default function InlineEditTime({
 
   const displayValue =
     isShowerField && value
-      ? formatShowerOption(normalizeTimeValue(value), Math.max(1, Number(showerQuantity || 1)))
+      ? formatShowerOption(normalizeTimeValue(value), quantity)
       : value || "-";
 
   return (
@@ -147,11 +226,18 @@ export default function InlineEditTime({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             className="w-full rounded-lg border px-2 py-2 text-sm"
+            disabled={availabilityLoading || isPending}
           >
-            <option value="">Select time</option>
+            <option value="">
+              {availabilityLoading ? "Loading times..." : "Select time"}
+            </option>
 
             {options.map((option) => (
-              <option key={option.value} value={option.value}>
+              <option
+                key={option.value}
+                value={option.value}
+                disabled={!option.available && option.value !== normalizedValue}
+              >
                 {option.label}
               </option>
             ))}
@@ -160,7 +246,7 @@ export default function InlineEditTime({
           <div className="flex gap-2">
             <button
               type="button"
-              disabled={isPending}
+              disabled={isPending || availabilityLoading}
               onClick={handleSave}
               className="rounded bg-blue-600 px-2 py-1 text-xs text-white disabled:opacity-60"
             >

@@ -260,8 +260,36 @@ const backLabel = cameFromAdmin
               <p className="text-sm text-gray-500">No items linked to this booking.</p>
             ) : (
               <div className="space-y-3">
-                {bookingItems.map((item) => (
-                  <div key={item.id} className="rounded-2xl border p-4">
+                {bookingItems.map((item) => {
+  const productType = item.product_type?.toLowerCase().trim() ?? "";
+const title = item.title?.toLowerCase().trim() ?? "";
+
+const hasShower =
+  productType === "shower" ||
+  productType === "combo" ||
+  title.includes("shower") ||
+  title.includes("ducha") ||
+  title.includes("duche");
+
+const hasLuggage =
+  productType === "luggage" ||
+  productType === "booking" ||
+  productType === "combo" ||
+  title.includes("luggage") ||
+  title.includes("equipaje") ||
+  title.includes("bag");
+
+const isCombo =
+  productType === "combo" ||
+  (hasShower && hasLuggage);
+
+const isShowerOnly = hasShower && !hasLuggage && !isCombo;
+
+const showLuggageTimes = hasLuggage || isCombo;
+const showShowerTime = hasShower;
+
+  return (
+    <div key={item.id} className="rounded-2xl border p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="text-lg font-semibold">
@@ -301,30 +329,37 @@ const backLabel = cameFromAdmin
   title={item.title}
 />
 
-  <InlineEditTime
-  bookingId={booking.id}
-  itemId={item.id}
-  label="Shower"
-  field="showerTime"
-  value={item.meta?.showerTime}
-  showerQuantity={getRealShowerQuantity(item)}
-/>
+  {showLuggageTimes && (
+  <>
+    <InlineEditTime
+      bookingId={booking.id}
+      itemId={item.id}
+      label="Drop-off"
+      field="dropOffTime"
+      value={item.meta?.dropOffTime}
+    />
 
-  <InlineEditTime
-    bookingId={booking.id}
-    itemId={item.id}
-    label="Pick-up"
-    field="pickUpTime"
-    value={item.meta?.pickUpTime}
-  />
+    <InlineEditTime
+      bookingId={booking.id}
+      itemId={item.id}
+      label="Pick-up"
+      field="pickUpTime"
+      value={item.meta?.pickUpTime}
+    />
+  </>
+)}
 
+{showShowerTime && (
   <InlineEditTime
     bookingId={booking.id}
     itemId={item.id}
     label="Shower"
     field="showerTime"
     value={item.meta?.showerTime}
+    showerQuantity={getRealShowerQuantity(item)}
+    serviceDate={booking.service_date}
   />
+)}
 </div>
 
 {item.meta?.breakdown && item.meta.breakdown.length > 0 && (
