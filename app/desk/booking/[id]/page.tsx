@@ -363,29 +363,28 @@ const showShowerTime = hasShower;
 </div>
 
 {item.meta?.breakdown && item.meta.breakdown.length > 0 && (
-                      <div className="mt-4 rounded-2xl bg-gray-50 p-4">
-                        <div className="mb-2 text-sm font-semibold">
-                          Details
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          {item.meta.breakdown.map((b, index) => (
-                            <div
-                              key={index}
-                              className="flex justify-between gap-3"
-                            >
-                              <span>
-                                {b.label} × {b.quantity}
-                              </span>
-                              <span>{Number(b.totalPrice).toFixed(2)} €</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+  <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+    <div className="mb-2 text-sm font-semibold">
+      Details
+    </div>
+    <div className="space-y-2 text-sm">
+      {item.meta.breakdown.map((b, index) => (
+        <div
+          key={index}
+          className="flex justify-between gap-3"
+        >
+          <span>
+            {b.label} × {b.quantity}
+          </span>
+          <span>{Number(b.totalPrice).toFixed(2)} €</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+</div>
+);
+})}
           </section>
 
                     <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
