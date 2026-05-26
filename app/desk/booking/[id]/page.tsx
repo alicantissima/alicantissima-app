@@ -13,7 +13,6 @@ import InlineEditTime from "@/components/inline-edit-time";
 import ChangeBookingItemProductSelect from "@/components/change-booking-item-product-select";
 import UpdateBookingItemQuantity from "@/components/update-booking-item-quantity";
 import AddShowerTimeSelect from "@/components/add-shower-time-select";
-import { TIME_SLOTS } from "@/lib/time-slots";
 
 type PageProps = {
   params: Promise<{
@@ -36,6 +35,9 @@ type BookingItem = {
     pickUpTime?: string | null;
     showerTime?: string | null;
     comments?: string | null;
+    showerQuantity?: number | null;
+    showerDurationMinutes?: number | null;
+    showerEndTime?: string | null;
     breakdown?: Array<{
       label: string;
       quantity: number;
@@ -47,6 +49,7 @@ type BookingItem = {
 
 function formatDate(value?: string | null) {
   if (!value) return "-";
+
   return new Intl.DateTimeFormat("pt-PT", {
     timeZone: "Europe/Madrid",
     day: "2-digit",
@@ -57,6 +60,7 @@ function formatDate(value?: string | null) {
 
 function formatDateTime(value?: string | null) {
   if (!value) return "-";
+
   return new Intl.DateTimeFormat("pt-PT", {
     timeZone: "Europe/Madrid",
     day: "2-digit",
@@ -96,9 +100,9 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="rounded-xl bg-gray-50 p-3 text-sm h-full flex flex-col justify-between">
+    <div className="flex h-full flex-col justify-between rounded-xl bg-gray-50 p-3 text-sm">
       <div className="text-xs text-gray-500">{label}</div>
-      <div className="font-medium break-words">{value}</div>
+      <div className="break-words font-medium">{value}</div>
     </div>
   );
 }
@@ -106,9 +110,7 @@ function InfoCard({
 function getRealShowerQuantity(item: BookingItem) {
   const meta = item.meta ?? {};
 
-  const storedShowerQuantity = Number(
-    (meta as { showerQuantity?: unknown }).showerQuantity
-  );
+  const storedShowerQuantity = Number(meta.showerQuantity);
 
   if (Number.isFinite(storedShowerQuantity) && storedShowerQuantity > 0) {
     return storedShowerQuantity;
@@ -137,11 +139,44 @@ function getRealShowerQuantity(item: BookingItem) {
   return Number(item.quantity || 1);
 }
 
-export default async function DeskBookingPage({ params, searchParams }: PageProps) {
+function getItemFlags(item: BookingItem) {
+  const productType = item.product_type?.toLowerCase().trim() ?? "";
+  const title = item.title?.toLowerCase().trim() ?? "";
+
+  const hasShower =
+    productType === "shower" ||
+    productType === "combo" ||
+    title.includes("shower") ||
+    title.includes("ducha") ||
+    title.includes("duche");
+
+  const hasLuggage =
+    productType === "luggage" ||
+    productType === "booking" ||
+    productType === "combo" ||
+    title.includes("luggage") ||
+    title.includes("equipaje") ||
+    title.includes("bag");
+
+  const isCombo = productType === "combo" || (hasShower && hasLuggage);
+
+  return {
+    hasShower,
+    hasLuggage,
+    isCombo,
+    showLuggageTimes: hasLuggage || isCombo,
+    showShowerTime: hasShower,
+  };
+}
+
+export default async function DeskBookingPage({
+  params,
+  searchParams,
+}: PageProps) {
   const supabase = await createClient();
   const { id } = await params;
-const query = await searchParams;
-const cameFromAdmin = query.back === "admin";
+  const query = await searchParams;
+  const cameFromAdmin = query.back === "admin";
 
   const {
     data: { user },
@@ -175,10 +210,8 @@ const cameFromAdmin = query.back === "admin";
 
   const bookingItems = (bookingItemsData ?? []) as BookingItem[];
 
-const backHref = cameFromAdmin ? "/admin" : "/desk";
-const backLabel = cameFromAdmin
-  ? "← Back to Admin"
-  : "← Back to Desk";
+  const backHref = cameFromAdmin ? "/admin" : "/desk";
+  const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
 
   return (
     <main className="mx-auto max-w-5xl space-y-4 p-3 md:p-6">
@@ -186,62 +219,62 @@ const backLabel = cameFromAdmin
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3">
             <Link
-  href={backHref}
-  className="inline-flex text-sm font-medium text-gray-600 hover:text-gray-900"
->
-  {backLabel}
-</Link>
+              href={backHref}
+              className="inline-flex text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              {backLabel}
+            </Link>
 
             <div className="space-y-2">
-  <div className="flex flex-wrap items-center gap-3">
-    <h1 className="text-2xl font-bold leading-tight md:text-3xl">
-      {booking.customer_name || "Customer"}
-    </h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-bold leading-tight md:text-3xl">
+                  {booking.customer_name || "Customer"}
+                </h1>
 
-    <span
-      className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase ${getStatusClasses(
-        booking.status
-      )}`}
-    >
-      {booking.status || "-"}
-    </span>
-  </div>
+                <span
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase ${getStatusClasses(
+                    booking.status
+                  )}`}
+                >
+                  {booking.status || "-"}
+                </span>
+              </div>
 
-  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
-    <span>Service date: {formatDate(booking.service_date)}</span>
-    <span className="rounded-full border px-2 py-0.5 text-xs">
-      {booking.booking_code}
-    </span>
-  </div>
+              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                <span>Service date: {formatDate(booking.service_date)}</span>
+                <span className="rounded-full border px-2 py-0.5 text-xs">
+                  {booking.booking_code}
+                </span>
+              </div>
 
-  {isPaidPartner(booking.source) && (
-    <div className="rounded-2xl border border-green-300 bg-green-100 px-4 py-3 text-sm font-bold uppercase tracking-wide text-green-900">
-      Paid partner online · do not charge customer
-    </div>
-  )}
-</div>
+              {isPaidPartner(booking.source) && (
+                <div className="rounded-2xl border border-green-300 bg-green-100 px-4 py-3 text-sm font-bold uppercase tracking-wide text-green-900">
+                  Paid partner online · do not charge customer
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-{booking.status === "booked" && (
-  <>
-    <CheckInBookingButton
-      bookingId={booking.id}
-      currentStatus={booking.status}
-      serviceDate={booking.service_date}
-      checkInTime={booking.check_in_time}
-    />
-    <CancelBookingButton bookingId={booking.id} />
-  </>
-)}
+            {booking.status === "booked" && (
+              <>
+                <CheckInBookingButton
+                  bookingId={booking.id}
+                  currentStatus={booking.status}
+                  serviceDate={booking.service_date}
+                  checkInTime={booking.check_in_time}
+                />
+                <CancelBookingButton bookingId={booking.id} />
+              </>
+            )}
 
-{booking.status === "inside" && (
-  <FinishBookingButton
-    bookingId={booking.id}
-    currentStatus={booking.status}
-    checkOutTime={booking.check_out_time}
-  />
-)}
+            {booking.status === "inside" && (
+              <FinishBookingButton
+                bookingId={booking.id}
+                currentStatus={booking.status}
+                checkOutTime={booking.check_out_time}
+              />
+            )}
           </div>
         </div>
       </section>
@@ -257,140 +290,125 @@ const backLabel = cameFromAdmin
             </div>
 
             {bookingItems.length === 0 ? (
-              <p className="text-sm text-gray-500">No items linked to this booking.</p>
+              <p className="text-sm text-gray-500">
+                No items linked to this booking.
+              </p>
             ) : (
               <div className="space-y-3">
                 {bookingItems.map((item) => {
-  const productType = item.product_type?.toLowerCase().trim() ?? "";
-const title = item.title?.toLowerCase().trim() ?? "";
+                  const { showLuggageTimes, showShowerTime } =
+                    getItemFlags(item);
 
-const hasShower =
-  productType === "shower" ||
-  productType === "combo" ||
-  title.includes("shower") ||
-  title.includes("ducha") ||
-  title.includes("duche");
+                  return (
+                    <div key={item.id} className="rounded-2xl border p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="text-lg font-semibold">
+                            {item.title || item.product_type || "Item"}
 
-const hasLuggage =
-  productType === "luggage" ||
-  productType === "booking" ||
-  productType === "combo" ||
-  title.includes("luggage") ||
-  title.includes("equipaje") ||
-  title.includes("bag");
+                            {(item.product_type === "combo" ||
+                              item.product_type === "shower") &&
+                            !item.meta?.showerTime ? (
+                              <AddShowerTimeSelect
+                                bookingId={booking.id}
+                                itemId={item.id}
+                                serviceDate={booking.service_date}
+                                quantity={getRealShowerQuantity(item)}
+                              />
+                            ) : null}
+                          </div>
 
-const isCombo =
-  productType === "combo" ||
-  (hasShower && hasLuggage);
-
-const isShowerOnly = hasShower && !hasLuggage && !isCombo;
-
-const showLuggageTimes = hasLuggage || isCombo;
-const showShowerTime = hasShower;
-
-  return (
-    <div key={item.id} className="rounded-2xl border p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <div className="text-lg font-semibold">
-                          {item.title || item.product_type || "Item"}
-{(item.product_type === "combo" || item.product_type === "shower") &&
-!item.meta?.showerTime ? (
-  <AddShowerTimeSelect
-  bookingId={booking.id}
-  itemId={item.id}
-  serviceDate={booking.service_date}
-  quantity={getRealShowerQuantity(item)}
-/>
-) : null}
+                          <UpdateBookingItemQuantity
+                            bookingId={booking.id}
+                            itemId={item.id}
+                            quantity={item.quantity}
+                          />
                         </div>
-                        <UpdateBookingItemQuantity
-  bookingId={booking.id}
-  itemId={item.id}
-  quantity={item.quantity}
-/>
 
-                      </div>
-
-                      <div className="text-right">
-                        <div className="text-sm text-gray-500">Total</div>
-                        <div className="text-lg font-semibold">
-                          {Number(item.line_total ?? 0).toFixed(2)} €
+                        <div className="text-right">
+                          <div className="text-sm text-gray-500">Total</div>
+                          <div className="text-lg font-semibold">
+                            {Number(item.line_total ?? 0).toFixed(2)} €
+                          </div>
                         </div>
                       </div>
+
+                      <div className="mt-4 grid items-stretch gap-2 sm:grid-cols-3">
+                        <ChangeBookingItemProductSelect
+                          bookingId={booking.id}
+                          itemId={item.id}
+                          currentType={item.product_type}
+                          title={item.title}
+                        />
+
+                        {showLuggageTimes && (
+                          <>
+                            <InlineEditTime
+                              bookingId={booking.id}
+                              itemId={item.id}
+                              label="Drop-off"
+                              field="dropOffTime"
+                              value={item.meta?.dropOffTime}
+                            />
+
+                            <InlineEditTime
+                              bookingId={booking.id}
+                              itemId={item.id}
+                              label="Pick-up"
+                              field="pickUpTime"
+                              value={item.meta?.pickUpTime}
+                            />
+                          </>
+                        )}
+
+                        {showShowerTime && (
+                          <InlineEditTime
+                            bookingId={booking.id}
+                            itemId={item.id}
+                            label="Shower"
+                            field="showerTime"
+                            value={item.meta?.showerTime}
+                            showerQuantity={getRealShowerQuantity(item)}
+                            serviceDate={booking.service_date}
+                          />
+                        )}
+                      </div>
+
+                      {item.meta?.breakdown &&
+                        item.meta.breakdown.length > 0 && (
+                          <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                            <div className="mb-2 text-sm font-semibold">
+                              Details
+                            </div>
+
+                            <div className="space-y-2 text-sm">
+                              {item.meta.breakdown.map((b, index) => (
+                                <div
+                                  key={index}
+                                  className="flex justify-between gap-3"
+                                >
+                                  <span>
+                                    {b.label} × {b.quantity}
+                                  </span>
+                                  <span>
+                                    {Number(b.totalPrice).toFixed(2)} €
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                     </div>
-
-
-<div className="mt-4 grid gap-2 sm:grid-cols-3 items-stretch">
-<ChangeBookingItemProductSelect
-  bookingId={booking.id}
-  itemId={item.id}
-  currentType={item.product_type}
-  title={item.title}
-/>
-
-  {showLuggageTimes && (
-  <>
-    <InlineEditTime
-      bookingId={booking.id}
-      itemId={item.id}
-      label="Drop-off"
-      field="dropOffTime"
-      value={item.meta?.dropOffTime}
-    />
-
-    <InlineEditTime
-      bookingId={booking.id}
-      itemId={item.id}
-      label="Pick-up"
-      field="pickUpTime"
-      value={item.meta?.pickUpTime}
-    />
-  </>
-)}
-
-{showShowerTime && (
-  <InlineEditTime
-    bookingId={booking.id}
-    itemId={item.id}
-    label="Shower"
-    field="showerTime"
-    value={item.meta?.showerTime}
-    showerQuantity={getRealShowerQuantity(item)}
-    serviceDate={booking.service_date}
-  />
-)}
-</div>
-
-{item.meta?.breakdown && item.meta.breakdown.length > 0 && (
-  <div className="mt-4 rounded-2xl bg-gray-50 p-4">
-    <div className="mb-2 text-sm font-semibold">
-      Details
-    </div>
-    <div className="space-y-2 text-sm">
-      {item.meta.breakdown.map((b, index) => (
-        <div
-          key={index}
-          className="flex justify-between gap-3"
-        >
-          <span>
-            {b.label} × {b.quantity}
-          </span>
-          <span>{Number(b.totalPrice).toFixed(2)} €</span>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-</div>
-);
-})}
+                  );
+                })}
+              </div>
+            )}
           </section>
 
-                    <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
+          <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
             <h2 className="text-2xl font-bold">Customer</h2>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 items-stretch">
+            <div className="mt-4 grid items-stretch gap-2 sm:grid-cols-2">
               <InfoCard label="Name" value={booking.customer_name || "-"} />
 
               <InlineEditBookingField
@@ -411,7 +429,11 @@ const showShowerTime = hasShower;
                 bookingId={booking.id}
                 label="Email"
                 field="customer_email"
-                value={booking.source === "viator" ? "-" : booking.customer_email || "-"}
+                value={
+                  booking.source === "viator"
+                    ? "-"
+                    : booking.customer_email || "-"
+                }
               />
             </div>
           </section>
@@ -440,14 +462,17 @@ const showShowerTime = hasShower;
                 label="Created at"
                 value={formatDateTime(booking.created_at)}
               />
+
               <InfoCard
                 label="Actual check-in"
                 value={formatDateTime(booking.check_in_time)}
               />
+
               <InfoCard
                 label="Actual check-out"
                 value={formatDateTime(booking.check_out_time)}
               />
+
               <InfoCard
                 label="Source"
                 value={
