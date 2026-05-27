@@ -208,27 +208,27 @@ export async function updateBookingItemQuantity({
 
   if (quantity < 1) return;
 
-const {
-  data: { user },
-} = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-if (!user) {
-  throw new Error("Not authenticated");
-}
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
 
-const { data: profile, error: profileError } = await supabase
-  .from("profiles")
-  .select("role")
-  .eq("id", user.id)
-  .single();
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
-if (profileError) {
-  throw new Error(profileError.message);
-}
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
 
-if (!profile || !["admin", "desk"].includes(profile.role)) {
-  throw new Error("Unauthorized");
-}
+  if (!profile || !["admin", "desk"].includes(profile.role)) {
+    throw new Error("Unauthorized");
+  }
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
@@ -239,19 +239,20 @@ if (!profile || !["admin", "desk"].includes(profile.role)) {
 
   if (itemError) throw new Error(itemError.message);
 
-if (
-  profile.role === "desk" &&
-  item.product_type !== "booking" &&
-  item.product_type !== "luggage"
-) {
-  throw new Error("Desk can only edit luggage quantities.");
-}
+  if (
+    profile.role === "desk" &&
+    item.product_type !== "booking" &&
+    item.product_type !== "luggage"
+  ) {
+    throw new Error("Desk can only edit luggage quantities.");
+  }
 
   const unitPrice = Number(item.unit_price || 0);
   const newLineTotal = unitPrice * quantity;
 
   let newMeta = item.meta || {};
 
+  if (item.product_type === "combo") {
     newMeta = {
       ...newMeta,
       breakdown: [
@@ -275,7 +276,6 @@ if (
     .eq("id", itemId)
     .eq("booking_id", bookingId);
 
-  // 👉 recalcular booking total
   const { data: items } = await supabase
     .from("booking_items")
     .select("line_total")
