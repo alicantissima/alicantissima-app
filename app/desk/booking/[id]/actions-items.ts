@@ -91,7 +91,6 @@ export async function updateBookingItemTime({
 if (profile.role === "desk" && field === "showerTime") {
   throw new Error("Desk cannot edit shower times.");
 }
-  }
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
