@@ -307,6 +307,24 @@ export async function updateBookingItemShowerTime({
 }: UpdateShowerTimeInput) {
   const supabase = await createClient();
 
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) {
+  throw new Error("Not authenticated");
+}
+
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("role")
+  .eq("id", user.id)
+  .single();
+
+if (profile?.role === "desk") {
+  throw new Error("Desk cannot edit shower times.");
+}
+
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
     .select("meta")
