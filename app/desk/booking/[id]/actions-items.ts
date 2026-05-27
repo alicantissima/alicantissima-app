@@ -85,12 +85,17 @@ export async function updateBookingItemTime({
   }
 
   if (!profile || !["admin", "desk"].includes(profile.role)) {
-    throw new Error("Unauthorized");
+  throw new Error("Unauthorized");
+}
+
+if (profile.role === "desk" && field === "showerTime") {
+  throw new Error("Desk cannot edit shower times.");
+}
   }
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
-    .select("id, booking_id, quantity, meta")
+    .select("id, booking_id, quantity, product_type, meta")
     .eq("id", itemId)
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -102,6 +107,13 @@ export async function updateBookingItemTime({
   if (!item) {
     throw new Error("Booking item not found or access blocked");
   }
+
+if (
+  profile.role === "desk" &&
+  (item.product_type === "shower" || item.product_type === "combo")
+) {
+  throw new Error("Desk cannot edit shower or combo times.");
+}
 
   const currentMeta =
     item.meta && typeof item.meta === "object" && !Array.isArray(item.meta)
