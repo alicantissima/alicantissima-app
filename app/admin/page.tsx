@@ -530,12 +530,28 @@ export default async function AdminPage({
 
   const bookingIds = (bookings ?? []).map((b) => b.id);
 
-  const { data: items } = bookingIds.length
-    ? await supabase
-        .from("booking_items")
-        .select("booking_id, quantity, line_total, title, product_type, meta")
-        .in("booking_id", bookingIds)
-    : { data: [] };
+let items: BookingItemRow[] = [];
+
+if (bookingIds.length > 0) {
+  const chunkSize = 100;
+
+  for (let i = 0; i < bookingIds.length; i += chunkSize) {
+    const chunk = bookingIds.slice(i, i + chunkSize);
+
+    const { data, error } = await supabase
+      .from("booking_items")
+      .select("booking_id, quantity, line_total, title, product_type, meta")
+      .in("booking_id", chunk);
+
+    if (error) {
+      console.error("booking_items chunk error:", error);
+    }
+
+    if (data) {
+      items = [...items, ...(data as BookingItemRow[])];
+    }
+  }
+}
 
   const bookingMetaMap = new Map<string, BookingMetaSummary>();
 
