@@ -9,6 +9,7 @@ import { sendPushToAll } from "@/lib/push/send-push";
 import {
   getShowerDurationMinutes,
   getShowerEndTime,
+  timeToMinutes,
 } from "@/lib/showers";
 
 type CheckoutItem = {
@@ -929,6 +930,99 @@ return {
     const supabase = createAdminClient();
     const bookingCode = generateBookingCode();
     const serviceDate = getServiceDateFromItems(items);
+
+const showerItems = items.filter(
+  (item) =>
+    (item.productType === "shower" ||
+      item.productType === "combo") &&
+    typeof item.meta?.showerTime === "string"
+);
+
+for (const item of showerItems) {
+  const meta = item.meta ?? {};
+
+  const showerTime =
+    typeof meta.showerTime === "string"
+      ? meta.showerTime
+      : "";
+
+  if (!showerTime) continue;
+
+  const showerQuantity = Number(
+    meta.showerQuantity || item.quantity || 1
+  );
+
+  const requestedStart =
+    timeToMinutes(showerTime);
+
+  const requestedEnd =
+    timeToMinutes(
+      getShowerEndTime(
+        showerTime,
+        showerQuantity
+      )
+    );
+
+  const { data: existingItems } = await supabase
+    .from("booking_items")
+    .select(`
+      quantity,
+      meta,
+      bookings!inner (
+        status,
+        service_date
+      )
+    `)
+    .eq("bookings.service_date", serviceDate)
+    .not(
+      "bookings.status",
+      "in",
+      '("cancelled","no_show")'
+    );
+
+  const hasConflict =
+    (existingItems ?? []).some((existing) => {
+      const existingMeta =
+        (existing.meta as Record<string, unknown>) ?? {};
+
+      const existingTime =
+        typeof existingMeta.showerTime === "string"
+          ? existingMeta.showerTime
+          : "";
+
+      if (!existingTime) return false;
+
+      const existingQuantity = Number(
+        existingMeta.showerQuantity ||
+          existing.quantity ||
+          1
+      );
+
+      const existingStart =
+        timeToMinutes(existingTime);
+
+      const existingEnd =
+        timeToMinutes(
+          getShowerEndTime(
+            existingTime,
+            existingQuantity
+          )
+        );
+
+      return (
+        requestedStart < existingEnd &&
+        existingStart < requestedEnd
+      );
+    });
+
+  if (hasConflict) {
+    return {
+      ok: false,
+      error:
+        "This shower slot was just booked by another customer.",
+    };
+  }
+}
 
     const { data: booking, error: bookingError } = await supabase
   .from("bookings")
