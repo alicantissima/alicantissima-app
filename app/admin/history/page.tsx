@@ -339,13 +339,7 @@ export default async function AdminHistoryPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  const bookingIds = (bookings ?? []).map((b) => b.id);
-
-  const { data: items } = bookingIds.length
-    ? await supabase
-        .from("booking_items")
-        .select("booking_id, quantity, line_total, title, product_type, meta")
-        .in("booking_id", bookingIds)
+  v
     : { data: [] };
 
   const bookingMetaMap = new Map<string, BookingMetaSummary>();
