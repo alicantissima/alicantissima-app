@@ -371,6 +371,13 @@ export default function CheckoutClient() {
     <p className="text-sm text-zinc-600 dark:text-zinc-300">
       Duration: {getShowerDurationLabel(getCheckoutShowerQuantity(item))}
     </p>
+
+    {item.showerQuantity ? (
+      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+        Reserved for: {Number(item.showerQuantity)}{" "}
+        {Number(item.showerQuantity) === 1 ? "person" : "people"}
+      </p>
+    ) : null}
   </>
 )}
 
