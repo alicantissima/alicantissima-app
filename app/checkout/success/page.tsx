@@ -14,7 +14,6 @@ type BookingItem = {
   line_total: number;
   product_type: string | null;
   meta: {
-    meta: {
   date?: string;
   dropOffTime?: string | null;
   pickUpTime?: string | null;
