@@ -4,6 +4,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import InstallAppButton from "@/components/install-app-button";
+import Link from "next/link";
 
 type SuccessSearchParams = Promise<{ code?: string }>;
 
@@ -336,6 +337,16 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
             height={240}
           />
         </div>
+
+<div className="mt-6 text-center">
+  <Link
+    href="/"
+    className="inline-flex rounded-xl border border-zinc-900 bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+  >
+    Back home
+  </Link>
+</div>
+
       </section>
 
       <section className="mx-auto mt-8 max-w-xl rounded-[22px] border border-zinc-300 bg-white p-5 text-center text-zinc-900 shadow-sm">
