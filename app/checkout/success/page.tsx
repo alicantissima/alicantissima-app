@@ -193,7 +193,17 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
     ? item.meta.breakdown
     : [];
   const hasBreakdown = breakdown.length > 0;
+
+  const showerQuantity = Number(
+    item.meta?.showerQuantity || item.quantity || 1
+  );
+
+  const showerDurationMinutes = Number(
+    item.meta?.showerDurationMinutes || 0
+  );
+
   return (
+
     <div
       key={item.id}
       className="border-b border-zinc-300 pb-5 last:border-b-0 last:pb-0"
@@ -256,22 +266,6 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
             <strong>{t.estimatedPickUpLabel}</strong> {pickUpTime}
           </p>
         )}
-
-        {showerTime && (
-
-const showerQuantity = Number(
-  item.meta?.showerQuantity || item.quantity || 1
-);
-
-const showerDurationMinutes = Number(
-  item.meta?.showerDurationMinutes || 0
-);
-
-{showerTime && (
-  <p>
-    <strong>{t.showerTimeLabel}</strong> {showerTime}
-  </p>
-)}
 
 {showerQuantity > 0 && (
   <p>
