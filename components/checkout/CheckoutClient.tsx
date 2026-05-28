@@ -338,9 +338,29 @@ export default function CheckoutClient() {
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-zinc-900 dark:text-white">
-                    {item.quantity} × {item.productName}
-                  </p>
+                  {Array.isArray(item.breakdown) && item.breakdown.length > 0 ? (
+  <div className="space-y-1">
+    {item.breakdown.map((part, partIndex) => {
+      const breakdownPart = part as {
+        label?: string;
+        quantity?: number;
+      };
+
+      return (
+        <p
+          key={partIndex}
+          className="font-semibold text-zinc-900 dark:text-white"
+        >
+          {Number(breakdownPart.quantity || 0)} × {breakdownPart.label}
+        </p>
+      );
+    })}
+  </div>
+) : (
+  <p className="font-semibold text-zinc-900 dark:text-white">
+    {item.quantity} × {item.productName}
+  </p>
+)}
 
                   <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     {t.dateLabel} {item.date}
