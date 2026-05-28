@@ -92,9 +92,9 @@ function getReservedForPeople(item: {
 }) {
   const metaShowerQuantity = Number(item.meta?.showerQuantity);
 
-  if (Number.isFinite(metaShowerQuantity) && metaShowerQuantity > 0) {
-    return metaShowerQuantity;
-  }
+if (Number.isFinite(metaShowerQuantity) && metaShowerQuantity > 0) {
+  return metaShowerQuantity;
+}
 
   const breakdown = getBreakdown(item.meta);
 
