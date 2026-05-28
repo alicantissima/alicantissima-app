@@ -90,14 +90,28 @@ function getReservedForPeople(item: {
   quantity: number;
   meta?: Record<string, unknown>;
 }) {
+  const metaShowerQuantity = Number(item.meta?.showerQuantity);
+
+  if (Number.isFinite(metaShowerQuantity) && metaShowerQuantity > 0) {
+    return metaShowerQuantity;
+  }
+
   const breakdown = getBreakdown(item.meta);
 
   if (breakdown.length > 0) {
-    const showerPart = breakdown.find((part) =>
-      part.label.toLowerCase().includes("shower")
-    );
+    return breakdown.reduce((sum, part) => {
+      const label = part.label.toLowerCase();
 
-    if (showerPart) return showerPart.quantity;
+      if (
+        label.includes("shower") ||
+        label.includes("duche") ||
+        label.includes("ducha")
+      ) {
+        return sum + Number(part.quantity || 0);
+      }
+
+      return sum;
+    }, 0);
   }
 
   return item.quantity;
