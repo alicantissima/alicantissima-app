@@ -14,12 +14,16 @@ type BookingItem = {
   line_total: number;
   product_type: string | null;
   meta: {
-    date?: string;
-    dropOffTime?: string | null;
-    pickUpTime?: string | null;
-    showerTime?: string | null;
-    comments?: string | null;
-    breakdown?: Array<{
+    meta: {
+  date?: string;
+  dropOffTime?: string | null;
+  pickUpTime?: string | null;
+  showerTime?: string | null;
+  showerEndTime?: string | null;
+  showerQuantity?: number;
+  showerDurationMinutes?: number;
+  comments?: string | null;
+  breakdown?: Array<{
       label: string;
       quantity: number;
       unitPrice: number;
@@ -267,16 +271,20 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
           </p>
         )}
 
-{showerQuantity > 0 && (
+{showerTime && (
   <p>
-    <strong>Reserved for:</strong>{" "}
-    {showerQuantity === 1
-      ? "1 person"
-      : `${showerQuantity} people`}
+    <strong>{t.showerTimeLabel}</strong> {showerTime}
   </p>
 )}
 
-{showerDurationMinutes > 0 && (
+{showerTime && showerQuantity > 0 && (
+  <p>
+    <strong>Reserved for:</strong>{" "}
+    {showerQuantity === 1 ? "1 person" : `${showerQuantity} people`}
+  </p>
+)}
+
+{showerTime && showerDurationMinutes > 0 && (
   <p>
     <strong>Total group duration:</strong>{" "}
     {showerDurationMinutes === 60
@@ -284,17 +292,6 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
       : `${showerDurationMinutes} minutes`}
   </p>
 )}
-
-          <p>
-            <strong>{t.showerTimeLabel}</strong> {showerTime}
-          </p>
-        )}
-
-        {comments && (
-          <p>
-            <strong>{t.commentsLabel}:</strong> {comments}
-          </p>
-        )}
       </div>
     </div>
   );
