@@ -7,6 +7,7 @@ export type BookingBreakdownItem = {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  showerQuantity?: number;
 };
 
 export type BookingItem = {
