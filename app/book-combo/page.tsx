@@ -284,12 +284,15 @@ useEffect(() => {
 clearItems();
 
     addItem({
-      productCode: "combo",
-      productName: t.bookComboProductName,
-      quantity: comboQty,
-      date,
-      dropOffTime,
-      showerTime,
+  productCode: "combo",
+  productName: t.bookComboProductName,
+  quantity: comboQty,
+
+  showerQuantity: totalShowerPeople,
+
+  date,
+  dropOffTime,
+  showerTime,
       comments: comments.trim() || undefined,
       unitPrice: comboPrice,
       totalPrice,
