@@ -24,12 +24,12 @@ type BookingItem = {
   showerDurationMinutes?: number;
   comments?: string | null;
   breakdown?: Array<{
-      label: string;
-      quantity: number;
-      unitPrice: number;
-      totalPrice: number;
-    }>;
-  } | null;
+    label: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }>;
+} | null;
 };
 
 function getBaseUrl() {
