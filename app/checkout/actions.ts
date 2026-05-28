@@ -906,11 +906,18 @@ const showerTime =
 const shouldApplyShowerDuration =
   (productType === "shower" || productType === "combo") && showerTime;
 
+const showerQuantity = Number(
+  currentMeta.showerQuantity || quantity || 1
+);
+
 const meta = shouldApplyShowerDuration
   ? {
       ...currentMeta,
-      showerDurationMinutes: getShowerDurationMinutes(quantity),
-      showerEndTime: getShowerEndTime(showerTime, quantity),
+      showerQuantity,
+      showerDurationMinutes:
+        getShowerDurationMinutes(showerQuantity),
+      showerEndTime:
+        getShowerEndTime(showerTime, showerQuantity),
     }
   : currentMeta;
 

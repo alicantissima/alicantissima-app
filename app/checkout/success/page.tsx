@@ -258,6 +258,39 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
         )}
 
         {showerTime && (
+
+const showerQuantity = Number(
+  item.meta?.showerQuantity || item.quantity || 1
+);
+
+const showerDurationMinutes = Number(
+  item.meta?.showerDurationMinutes || 0
+);
+
+{showerTime && (
+  <p>
+    <strong>{t.showerTimeLabel}</strong> {showerTime}
+  </p>
+)}
+
+{showerQuantity > 0 && (
+  <p>
+    <strong>Reserved for:</strong>{" "}
+    {showerQuantity === 1
+      ? "1 person"
+      : `${showerQuantity} people`}
+  </p>
+)}
+
+{showerDurationMinutes > 0 && (
+  <p>
+    <strong>Total group duration:</strong>{" "}
+    {showerDurationMinutes === 60
+      ? "1 hour"
+      : `${showerDurationMinutes} minutes`}
+  </p>
+)}
+
           <p>
             <strong>{t.showerTimeLabel}</strong> {showerTime}
           </p>
