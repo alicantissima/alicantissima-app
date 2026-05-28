@@ -335,16 +335,38 @@ export default async function AdminHistoryPage() {
   }
 
   const { data: bookings } = await supabase
-    .from("bookings")
-    .select("*")
-    .order("created_at", { ascending: false });
+  .from("bookings")
+  .select("*")
+  .order("created_at", { ascending: false });
 
-  v
-    : { data: [] };
+const bookingIds = ((bookings as BookingRow[]) ?? []).map((b) => b.id);
+
+let items: BookingItemRow[] = [];
+
+if (bookingIds.length > 0) {
+  const chunkSize = 100;
+
+  for (let i = 0; i < bookingIds.length; i += chunkSize) {
+    const chunk = bookingIds.slice(i, i + chunkSize);
+
+    const { data, error } = await supabase
+      .from("booking_items")
+      .select("booking_id, quantity, line_total, title, product_type, meta")
+      .in("booking_id", chunk);
+
+    if (error) {
+      console.error("history booking_items chunk error:", error);
+    }
+
+    if (data) {
+      items = [...items, ...(data as BookingItemRow[])];
+    }
+  }
+}
 
   const bookingMetaMap = new Map<string, BookingMetaSummary>();
 
-  for (const item of ((items as BookingItemRow[]) ?? [])) {
+  for (const item of items) {
     const current = bookingMetaMap.get(item.booking_id) ?? emptyMeta();
     const code = getItemCode(item);
 
@@ -474,8 +496,7 @@ for (const key of sourceKeys) {
 
 for (const booking of historyBookings) {
   const currentSource = booking.source ?? "choose";
-  const bookingItems =
-    (items as BookingItemRow[])?.filter((item) => item.booking_id === booking.id) ?? [];
+  const bookingItems = items.filter((item) => item.booking_id === booking.id);
 
   const computedRevenue = bookingItems.reduce(
     (sum, item) => sum + Number(item.line_total ?? 0),
