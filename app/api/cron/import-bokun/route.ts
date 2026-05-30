@@ -103,6 +103,20 @@ console.log("Parsed Bokun email", {
           continue;
         }
 
+const productType =
+  parsed.product === "combo" ||
+  parsed.product === "shower" ||
+  parsed.product === "luggage"
+    ? parsed.product
+    : "luggage";
+
+const productTitle =
+  productType === "combo"
+    ? "Luggage + Shower"
+    : productType === "shower"
+    ? "Shower"
+    : "Luggage Storage";
+
         const bookingInsert: Record<string, unknown> = {
   booking_code: parsed.bookingCode,
   customer_name:
@@ -150,15 +164,15 @@ console.log("Inserted booking row", bookingRow);
         };
 
         const { error: itemError } = await supabase
-          .from("booking_items")
-          .insert({
-            booking_id: bookingRow.id,
-            title: parsed.product || "Viator booking",
-            quantity: parsed.quantity ?? 1,
-            line_total: parsed.viatorAmount ?? 0,
-            product_type: "luggage",
-            meta: itemMeta,
-          });
+  .from("booking_items")
+  .insert({
+    booking_id: bookingRow.id,
+    title: productTitle,
+    quantity: parsed.quantity ?? 1,
+    line_total: parsed.viatorAmount ?? 0,
+    product_type: productType,
+    meta: itemMeta,
+  });
 
         if (itemError) {
           throw itemError;
