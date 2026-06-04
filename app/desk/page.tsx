@@ -497,7 +497,9 @@ const today = sortDeskByShowerTimeThenLuggage(
 );
 
 const finished = (finishedQuery.data ?? []) as BookingRow[];
-const tomorrow = (tomorrowQuery.data ?? []) as BookingRow[];
+const tomorrow = sortDeskByShowerTimeThenLuggage(
+  (tomorrowQuery.data ?? []) as BookingRow[]
+);
 
   return (
     <main className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col gap-6 p-4 md:p-6">
