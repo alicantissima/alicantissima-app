@@ -496,7 +496,12 @@ const today = sortDeskByShowerTimeThenLuggage(
   (todayQuery.data ?? []) as BookingRow[]
 );
 
-const finished = (finishedQuery.data ?? []) as BookingRow[];
+const finished = ((finishedQuery.data ?? []) as BookingRow[]).sort((a, b) => {
+  const aTime = a.check_out_time ? new Date(a.check_out_time).getTime() : 0;
+  const bTime = b.check_out_time ? new Date(b.check_out_time).getTime() : 0;
+
+  return bTime - aTime;
+});
 const tomorrow = sortDeskByShowerTimeThenLuggage(
   (tomorrowQuery.data ?? []) as BookingRow[]
 );
