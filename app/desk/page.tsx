@@ -115,6 +115,58 @@ function formatDeskTime(value?: string | null) {
     .replace("h", ":");
 }
 
+function getDeskSortableTime(value?: string | null) {
+  if (!value) return "99:99";
+
+  return value
+    .trim()
+    .split("-")[0]
+    ?.trim()
+    .replace("H", "h")
+    .replace("h", ":") || "99:99";
+}
+
+function getDeskShowerSortTime(booking: BookingRow) {
+  const items = booking.booking_items ?? [];
+
+  for (const item of items) {
+    const meta = item.meta ?? {};
+    const title = item.title?.toLowerCase() ?? "";
+    const productType = item.product_type?.toLowerCase() ?? "";
+
+    const isShowerBooking =
+      Boolean(meta.showerTime) ||
+      productType === "shower" ||
+      productType === "combo" ||
+      title.includes("shower") ||
+      title.includes("combo");
+
+    if (isShowerBooking && meta.showerTime) {
+      return meta.showerTime;
+    }
+  }
+
+  return null;
+}
+
+function sortDeskByShowerTimeThenLuggage(bookings: BookingRow[]) {
+  return bookings.sort((a, b) => {
+    const aShowerTime = getDeskShowerSortTime(a);
+    const bShowerTime = getDeskShowerSortTime(b);
+
+    if (aShowerTime && bShowerTime) {
+      return getDeskSortableTime(aShowerTime).localeCompare(
+        getDeskSortableTime(bShowerTime)
+      );
+    }
+
+    if (aShowerTime && !bShowerTime) return -1;
+    if (!aShowerTime && bShowerTime) return 1;
+
+    return 0;
+  });
+}
+
 function getDeskShowerSummary(booking: BookingRow) {
   const items = booking.booking_items ?? [];
 
@@ -423,10 +475,16 @@ export default async function DeskPage() {
         .order("created_at", { ascending: true }),
     ]);
 
-  const inside = (insideQuery.data ?? []) as BookingRow[];
-  const today = (todayQuery.data ?? []) as BookingRow[];
-  const finished = (finishedQuery.data ?? []) as BookingRow[];
-  const tomorrow = (tomorrowQuery.data ?? []) as BookingRow[];
+  const inside = sortDeskByShowerTimeThenLuggage(
+  (insideQuery.data ?? []) as BookingRow[]
+);
+
+const today = sortDeskByShowerTimeThenLuggage(
+  (todayQuery.data ?? []) as BookingRow[]
+);
+
+const finished = (finishedQuery.data ?? []) as BookingRow[];
+const tomorrow = (tomorrowQuery.data ?? []) as BookingRow[];
 
   return (
     <main className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col gap-6 p-4 md:p-6">
