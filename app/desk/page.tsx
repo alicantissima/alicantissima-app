@@ -8,13 +8,19 @@ import DeskQrScanner from "@/components/desk-qr-scanner";
 import LogoutButton from "@/components/logout-button";
 import EnablePushButton from "@/components/enable-push-button";
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 type BookingItemRow = {
   quantity: number;
   product_type?: string | null;
   title?: string | null;
   meta?: {
-    showerTime?: string | null;
-    showerEndTime?: string | null;
+  showerTime?: string | null;
+  shower_time?: string | null;
+  showerStartTime?: string | null;
+  shower_start_time?: string | null;
+  showerEndTime?: string | null;
     showerDurationMinutes?: number | null;
     breakdown?: Array<{
       label?: string;
@@ -134,15 +140,22 @@ function getDeskShowerSortTime(booking: BookingRow) {
     const title = item.title?.toLowerCase() ?? "";
     const productType = item.product_type?.toLowerCase() ?? "";
 
+    const showerTime =
+      meta.showerTime ||
+      meta.shower_time ||
+      meta.showerStartTime ||
+      meta.shower_start_time ||
+      null;
+
     const isShowerBooking =
-      Boolean(meta.showerTime) ||
+      Boolean(showerTime) ||
       productType === "shower" ||
       productType === "combo" ||
       title.includes("shower") ||
       title.includes("combo");
 
-    if (isShowerBooking && meta.showerTime) {
-      return meta.showerTime;
+    if (isShowerBooking && showerTime) {
+      return showerTime;
     }
   }
 
