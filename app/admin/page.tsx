@@ -98,6 +98,30 @@ function getSortableTime(value?: string | null) {
   return getFirstTimeSlot(value).replace("h", ":");
 }
 
+function sortByShowerTimeThenLuggage(
+  bookings: BookingRow[],
+  bookingMetaMap: Map<string, BookingMetaSummary>
+) {
+  return bookings.sort((a, b) => {
+    const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
+    const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
+
+    const aShowerTime = aMeta.shower_time;
+    const bShowerTime = bMeta.shower_time;
+
+    if (aShowerTime && bShowerTime) {
+      return getSortableTime(aShowerTime).localeCompare(
+        getSortableTime(bShowerTime)
+      );
+    }
+
+    if (aShowerTime && !bShowerTime) return -1;
+    if (!aShowerTime && bShowerTime) return 1;
+
+    return 0;
+  });
+}
+
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("pt-PT", {
     style: "currency",
@@ -857,19 +881,8 @@ if (isUpcoming(date)) {
 }
   }
 
-  insideBookings.sort((a, b) => {
-    const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
-    const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
-
-    const aOut = getSortableTime(
-      aMeta.time_out || aMeta.pick_up || aMeta.shower_time || aMeta.checkout_time
-    );
-    const bOut = getSortableTime(
-      bMeta.time_out || bMeta.pick_up || bMeta.shower_time || bMeta.checkout_time
-    );
-
-    return aOut.localeCompare(bOut);
-  });
+  sortByShowerTimeThenLuggage(todayBookings, bookingMetaMap);
+sortByShowerTimeThenLuggage(insideBookings, bookingMetaMap);
 
   finishedBookings.sort((a, b) => {
     const aTime = a.check_out_time ? new Date(a.check_out_time).getTime() : 0;
