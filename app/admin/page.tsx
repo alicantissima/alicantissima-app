@@ -46,7 +46,10 @@ type BookingItemRow = {
     dropOffTime?: string | null;
     pickUpTime?: string | null;
     showerTime?: string | null;
-    comments?: string | null;
+shower_time?: string | null;
+showerStartTime?: string | null;
+shower_start_time?: string | null;
+comments?: string | null;
     breakdown?: Array<{
       label: string;
       quantity: number;
@@ -98,6 +101,19 @@ function getSortableTime(value?: string | null) {
   return getFirstTimeSlot(value).replace("h", ":");
 }
 
+function getAdminShowerSortTime(meta: BookingMetaSummary) {
+  const hasShower = meta.showers > 0 || meta.combo > 0;
+
+  if (!hasShower) return null;
+
+  return (
+    meta.shower_time ||
+    meta.time_out ||
+    meta.checkout_time ||
+    null
+  );
+}
+
 function sortByShowerTimeThenLuggage(
   bookings: BookingRow[],
   bookingMetaMap: Map<string, BookingMetaSummary>
@@ -106,8 +122,8 @@ function sortByShowerTimeThenLuggage(
     const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
     const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
 
-    const aShowerTime = aMeta.shower_time;
-    const bShowerTime = bMeta.shower_time;
+    const aShowerTime = getAdminShowerSortTime(aMeta);
+    const bShowerTime = getAdminShowerSortTime(bMeta);
 
     if (aShowerTime && bShowerTime) {
       return getSortableTime(aShowerTime).localeCompare(
@@ -118,7 +134,9 @@ function sortByShowerTimeThenLuggage(
     if (aShowerTime && !bShowerTime) return -1;
     if (!aShowerTime && bShowerTime) return 1;
 
-    return 0;
+    return getSortableTime(aMeta.time_in || aMeta.drop_off).localeCompare(
+      getSortableTime(bMeta.time_in || bMeta.drop_off)
+    );
   });
 }
 
@@ -642,9 +660,18 @@ if (bookingIds.length > 0) {
         : current.pick_up;
 
     const showerTime =
-      typeof item.meta?.showerTime === "string"
-        ? item.meta.showerTime
-        : current.shower_time;
+  typeof item.meta?.showerTime === "string" && item.meta.showerTime.trim() !== ""
+    ? item.meta.showerTime
+    : typeof item.meta?.shower_time === "string" &&
+      item.meta.shower_time.trim() !== ""
+    ? item.meta.shower_time
+    : typeof item.meta?.showerStartTime === "string" &&
+      item.meta.showerStartTime.trim() !== ""
+    ? item.meta.showerStartTime
+    : typeof item.meta?.shower_start_time === "string" &&
+      item.meta.shower_start_time.trim() !== ""
+    ? item.meta.shower_start_time
+    : current.shower_time;
 
     bookingMetaMap.set(item.booking_id, {
       bags,
