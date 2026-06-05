@@ -911,7 +911,6 @@ if (isUpcoming(date)) {
   sortByShowerTimeThenLuggage(todayBookings, bookingMetaMap);
 sortByShowerTimeThenLuggage(insideBookings, bookingMetaMap);
 sortByShowerTimeThenLuggage(tomorrowBookings, bookingMetaMap);
-sortByShowerTimeThenLuggage(upcomingBookings, bookingMetaMap);
 
   finishedBookings.sort((a, b) => {
     const aTime = a.check_out_time ? new Date(a.check_out_time).getTime() : 0;
