@@ -5,10 +5,9 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { submitCheckout } from "@/app/checkout/actions";
+import { submitCheckout as submitCheckoutAction } from "@/app/checkout/actions";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
-import { submitCheckout } from "@/app/checkout/actions";
 import {
   getShowerDurationMinutes,
   getShowerEndTime,
@@ -196,7 +195,7 @@ export default function CheckoutClient() {
     };
 
     startTransition(async () => {
-      const result = await submitCheckout(payload);
+      const result = await submitCheckoutAction(payload);
 
       if (!result.ok) {
         setError(result.error ?? t.checkoutError);
