@@ -90,8 +90,6 @@ function getMadridHour() {
   );
 }
 
-v
-
 function formatDeskTime(value?: string | null) {
   if (!value) return "";
 
