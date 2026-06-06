@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { submitCheckout } from "@/app/checkout/actions";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
+import { submitCheckout } from "@/app/checkout/actions";
 import {
   getShowerDurationMinutes,
   getShowerEndTime,

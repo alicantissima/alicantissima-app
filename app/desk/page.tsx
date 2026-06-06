@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import DeskQrScanner from "@/components/desk-qr-scanner";
 import LogoutButton from "@/components/logout-button";
@@ -12,6 +13,7 @@ export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
 type BookingItemRow = {
+  id: string;
   quantity: number;
   product_type?: string | null;
   title?: string | null;
@@ -21,12 +23,14 @@ type BookingItemRow = {
   showerStartTime?: string | null;
   shower_start_time?: string | null;
   showerEndTime?: string | null;
-    showerDurationMinutes?: number | null;
-    breakdown?: Array<{
-      label?: string;
-      quantity?: number;
-    }>;
-  } | null;
+  showerDone?: boolean | null;
+  shower_done?: boolean | null;
+  showerDurationMinutes?: number | null;
+  breakdown?: Array<{
+    label?: string;
+    quantity?: number;
+  }>;
+} | null;
 };
 
 type BookingRow = {
@@ -105,6 +109,60 @@ function getSourceBadge(source?: string | null) {
     );
   }
 
+async function toggleShowerDone(formData: FormData) {
+  "use server";
+
+  const bookingItemId = String(formData.get("bookingItemId") || "");
+  const nextValue = String(formData.get("nextValue") || "") === "true";
+
+  if (!bookingItemId) return;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "desk")) {
+    return;
+  }
+
+  const { data: item } = await supabase
+    .from("booking_items")
+    .select("id, meta")
+    .eq("id", bookingItemId)
+    .single();
+
+  if (!item) return;
+
+  const currentMeta =
+    item.meta && typeof item.meta === "object" && !Array.isArray(item.meta)
+      ? item.meta
+      : {};
+
+  await supabase
+    .from("booking_items")
+    .update({
+      meta: {
+        ...currentMeta,
+        showerDone: nextValue,
+        shower_done: nextValue,
+      },
+    })
+    .eq("id", bookingItemId);
+
+  revalidatePath("/desk");
+  revalidatePath("/admin");
+}
+
   return (
     <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-700">
       {s}
@@ -160,6 +218,41 @@ function getDeskShowerSortTime(booking: BookingRow) {
   }
 
   return null;
+}
+
+function getDeskShowerDoneItem(booking: BookingRow) {
+  const items = booking.booking_items ?? [];
+
+  for (const item of items) {
+    const meta = item.meta ?? {};
+    const title = item.title?.toLowerCase() ?? "";
+    const productType = item.product_type?.toLowerCase() ?? "";
+
+    const hasShower =
+      Boolean(
+        meta.showerTime ||
+          meta.shower_time ||
+          meta.showerStartTime ||
+          meta.shower_start_time
+      ) ||
+      productType === "shower" ||
+      productType === "combo" ||
+      title.includes("shower") ||
+      title.includes("combo");
+
+    if (hasShower) {
+      return item;
+    }
+  }
+
+  return null;
+}
+
+function isDeskShowerDone(booking: BookingRow) {
+  const item = getDeskShowerDoneItem(booking);
+  const meta = item?.meta ?? {};
+
+  return Boolean(meta.showerDone || meta.shower_done);
 }
 
 function sortDeskByShowerTimeThenLuggage(bookings: BookingRow[]) {
@@ -347,7 +440,9 @@ function DeskTable({
             <tbody>
               {rows.map((booking) => {
                 const bagSummary = getDeskBagSummary(booking);
-                const showerSummary = getDeskShowerSummary(booking);
+const showerSummary = getDeskShowerSummary(booking);
+const showerDoneItem = getDeskShowerDoneItem(booking);
+const showerDone = isDeskShowerDone(booking);
 
                 return (
                   <tr
@@ -393,10 +488,38 @@ function DeskTable({
                           )}
 
                           {showerSummary && (
-                            <span className="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
-                              {showerSummary}
-                            </span>
-                          )}
+  <span
+    className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+      showerDone
+        ? "bg-green-100 text-green-800"
+        : "bg-blue-50 text-blue-700"
+    }`}
+  >
+    {showerSummary}
+  </span>
+)}
+
+{showerSummary && showerDoneItem && (
+  <form action={toggleShowerDone}>
+    <input type="hidden" name="bookingItemId" value={showerDoneItem.id} />
+    <input
+      type="hidden"
+      name="nextValue"
+      value={showerDone ? "false" : "true"}
+    />
+
+    <button
+      type="submit"
+      className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+        showerDone
+          ? "bg-green-600 text-white"
+          : "bg-gray-900 text-white"
+      }`}
+    >
+      {showerDone ? "Undo shw" : "Shw done"}
+    </button>
+  </form>
+)}
                         </div>
                       </Link>
                     </td>
@@ -449,11 +572,12 @@ export default async function DeskPage() {
     service_date,
     source,
     booking_items (
-      quantity,
-      product_type,
-      title,
-      meta
-    )
+  id,
+  quantity,
+  product_type,
+  title,
+  meta
+)
   `;
 
   const [insideQuery, todayQuery, finishedQuery, tomorrowQuery] =
