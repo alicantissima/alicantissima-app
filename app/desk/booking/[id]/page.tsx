@@ -4,6 +4,7 @@
 import BookingQr from "@/components/booking-qr";
 import { createClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import CancelBookingButton from "@/components/cancel-booking-button";
 import CheckInBookingButton from "@/components/check-in-booking-button";
 import FinishBookingButton from "@/components/finish-booking-button";
@@ -38,7 +39,9 @@ type BookingItem = {
     showerQuantity?: number | null;
     showerDurationMinutes?: number | null;
     showerEndTime?: string | null;
-    breakdown?: Array<{
+showerDone?: boolean | null;
+shower_done?: boolean | null;
+breakdown?: Array<{
       label: string;
       quantity: number;
       unitPrice: number;
@@ -169,6 +172,73 @@ function getItemFlags(item: BookingItem) {
   };
 }
 
+function getShowerDoneItem(items: BookingItem[]) {
+  return items.find((item) => {
+    const flags = getItemFlags(item);
+
+    return flags.showShowerTime;
+  });
+}
+
+function isShowerDone(item?: BookingItem | null) {
+  return Boolean(item?.meta?.showerDone || item?.meta?.shower_done);
+}
+
+async function toggleShowerDone(formData: FormData) {
+  "use server";
+
+  const bookingId = String(formData.get("bookingId") || "");
+  const bookingItemId = String(formData.get("bookingItemId") || "");
+  const nextValue = String(formData.get("nextValue") || "") === "true";
+
+  if (!bookingId || !bookingItemId) return;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "desk")) {
+    return;
+  }
+
+  const { data: item } = await supabase
+    .from("booking_items")
+    .select("id, meta")
+    .eq("id", bookingItemId)
+    .single();
+
+  if (!item) return;
+
+  const currentMeta =
+    item.meta && typeof item.meta === "object" && !Array.isArray(item.meta)
+      ? item.meta
+      : {};
+
+  await supabase
+    .from("booking_items")
+    .update({
+      meta: {
+        ...currentMeta,
+        showerDone: nextValue,
+        shower_done: nextValue,
+      },
+    })
+    .eq("id", bookingItemId);
+
+  revalidatePath("/desk");
+  revalidatePath(`/desk/booking/${bookingId}`);
+}
+
 export default async function DeskBookingPage({
   params,
   searchParams,
@@ -210,7 +280,10 @@ export default async function DeskBookingPage({
 
   const bookingItems = (bookingItemsData ?? []) as BookingItem[];
 
-  const backHref = cameFromAdmin ? "/admin" : "/desk";
+const showerDoneItem = getShowerDoneItem(bookingItems);
+const showerDone = isShowerDone(showerDoneItem);
+
+const backHref = cameFromAdmin ? "/admin" : "/desk";
   const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
 
   return (
@@ -269,12 +342,37 @@ export default async function DeskBookingPage({
             )}
 
             {booking.status === "inside" && (
-              <FinishBookingButton
-                bookingId={booking.id}
-                currentStatus={booking.status}
-                checkOutTime={booking.check_out_time}
-              />
-            )}
+  <>
+    {showerDoneItem && (
+      <form action={toggleShowerDone}>
+        <input type="hidden" name="bookingId" value={booking.id} />
+        <input type="hidden" name="bookingItemId" value={showerDoneItem.id} />
+        <input
+          type="hidden"
+          name="nextValue"
+          value={showerDone ? "false" : "true"}
+        />
+
+        <button
+          type="submit"
+          className={`inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold shadow-sm transition ${
+            showerDone
+              ? "border border-green-700 bg-green-600 text-white hover:bg-green-700"
+              : "border border-gray-900 bg-gray-900 text-white hover:bg-gray-800"
+          }`}
+        >
+          {showerDone ? "Undo shw" : "Shw done"}
+        </button>
+      </form>
+    )}
+
+    <FinishBookingButton
+      bookingId={booking.id}
+      currentStatus={booking.status}
+      checkOutTime={booking.check_out_time}
+    />
+  </>
+)}
           </div>
         </div>
       </section>
