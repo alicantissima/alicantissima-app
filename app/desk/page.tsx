@@ -3,7 +3,6 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import DeskQrScanner from "@/components/desk-qr-scanner";
 import LogoutButton from "@/components/logout-button";
@@ -114,60 +113,6 @@ function getSourceBadge(source?: string | null) {
       {s}
     </span>
   );
-}
-
-async function toggleShowerDone(formData: FormData) {
-  "use server";
-
-  const bookingItemId = String(formData.get("bookingItemId") || "");
-  const nextValue = String(formData.get("nextValue") || "") === "true";
-
-  if (!bookingItemId) return;
-
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || (profile.role !== "admin" && profile.role !== "desk")) {
-    return;
-  }
-
-  const { data: item } = await supabase
-    .from("booking_items")
-    .select("id, meta")
-    .eq("id", bookingItemId)
-    .single();
-
-  if (!item) return;
-
-  const currentMeta =
-    item.meta && typeof item.meta === "object" && !Array.isArray(item.meta)
-      ? item.meta
-      : {};
-
-  await supabase
-    .from("booking_items")
-    .update({
-      meta: {
-        ...currentMeta,
-        showerDone: nextValue,
-        shower_done: nextValue,
-      },
-    })
-    .eq("id", bookingItemId);
-
-  revalidatePath("/desk");
-  revalidatePath("/admin");
 }
 
 function formatDeskTime(value?: string | null) {
@@ -441,7 +386,6 @@ function DeskTable({
               {rows.map((booking) => {
                 const bagSummary = getDeskBagSummary(booking);
 const showerSummary = getDeskShowerSummary(booking);
-const showerDoneItem = getDeskShowerDoneItem(booking);
 const showerDone = isDeskShowerDone(booking);
 
                 return (
@@ -499,27 +443,6 @@ const showerDone = isDeskShowerDone(booking);
   </span>
 )}
 
-{showerSummary && showerDoneItem && (
-  <form action={toggleShowerDone}>
-    <input type="hidden" name="bookingItemId" value={showerDoneItem.id} />
-    <input
-      type="hidden"
-      name="nextValue"
-      value={showerDone ? "false" : "true"}
-    />
-
-    <button
-      type="submit"
-      className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-        showerDone
-          ? "bg-green-600 text-white"
-          : "bg-gray-900 text-white"
-      }`}
-    >
-      {showerDone ? "Undo shw" : "Shw done"}
-    </button>
-  </form>
-)}
                         </div>
                       </Link>
                     </td>
