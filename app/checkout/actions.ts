@@ -942,6 +942,102 @@ function normalizeSource(value?: string) {
   return "site";
 }
 
+export async function finalizePaidBookingByPaymentReference(paymentReference: string) {
+  const supabase = createAdminClient();
+
+  const { data: booking, error: bookingError } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("payment_reference", paymentReference)
+    .maybeSingle();
+
+  if (bookingError) throw bookingError;
+  if (!booking) return { ok: false, error: "Booking not found." };
+
+  if (booking.payment_status !== "paid") {
+    const { error: updateError } = await supabase
+      .from("bookings")
+      .update({
+        status: "booked",
+        payment_status: "paid",
+        paid_at: new Date().toISOString(),
+      })
+      .eq("id", booking.id);
+
+    if (updateError) throw updateError;
+  }
+
+  const { data: bookingItems, error: itemsError } = await supabase
+    .from("booking_items")
+    .select("*")
+    .eq("booking_id", booking.id);
+
+  if (itemsError) throw itemsError;
+
+  const appBaseUrl = (
+    process.env.APP_BASE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://app.alicantissima.es"
+  ).replace(/\/$/, "");
+
+  const customerBookingUrl = `${appBaseUrl}/b/${booking.booking_code}`;
+  const adminBookingUrl = `${appBaseUrl}/admin/booking/${booking.id}`;
+  const qrCodeUrl = getQrCodeUrl(customerBookingUrl);
+
+  const items = (bookingItems ?? []).map((item) => ({
+    title: item.title,
+    quantity: Number(item.quantity || 1),
+    unitPrice: Number(item.unit_price || 0),
+    totalPrice: Number(item.line_total || 0),
+    productType: item.product_type,
+    meta: (item.meta as Record<string, unknown>) ?? {},
+  }));
+
+  await sendBookingConfirmationEmail({
+    customerName: booking.customer_name,
+    customerEmail: booking.customer_email,
+    bookingCode: booking.booking_code,
+    bookingUrl: customerBookingUrl,
+    qrCodeUrl,
+    items,
+    totalAmount: Number(booking.total_amount || 0),
+    notes: booking.notes,
+    language: booking.language,
+  });
+
+  await sendInternalBookingNotification({
+    customerName: booking.customer_name,
+    customerCity: booking.city,
+    customerEmail: booking.customer_email,
+    customerPhone: booking.customer_phone,
+    bookingCode: booking.booking_code,
+    bookingUrl: adminBookingUrl,
+    qrCodeUrl,
+    items,
+    totalAmount: Number(booking.total_amount || 0),
+    notes: booking.notes,
+  });
+
+  const firstItem = items[0];
+
+  const time =
+    typeof firstItem?.meta?.dropOffTime === "string"
+      ? firstItem.meta.dropOffTime
+      : typeof firstItem?.meta?.showerTime === "string"
+        ? firstItem.meta.showerTime
+        : "";
+
+  await sendPushToAll({
+    title: "Nova reserva paga Alicantíssima 💳",
+    body: `${booking.booking_code} · ${firstItem?.title || "Booking"}${
+      time ? ` · ${time}` : ""
+    } · €${Number(booking.total_amount || 0).toFixed(2)}`,
+    url: `/desk/booking/${booking.id}`,
+  });
+
+  return { ok: true, bookingCode: booking.booking_code };
+}
+
 export async function submitCheckout(payload: CheckoutPayload) {
   try {
     const customerName = payload.customerName?.trim();

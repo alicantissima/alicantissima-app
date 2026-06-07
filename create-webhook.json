@@ -1,0 +1,6 @@
+
+
+{
+  "url": "https://app.alicantissima.es/api/revolut/webhook",
+  "events": ["ORDER_COMPLETED", "ORDER_AUTHORISED"]
+}
