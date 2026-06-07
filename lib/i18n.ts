@@ -251,7 +251,7 @@ const messages: Record<AppLanguage, Messages> = {
   bookingPassTitle: "Pase de reserva Alicantissima",
   showAtReception: "Muestra esta pantalla en recepción para un check-in más rápido.",
   checkInQr: "Código QR de check-in",
-  paymentOnSite: "paymentOnSite: "Pago online realizado correctamente.",
+  paymentOnSite: "Pago online realizado correctamente.",
 
   back: "Volver",
   backToProductMenu: "Volver al menú de servicios",
