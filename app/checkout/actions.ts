@@ -849,6 +849,88 @@ async function sendInternalBookingNotification(params: {
   });
 }
 
+function getAppBaseUrl() {
+  return (
+    process.env.APP_BASE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://app.alicantissima.es"
+  ).replace(/\/$/, "");
+}
+
+function getCancelUntil(items: Array<{ meta?: Record<string, unknown> }>) {
+  const first = items[0];
+  const date = first?.meta?.date;
+  const time =
+    typeof first?.meta?.showerTime === "string"
+      ? first.meta.showerTime
+      : typeof first?.meta?.dropOffTime === "string"
+        ? first.meta.dropOffTime
+        : "10:00";
+
+  if (typeof date !== "string") return null;
+
+  const normalizedTime = time.replace("h", ":").split("-")[0];
+  const cancelDate = new Date(`${date}T${normalizedTime}:00`);
+  if (Number.isNaN(cancelDate.getTime())) return null;
+
+  cancelDate.setHours(cancelDate.getHours() - 24);
+  return cancelDate.toISOString();
+}
+
+async function createRevolutOrder(params: {
+  amount: number;
+  bookingCode: string;
+  customerEmail: string;
+  customerName: string;
+  language: string;
+}) {
+  const secretKey = process.env.REVOLUT_SECRET_KEY;
+
+  if (!secretKey) {
+    throw new Error("REVOLUT_SECRET_KEY is missing.");
+  }
+
+  const appBaseUrl = getAppBaseUrl();
+  const amountInCents = Math.round(params.amount * 100);
+
+  const response = await fetch("https://merchant.revolut.com/api/orders", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      "Content-Type": "application/json",
+      "Revolut-Api-Version": "2024-09-01",
+    },
+    body: JSON.stringify({
+      amount: amountInCents,
+      currency: "EUR",
+      description: `Alicantissima booking ${params.bookingCode}`,
+      redirect_url: `${appBaseUrl}/checkout/success?code=${encodeURIComponent(
+        params.bookingCode
+      )}&lang=${encodeURIComponent(params.language)}`,
+      merchant_order_data: {
+        reference: params.bookingCode,
+      },
+      metadata: {
+        bookingCode: params.bookingCode,
+        customerEmail: params.customerEmail,
+        customerName: params.customerName,
+      },
+    }),
+    cache: "no-store",
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(`Revolut order error: ${response.status} ${JSON.stringify(data)}`);
+  }
+
+  return {
+    orderId: data?.id as string,
+    checkoutUrl: data?.checkout_url as string,
+  };
+}
+
 function normalizeSource(value?: string) {
   const source = (value || "").trim().toLowerCase();
 
@@ -1057,8 +1139,12 @@ for (const item of showerItems) {
     total_amount: totalAmount,
     currency: "EUR",
     source,
-    payment_method: "unpaid",
-    status: "booked",
+    payment_method: "revolut",
+status: "pending_payment",
+payment_status: "pending_payment",
+payment_provider: "revolut",
+cancel_until: getCancelUntil(items),
+payment_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
     service_date: serviceDate,
     language,
   })
@@ -1109,6 +1195,41 @@ for (const item of showerItems) {
 const customerBookingUrl = `${appBaseUrl}/b/${booking.booking_code}`;
 const adminBookingUrl = `${appBaseUrl}/admin/booking/${booking.id}`;
 const qrCodeUrl = getQrCodeUrl(customerBookingUrl);
+
+let revolutOrder: { orderId: string; checkoutUrl: string };
+
+try {
+  revolutOrder = await createRevolutOrder({
+    amount: totalAmount,
+    bookingCode: booking.booking_code,
+    customerEmail,
+    customerName,
+    language,
+  });
+} catch (revolutError) {
+  console.error("revolut order error:", revolutError);
+
+  await supabase.from("bookings").delete().eq("id", booking.id);
+
+  return {
+    ok: false,
+    error: "Could not start online payment.",
+  };
+}
+
+await supabase
+  .from("bookings")
+  .update({
+    payment_reference: revolutOrder.orderId,
+    payment_url: revolutOrder.checkoutUrl,
+  })
+  .eq("id", booking.id);
+
+return {
+  ok: true,
+  bookingCode: booking.booking_code,
+  checkoutUrl: revolutOrder.checkoutUrl,
+};
 
     try {
   await sendBookingConfirmationEmail({

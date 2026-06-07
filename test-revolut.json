@@ -1,0 +1,10 @@
+
+
+
+{
+  "amount": 18,
+  "currency": "EUR",
+  "bookingCode": "ALI-TESTE",
+  "customerEmail": "test@test.com",
+  "customerName": "Pedro"
+}
