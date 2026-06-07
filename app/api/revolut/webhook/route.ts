@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { finalizePaidBookingByPaymentReference } from "@/app/checkout/actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -123,26 +124,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const { error: updateError } = await supabase
-      .from("bookings")
-      .update({
-        status: "booked",
-        payment_status: "paid",
-        paid_at: new Date().toISOString(),
-      })
-      .eq("id", booking.id);
+    const result = await finalizePaidBookingByPaymentReference(orderId);
 
-    if (updateError) {
-      console.error("Revolut webhook update booking error:", updateError);
-      return NextResponse.json({ ok: false, error: "Booking update failed." }, { status: 500 });
-    }
+return NextResponse.json({
+  ok: true,
+  orderId,
+  eventName,
+  result,
+});
 
-    return NextResponse.json({
-      ok: true,
-      bookingCode: booking.booking_code,
-      orderId,
-      eventName,
-    });
   } catch (error) {
     console.error("Revolut webhook error:", error);
 
