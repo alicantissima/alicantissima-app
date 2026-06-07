@@ -202,17 +202,13 @@ export default function CheckoutClient() {
         return;
       }
 
-      clearItems();
+      if (result.checkoutUrl) {
+  clearItems();
+  window.location.href = result.checkoutUrl;
+  return;
+}
 
-      const successParams = new URLSearchParams();
-      successParams.set("code", result.bookingCode);
-      successParams.set("lang", language);
-
-      if (source === "walkin") {
-        successParams.set("source", "walkin");
-      }
-
-      router.push(`/checkout/success?${successParams.toString()}`);
+setError("Could not start payment.");
     });
   }
 
