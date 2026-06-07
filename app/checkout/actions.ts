@@ -1231,10 +1231,6 @@ return {
   checkoutUrl: revolutOrder.checkoutUrl,
 };
 
-    return {
-      ok: true,
-      bookingCode: booking.booking_code,
-    };
   } catch (error) {
     console.error("submitCheckout error:", error);
 
