@@ -106,8 +106,6 @@ export async function GET(req: NextRequest) {
   );
 }
 
-const supabase = createAdminClient();
-
 const { data, error } = await supabase
   .from("booking_items")
   .select(
@@ -117,15 +115,17 @@ const { data, error } = await supabase
     product_type,
     title,
     meta,
-    bookings!inner (
+    booking:bookings!inner (
       id,
       status,
-      service_date
+      service_date,
+      payment_status,
+      payment_expires_at
     )
   `
   )
-  .eq("bookings.service_date", date)
-  .not("bookings.status", "in", '("cancelled","no_show")');
+  .eq("booking.service_date", date)
+  .not("booking.status", "in", '("cancelled","no_show","completed")');
 
     if (error) {
       console.error("showers availability error:", error);
@@ -135,9 +135,36 @@ const { data, error } = await supabase
       );
     }
 
-    const existingRanges =
-  data
-    ?.filter((item) => {
+    const nowIso = new Date().toISOString();
+
+const activeItems =
+  data?.filter((item: any) => {
+    const booking = item.booking;
+
+    if (!booking) return false;
+
+    const status = booking.status;
+    const paymentStatus = booking.payment_status;
+    const paymentExpiresAt = booking.payment_expires_at;
+
+    if (
+      status === "cancelled" ||
+      status === "no_show" ||
+      status === "completed"
+    ) {
+      return false;
+    }
+
+    if (status === "pending_payment" || paymentStatus === "pending_payment") {
+      return Boolean(paymentExpiresAt && paymentExpiresAt > nowIso);
+    }
+
+    return status === "booked" || status === "inside";
+  }) ?? [];
+
+const existingRanges =
+  activeItems
+    .filter((item) => {
       const meta = item.meta as Record<string, unknown> | null;
       return typeof meta?.showerTime === "string" && meta.showerTime;
     })
@@ -147,7 +174,7 @@ const { data, error } = await supabase
         meta: item.meta as Record<string, unknown> | null,
       })
     )
-    .filter((value) => value !== null) ?? [];
+    .filter((value) => value !== null);
 
     const requestedDuration = getShowerDurationMinutes(quantity);
 
