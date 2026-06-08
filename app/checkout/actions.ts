@@ -1243,7 +1243,7 @@ payment_provider: isWalkin ? "walkin" : "revolut",
 cancel_until: isWalkin ? null : getCancelUntil(items),
 payment_expires_at: isWalkin
   ? null
-  : new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+  : new Date(Date.now() + 10 * 60 * 1000).toISOString(),
 service_date: serviceDate || new Date().toISOString().split("T")[0],
 language,
   })
