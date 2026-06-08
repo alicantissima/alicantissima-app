@@ -1047,6 +1047,7 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const notes = payload.notes?.trim() || null;
     const language = normalizeLanguage(payload.language);
     const source = normalizeSource(payload.source);
+    const isWalkin = source === "walkin";
 
     if (!customerName) {
       return { ok: false, error: "Missing name." };
@@ -1235,14 +1236,14 @@ for (const item of showerItems) {
     total_amount: totalAmount,
     currency: "EUR",
     source,
-    payment_method: "revolut",
-status: "pending_payment",
-payment_status: "pending_payment",
-payment_provider: "revolut",
-cancel_until: getCancelUntil(items),
-payment_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-    service_date: serviceDate,
-    language,
+    payment_method: isWalkin ? "unpaid" : "revolut",
+status: isWalkin ? "booked" : "pending_payment",
+payment_status: isWalkin ? "unpaid" : "pending_payment",
+payment_provider: isWalkin ? "walkin" : "revolut",
+cancel_until: isWalkin ? null : getCancelUntil(items),
+payment_expires_at: isWalkin
+  ? null
+  : new Date(Date.now() + 15 * 60 * 1000).toISOString(),
   })
   .select("id, booking_code")
   .single();
@@ -1291,6 +1292,13 @@ payment_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
 const customerBookingUrl = `${appBaseUrl}/b/${booking.booking_code}`;
 const adminBookingUrl = `${appBaseUrl}/admin/booking/${booking.id}`;
 const qrCodeUrl = getQrCodeUrl(customerBookingUrl);
+
+if (isWalkin) {
+  return {
+    ok: true,
+    bookingCode: booking.booking_code,
+  };
+}
 
 let revolutOrder: { orderId: string; checkoutUrl: string };
 
