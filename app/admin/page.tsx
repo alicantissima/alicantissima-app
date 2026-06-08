@@ -751,16 +751,18 @@ if (bookingIds.length > 0) {
   };
 
   const paymentTodayCounts: Record<PaymentKey, number> = {
-    card: 0,
-    cash: 0,
-    viator: 0,
-  };
+  card: 0,
+  cash: 0,
+  revolut: 0,
+  viator: 0,
+};
 
-  const paymentTodayRevenue: Record<PaymentKey, number> = {
-    card: 0,
-    cash: 0,
-    viator: 0,
-  };
+const paymentTodayRevenue: Record<PaymentKey, number> = {
+  card: 0,
+  cash: 0,
+  revolut: 0,
+  viator: 0,
+};
 
   const citiesTodayCounts: Record<string, number> = {};
 
