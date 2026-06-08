@@ -106,6 +106,8 @@ export async function GET(req: NextRequest) {
   );
 }
 
+const supabase = createAdminClient();
+
 const { data, error } = await supabase
   .from("booking_items")
   .select(
