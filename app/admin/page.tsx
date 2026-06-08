@@ -448,10 +448,15 @@ const bookingHref = `/desk/booking/${booking.id}?back=admin`;
                   title={`Open booking ${booking.booking_code}`}
                 >
                   <td className="whitespace-nowrap text-[12px] align-top">
-                    <Link href={bookingHref} className={cellLinkClass}>
-                      {formatServiceDate(getBookingDate(booking, meta))}
-                    </Link>
-                  </td>
+  <Link href={bookingHref} className={cellLinkClass}>
+    <div className="leading-tight">
+      {formatServiceDate(getBookingDate(booking, meta))}
+    </div>
+    <div className="mt-1 text-[11px] leading-tight text-gray-500">
+      {booking.booking_code}
+    </div>
+  </Link>
+</td>
 
                   <td className="align-top">
                     <Link href={bookingHref} className={cellLinkClass}>
