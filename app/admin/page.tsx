@@ -776,7 +776,6 @@ if (bookingIds.length > 0) {
   isToday(bookingDate) &&
   normalizedStatus !== "cancelled" &&
   normalizedStatus !== "no_show" &&
-  normalizedStatus !== "completed" &&
   normalizedStatus !== "pending_payment"
 ) {
       const currentSource = (booking.source ?? "choose") as SourceKey;
