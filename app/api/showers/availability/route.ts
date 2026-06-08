@@ -60,16 +60,26 @@ function getExistingShowerRange(item: {
   const meta = item.meta ?? {};
 
   const showerTime =
-    typeof meta.showerTime === "string" ? meta.showerTime : "";
+    typeof meta.showerTime === "string" && meta.showerTime.trim()
+      ? meta.showerTime
+      : typeof meta.shower_time === "string" && meta.shower_time.trim()
+        ? meta.shower_time
+        : typeof meta.showerStartTime === "string" && meta.showerStartTime.trim()
+          ? meta.showerStartTime
+          : typeof meta.shower_start_time === "string" && meta.shower_start_time.trim()
+            ? meta.shower_start_time
+            : "";
 
   if (!showerTime) return null;
 
   const quantity = Number(meta.showerQuantity || item.quantity || 1);
 
   const showerEndTime =
-    typeof meta.showerEndTime === "string" && meta.showerEndTime
+    typeof meta.showerEndTime === "string" && meta.showerEndTime.trim()
       ? meta.showerEndTime
-      : getShowerEndTime(showerTime, quantity);
+      : typeof meta.shower_end_time === "string" && meta.shower_end_time.trim()
+        ? meta.shower_end_time
+        : getShowerEndTime(showerTime, quantity);
 
   const start = timeToMinutes(showerTime);
   const end = timeToMinutes(showerEndTime);
@@ -167,9 +177,15 @@ const activeItems =
 const existingRanges =
   activeItems
     .filter((item) => {
-      const meta = item.meta as Record<string, unknown> | null;
-      return typeof meta?.showerTime === "string" && meta.showerTime;
-    })
+  const meta = item.meta as Record<string, unknown> | null;
+
+  return Boolean(
+    (typeof meta?.showerTime === "string" && meta.showerTime.trim()) ||
+      (typeof meta?.shower_time === "string" && meta.shower_time.trim()) ||
+      (typeof meta?.showerStartTime === "string" && meta.showerStartTime.trim()) ||
+      (typeof meta?.shower_start_time === "string" && meta.shower_start_time.trim())
+  );
+})
     .map((item) =>
       getExistingShowerRange({
         quantity: item.quantity,
