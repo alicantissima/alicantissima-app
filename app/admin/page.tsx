@@ -163,6 +163,7 @@ function formatRealTime(value?: string | null) {
 function normalizeStatus(status: string) {
   if (status === "received") return "booked";
   if (status === "pending") return "booked";
+  if (status === "pending_payment") return "pending_payment";
   if (status === "inside") return "inside";
   if (status === "completed") return "completed";
   if (status === "finished") return "completed";
@@ -772,10 +773,12 @@ if (bookingIds.length > 0) {
       (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
 
     if (
-      isToday(bookingDate) &&
-      normalizedStatus !== "cancelled" &&
-      normalizedStatus !== "no_show"
-    ) {
+  isToday(bookingDate) &&
+  normalizedStatus !== "cancelled" &&
+  normalizedStatus !== "no_show" &&
+  normalizedStatus !== "completed" &&
+  normalizedStatus !== "pending_payment"
+) {
       const currentSource = (booking.source ?? "choose") as SourceKey;
       const bookingRevenue = Number(booking.total_amount || 0);
       const currentPayment = (booking.payment_method ?? "").toLowerCase() as PaymentKey;
@@ -895,16 +898,20 @@ function isUpcoming(date: string | null) {
     }
 
     if (status === "completed") {
-      if (isToday(date)) {
-        finishedBookings.push(booking);
-      }
-      continue;
-    }
+  if (isToday(date)) {
+    finishedBookings.push(booking);
+  }
+  continue;
+}
 
-    if (isToday(date)) {
-      todayBookings.push(booking);
-      continue;
-    }
+if (status === "pending_payment") {
+  continue;
+}
+
+if (isToday(date)) {
+  todayBookings.push(booking);
+  continue;
+}
 
     if (isTomorrow(date)) {
   tomorrowBookings.push(booking);
