@@ -205,12 +205,31 @@ export default function CheckoutClient() {
       if (result.checkoutUrl) {
   clearItems();
 
-  window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
+  if (window.top && window.top !== window.self) {
+    window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
+  } else {
+    window.location.href = result.checkoutUrl;
+  }
 
   return;
 }
 
-setError("Could not start payment.");
+if (result.bookingCode) {
+  clearItems();
+
+  const successParams = new URLSearchParams();
+  successParams.set("code", result.bookingCode);
+  successParams.set("lang", language);
+
+  if (source === "walkin") {
+    successParams.set("source", "walkin");
+  }
+
+  router.push(`/checkout/success?${successParams.toString()}`);
+  return;
+}
+
+setError("Could not complete booking.");
     });
   }
 
