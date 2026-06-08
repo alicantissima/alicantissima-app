@@ -12,7 +12,7 @@ type PaymentMethod =
   | "viator"
   | "card"
   | "cash"
-  | "online"
+  | "revolut"
   | "refunded"
   | "cancelled"
   | "missed_payment";
@@ -22,7 +22,7 @@ const OPTIONS: Array<{ value: PaymentMethod; label: string }> = [
   { value: "viator", label: "Viator" },
   { value: "card", label: "Card" },
   { value: "cash", label: "Cash" },
-  { value: "online", label: "Online" },
+  { value: "revolut", label: "Revolut" },
   { value: "refunded", label: "Refunded" },
   { value: "cancelled", label: "Cancelled" },
   { value: "missed_payment", label: "Missed payment" },

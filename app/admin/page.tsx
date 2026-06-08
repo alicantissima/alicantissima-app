@@ -721,7 +721,7 @@ if (bookingIds.length > 0) {
 
   type SourceKey = (typeof sourceKeys)[number];
 
-  const paymentKeys = ["card", "cash", "viator"] as const;
+  const paymentKeys = ["card", "cash", "revolut", "viator"] as const;
   type PaymentKey = (typeof paymentKeys)[number];
 
   const sourceTodayCounts: Record<SourceKey, number> = {
