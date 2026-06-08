@@ -167,11 +167,15 @@ const activeItems =
       return false;
     }
 
-    if (status === "pending_payment" || paymentStatus === "pending_payment") {
-      return Boolean(paymentExpiresAt && paymentExpiresAt > nowIso);
-    }
+    if (status === "booked" || status === "inside") {
+  return true;
+}
 
-    return status === "booked" || status === "inside";
+if (status === "pending_payment" || paymentStatus === "pending_payment") {
+  return Boolean(paymentExpiresAt && paymentExpiresAt > nowIso);
+}
+
+return false;
   }) ?? [];
 
 const existingRanges =
