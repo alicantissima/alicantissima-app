@@ -221,46 +221,59 @@ function sortDeskByShowerTimeThenLuggage(bookings: BookingRow[]) {
 function getDeskShowerSummary(booking: BookingRow) {
   const items = booking.booking_items ?? [];
 
-  const showerItems = items.filter((item) => {
-    const meta = item.meta ?? {};
-    const title = item.title?.toLowerCase() ?? "";
-    const productType = item.product_type?.toLowerCase() ?? "";
-
-    return (
-      Boolean(meta.showerTime) ||
-      productType === "shower" ||
-      productType === "combo" ||
-      title.includes("shower") ||
-      title.includes("combo")
-    );
-  });
-
-  if (!showerItems.length) return "";
-
   let totalShowers = 0;
   let showerStart = "";
   let showerEnd = "";
 
-  showerItems.forEach((item) => {
+  items.forEach((item) => {
     const quantity = Number(item.quantity || 0);
     const meta = item.meta ?? {};
+    const title = item.title?.toLowerCase() ?? "";
+    const productType = item.product_type?.toLowerCase() ?? "";
+
+    const hasShower =
+      Boolean(
+        meta.showerTime ||
+          meta.shower_time ||
+          meta.showerStartTime ||
+          meta.shower_start_time
+      ) ||
+      productType === "shower" ||
+      productType === "combo" ||
+      title.includes("shower") ||
+      title.includes("combo");
+
+    if (!hasShower) return;
 
     if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
-      const showerBreakdown = meta.breakdown.find((part) =>
-        String(part.label || "").toLowerCase().includes("shower")
-      );
+      meta.breakdown.forEach((part) => {
+        const label = String(part.label || "").toLowerCase();
 
-      if (showerBreakdown) {
-        totalShowers += Number(showerBreakdown.quantity || 0);
-      } else {
-        totalShowers += quantity;
-      }
+        if (
+          label.includes("shower") ||
+          label.includes("ducha") ||
+          label.includes("duche") ||
+          label.includes("douche") ||
+          label.includes("doccia") ||
+          label.includes("dusche") ||
+          label.includes("prysznic")
+        ) {
+          totalShowers += Number(part.quantity || 0);
+        }
+      });
     } else {
       totalShowers += quantity;
     }
 
-    if (!showerStart && meta.showerTime) {
-      showerStart = formatDeskTime(meta.showerTime);
+    const start =
+      meta.showerTime ||
+      meta.shower_time ||
+      meta.showerStartTime ||
+      meta.shower_start_time ||
+      "";
+
+    if (!showerStart && start) {
+      showerStart = formatDeskTime(start);
     }
 
     if (!showerEnd && meta.showerEndTime) {
@@ -284,6 +297,7 @@ function getDeskBagSummary(booking: BookingRow) {
   const items = booking.booking_items ?? [];
 
   let totalBags = 0;
+  let totalCombos = 0;
 
   items.forEach((item) => {
     const quantity = Number(item.quantity || 0);
@@ -291,43 +305,86 @@ function getDeskBagSummary(booking: BookingRow) {
     const title = item.title?.toLowerCase() ?? "";
     const productType = item.product_type?.toLowerCase() ?? "";
 
-    if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
-      let breakdownBags = 0;
+    const isCombo =
+      productType === "combo" ||
+      title.includes("combo") ||
+      title.includes("luggage + shower") ||
+      title.includes("luggage and shower") ||
+      title.includes("bag + shower") ||
+      title.includes("bag and shower");
 
+    if (isCombo) {
+      if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
+        const comboPart = meta.breakdown.find((part) => {
+          const label = String(part.label || "").toLowerCase();
+
+          return (
+            label.includes("luggage + shower") ||
+            label.includes("luggage and shower") ||
+            label.includes("bag + shower") ||
+            label.includes("bag and shower") ||
+            label.includes("combo")
+          );
+        });
+
+        totalCombos += Number(comboPart?.quantity || quantity);
+      } else {
+        totalCombos += quantity;
+      }
+
+      return;
+    }
+
+    if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
       meta.breakdown.forEach((part) => {
         const label = String(part.label || "").toLowerCase();
 
-        if (
+        const isBag =
           label.includes("luggage") ||
           label.includes("bag") ||
           label.includes("malas") ||
-          label.includes("mala")
-        ) {
-          breakdownBags += Number(part.quantity || 0);
+          label.includes("mala") ||
+          label.includes("equipaje") ||
+          label.includes("maleta");
+
+        const isShower =
+          label.includes("shower") ||
+          label.includes("ducha") ||
+          label.includes("duche") ||
+          label.includes("douche") ||
+          label.includes("doccia") ||
+          label.includes("dusche") ||
+          label.includes("prysznic");
+
+        if (isBag && !isShower) {
+          totalBags += Number(part.quantity || 0);
         }
       });
 
-      if (breakdownBags > 0) {
-        totalBags += breakdownBags;
-        return;
-      }
+      return;
     }
 
     if (
       productType === "luggage" ||
       productType === "booking" ||
-      productType === "combo" ||
       title.includes("luggage") ||
-      title.includes("bag") ||
-      title.includes("combo")
+      title.includes("bag")
     ) {
       totalBags += quantity;
     }
   });
 
-  if (!totalBags) return "";
+  const parts: string[] = [];
 
-  return `${totalBags} bag`;
+  if (totalCombos) {
+    parts.push(`${totalCombos} lug+shw`);
+  }
+
+  if (totalBags) {
+    parts.push(`${totalBags} bag`);
+  }
+
+  return parts.join(" · ");
 }
 
 function DeskTable({
