@@ -1164,24 +1164,48 @@ for (const item of showerItems) {
     );
 
   const { data: existingItems } = await supabase
-    .from("booking_items")
-    .select(`
-      quantity,
-      meta,
-      bookings!inner (
-        status,
-        service_date
-      )
-    `)
-    .eq("bookings.service_date", serviceDate)
-    .not(
-      "bookings.status",
-      "in",
-      '("cancelled","no_show")'
-    );
+  .from("booking_items")
+  .select(`
+    quantity,
+    meta,
+    booking:bookings!inner (
+      status,
+      service_date,
+      payment_status,
+      payment_expires_at
+    )
+  `)
+  .eq("booking.service_date", serviceDate)
+  .not(
+    "booking.status",
+    "in",
+    '("cancelled","no_show","completed")'
+  );
+
+const nowIso = new Date().toISOString();
+
+const activeExistingItems = (existingItems ?? []).filter((existing: any) => {
+  const booking = existing.booking;
+
+  if (!booking) return false;
+
+  const status = booking.status;
+  const paymentStatus = booking.payment_status;
+  const paymentExpiresAt = booking.payment_expires_at;
+
+  if (status === "cancelled" || status === "no_show" || status === "completed") {
+    return false;
+  }
+
+  if (status === "pending_payment" || paymentStatus === "pending_payment") {
+    return Boolean(paymentExpiresAt && paymentExpiresAt > nowIso);
+  }
+
+  return status === "booked" || status === "inside";
+});
 
   const hasConflict =
-    (existingItems ?? []).some((existing) => {
+  activeExistingItems.some((existing) => {
       const existingMeta =
         (existing.meta as Record<string, unknown>) ?? {};
 
