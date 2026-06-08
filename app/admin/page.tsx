@@ -1193,11 +1193,13 @@ const total = bookingsList.reduce(
           )
           .map((key) => {
             const colorClass =
-              key === "card"
-                ? "bg-blue-100 text-blue-800"
-                : key === "cash"
-                ? "bg-amber-100 text-amber-800"
-                : "bg-green-100 text-green-800";
+  key === "card"
+    ? "bg-blue-100 text-blue-800"
+    : key === "cash"
+    ? "bg-amber-100 text-amber-800"
+    : key === "revolut"
+    ? "bg-gray-950 text-white"
+    : "bg-green-100 text-green-800";
 
             return (
               <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
