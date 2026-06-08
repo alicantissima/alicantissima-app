@@ -357,6 +357,15 @@ function emptyMeta(): BookingMetaSummary {
   };
 }
 
+function getBookingDate(booking: BookingRow, meta: BookingMetaSummary) {
+  return (
+    booking.service_date ||
+    booking.booking_date ||
+    meta.date ||
+    null
+  );
+}
+
 function renderSectionTable({
   title,
   bookings,
@@ -439,7 +448,7 @@ const bookingHref = `/desk/booking/${booking.id}?back=admin`;
                 >
                   <td className="whitespace-nowrap text-[12px] align-top">
                     <Link href={bookingHref} className={cellLinkClass}>
-                      {formatServiceDate(meta.date)}
+                      {formatServiceDate(getBookingDate(booking, meta))}
                     </Link>
                   </td>
 
@@ -757,7 +766,7 @@ if (bookingIds.length > 0) {
   for (const booking of ((bookings as BookingRow[]) ?? [])) {
     const normalizedStatus = normalizeStatus(booking.status);
     const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-    const bookingDate = meta.date;
+    const bookingDate = getBookingDate(booking, meta);
 
     const itemsForBooking =
       (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
@@ -820,8 +829,8 @@ if (bookingIds.length > 0) {
     const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
     const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
 
-    const aDate = aMeta.date || a.created_at;
-    const bDate = bMeta.date || b.created_at;
+    const aDate = getBookingDate(a, aMeta) || a.created_at;
+const bDate = getBookingDate(b, bMeta) || b.created_at;
 
     return new Date(aDate).getTime() - new Date(bDate).getTime();
   });
@@ -870,7 +879,7 @@ function isUpcoming(date: string | null) {
 
   for (const booking of sortedBookings) {
     const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-    const date = meta.date;
+    const date = getBookingDate(booking, meta);
     const status = normalizeStatus(booking.status);
 
     if (status === "inside") {
