@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getGmailClient, getGmailUserId } from "@/lib/gmail";
 import { extractMessageText } from "@/lib/gmailMessageText";
 import { parseBokunEmail } from "@/lib/parseBokunEmail";
+import { sendPushToAll } from "@/lib/push/send-push";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -135,6 +136,14 @@ const productTitle =
   status: "booked",
   source: "viator",
   payment_method: "viator",
+  payment_status: "paid",
+  payment_provider: "viator",
+  payment_reference:
+    parsed.productBookingRef ||
+    parsed.bookingRef ||
+    parsed.extRef ||
+    parsed.bookingCode,
+  paid_at: new Date().toISOString(),
   service_date: parsed.serviceDate,
   language: "en",
   notes: "Imported automatically from Bokun/Gmail",
@@ -143,8 +152,8 @@ const productTitle =
         const { data: bookingRow, error: bookingError } = await supabase
           .from("bookings")
           .insert(bookingInsert)
-          .select("id")
-          .single();
+          .select("id, booking_code")
+.single();
 
 
         if (bookingError) {
@@ -177,6 +186,19 @@ console.log("Inserted booking row", bookingRow);
         if (itemError) {
           throw itemError;
         }
+
+const pushTime =
+  productType === "shower" || productType === "combo"
+    ? " · shower time pending"
+    : "";
+
+await sendPushToAll({
+  title: "Nova reserva Viator Alicantíssima 🟢",
+  body: `${parsed.bookingCode} · ${bookingInsert.customer_name} · ${productTitle} × ${
+    parsed.quantity ?? 1
+  }${pushTime} · €${Number(parsed.viatorAmount ?? 0).toFixed(2)}`,
+  url: `/desk/booking/${bookingRow.id}`,
+});
 
         created += 1;
             } catch (error: unknown) {
