@@ -205,11 +205,7 @@ export default function CheckoutClient() {
       if (result.checkoutUrl) {
   clearItems();
 
-  if (window.top && window.top !== window.self) {
-    window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
-  } else {
-    window.location.href = result.checkoutUrl;
-  }
+  window.location.assign(result.checkoutUrl);
 
   return;
 }
