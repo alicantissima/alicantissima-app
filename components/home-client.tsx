@@ -139,12 +139,6 @@ const products = forcedSource === "walkin" ? walkinProducts : defaultProducts;
           </section>
 
           <section className="mt-5">
-            <Link
-              href="/find-my-booking"
-              className="block rounded-[30px] bg-white px-6 py-4 text-center text-[0.96rem] font-bold uppercase tracking-[0.02em] text-slate-950 ring-1 ring-slate-200 shadow-[0_6px_18px_rgba(15,23,42,0.05)] transition hover:opacity-95 dark:bg-zinc-950 dark:text-white dark:ring-zinc-700"
-            >
-              Find my booking
-            </Link>
           </section>
         </div>
       </main>
