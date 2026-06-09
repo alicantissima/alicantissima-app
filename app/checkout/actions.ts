@@ -578,8 +578,6 @@ ${
     `
     : ""
 }
-            ${t.paymentOnSite}
-          </p>
 
           ${
             params.notes
