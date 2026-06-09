@@ -2,6 +2,7 @@
 
 
 import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-const body = await request.json().catch(() => ({}));
+    const body = await request.json().catch(() => ({}));
     console.log("REVOLUT BODY:", body);
 
     const amountInCents = toCents(body.amount);
@@ -96,11 +97,43 @@ const body = await request.json().catch(() => ({}));
       );
     }
 
+    const orderId = data?.id ? String(data.id) : "";
+    const checkoutUrl = data?.checkout_url ? String(data.checkout_url) : "";
+
+    if (bookingCode && orderId) {
+      const supabase = createAdminClient();
+
+      const { error: updateError } = await supabase
+        .from("bookings")
+        .update({
+          revolut_order_id: orderId,
+          revolut_checkout_url: checkoutUrl || null,
+          payment_status: "pending",
+          payment_method: "revolut",
+        })
+        .eq("booking_code", bookingCode);
+
+      if (updateError) {
+        console.error("Failed to save Revolut order on booking:", updateError);
+
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "Revolut order created, but failed to save it on booking.",
+            revolut_order_id: orderId,
+            checkout_url: checkoutUrl,
+            details: updateError.message,
+          },
+          { status: 500 }
+        );
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       order: data,
-      order_id: data?.id,
-      checkout_url: data?.checkout_url,
+      order_id: orderId,
+      checkout_url: checkoutUrl,
     });
   } catch (error) {
     console.error("Revolut create order error:", error);
