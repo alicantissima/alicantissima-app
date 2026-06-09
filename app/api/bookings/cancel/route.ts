@@ -5,6 +5,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+type CancelBookingRow = {
+  id: string;
+  booking_code: string;
+  status: string | null;
+  total_amount: number | string | null;
+  currency: string | null;
+  payment_status: string | null;
+  payment_provider: string | null;
+  payment_method: string | null;
+  payment_reference: string | null;
+  revolut_order_id: string | null;
+  cancel_until: string | null;
+  cancelled_at: string | null;
+  refund_status: string | null;
+  refunded_at: string | null;
+  cancellation_token: string | null;
+  cancellation_token_expires_at: string | null;
+};
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -95,30 +114,28 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: booking, error: bookingError } = await supabase
-      .from("bookings")
-      .select(
-        [
-          "id",
-          "booking_code",
-          "status",
-          "total_amount",
-          "currency",
-          "payment_status",
-          "payment_provider",
-          "payment_method",
-          "payment_reference",
-          "revolut_order_id",
-          "cancel_until",
-          "cancelled_at",
-          "refund_status",
-          "refunded_at",
-          "cancellation_token",
-          "cancellation_token_expires_at",
-        ].join(", ")
-      )
-      .eq("booking_code", bookingCode)
-      .eq("cancellation_token", token)
-      .maybeSingle();
+  .from("bookings")
+  .select(`
+    id,
+    booking_code,
+    status,
+    total_amount,
+    currency,
+    payment_status,
+    payment_provider,
+    payment_method,
+    payment_reference,
+    revolut_order_id,
+    cancel_until,
+    cancelled_at,
+    refund_status,
+    refunded_at,
+    cancellation_token,
+    cancellation_token_expires_at
+  `)
+  .eq("booking_code", bookingCode)
+  .eq("cancellation_token", token)
+  .maybeSingle<CancelBookingRow>();
 
     if (bookingError) {
       console.error("Cancel booking lookup error:", bookingError);
