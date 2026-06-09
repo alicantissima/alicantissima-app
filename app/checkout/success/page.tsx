@@ -87,6 +87,83 @@ function formatTimeRange(value?: string | null) {
     .replace(/(\d{2}):(\d{2})-(\d{2}):(\d{2})/, "$1:$2 – $3:$4");
 }
 
+async function retrieveRevolutOrder(orderId: string) {
+  const secretKey = process.env.REVOLUT_SECRET_KEY;
+
+  if (!secretKey) {
+    throw new Error("REVOLUT_SECRET_KEY is missing.");
+  }
+
+  const response = await fetch(
+    `https://merchant.revolut.com/api/orders/${encodeURIComponent(orderId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        "Content-Type": "application/json",
+        "Revolut-Api-Version": "2024-09-01",
+      },
+      cache: "no-store",
+    }
+  );
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    console.error("Failed to retrieve Revolut order:", {
+      status: response.status,
+      data,
+    });
+
+    return null;
+  }
+
+  return data;
+}
+
+async function confirmRevolutPaymentIfCompleted({
+  bookingId,
+  orderId,
+}: {
+  bookingId: string;
+  orderId: string;
+}) {
+  const revolutOrder = await retrieveRevolutOrder(orderId);
+  const state = String(revolutOrder?.state || "").toLowerCase();
+
+  if (state !== "completed") {
+    return {
+      paid: false,
+      state,
+    };
+  }
+
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({
+      status: "booked",
+      payment_status: "paid",
+      paid_at: new Date().toISOString(),
+    })
+    .eq("id", bookingId);
+
+  if (error) {
+    console.error("Failed to mark booking as paid:", error);
+
+    return {
+      paid: false,
+      state,
+    };
+  }
+
+  return {
+    paid: true,
+    state,
+  };
+}
+
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
@@ -122,12 +199,29 @@ export default async function CheckoutSuccessPage({
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id, booking_code, customer_name, total_amount, currency, language")
+    .select(
+  "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id"
+)
     .eq("booking_code", code)
     .single();
 
   const language = normalizeLanguage(booking?.language);
   const t = getMessages(language);
+
+let paymentConfirmed =
+  booking?.payment_status === "paid" || booking?.status === "booked";
+
+let revolutState = "";
+
+if (booking?.id && booking?.revolut_order_id && !paymentConfirmed) {
+  const result = await confirmRevolutPaymentIfCompleted({
+    bookingId: booking.id,
+    orderId: booking.revolut_order_id,
+  });
+
+  paymentConfirmed = result.paid;
+  revolutState = result.state;
+}
 
   const { data: items } = booking
     ? await supabase
@@ -313,9 +407,16 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
     </p>
   </div>
 
-  <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-[14px] leading-6 text-amber-700">
-    {t.paymentOnSite}
+  {paymentConfirmed ? (
+  <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-[14px] leading-6 text-emerald-700">
+    Payment confirmed. Your booking is confirmed.
   </p>
+) : (
+  <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-[14px] leading-6 text-amber-700">
+    We are still confirming your payment.
+    {revolutState ? ` Current payment status: ${revolutState}.` : ""}
+  </p>
+)}
 </div>
         </section>
       )}
