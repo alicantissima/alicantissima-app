@@ -264,7 +264,7 @@ const messages: Record<AppLanguage, Messages> = {
   showAtReception: "Muestra esta pantalla en recepción para un check-in más rápido.",
   checkInQr: "Código QR de check-in",
   paymentOnSite: "Pago online realizado correctamente.",
-paymentConfirmedOnline: "Pago recibido correctamente. Tu reserva está confirmada."
+paymentConfirmedOnline: "Pago recibido correctamente. Tu reserva está confirmada.",
 
   back: "Volver",
   backToProductMenu: "Volver al menú de servicios",
@@ -350,7 +350,7 @@ openInApp: "Abrir en la app",
     showAtReception: "Mostra este ecrã na receção para um check-in mais rápido.",
     checkInQr: "QR de check-in",
     paymentOnSite: "O pagamento é feito no local, por cartão ou dinheiro.",
-paymentConfirmedOnline: "Pagamento recebido com sucesso. A tua reserva está confirmada."
+paymentConfirmedOnline: "Pagamento recebido com sucesso. A tua reserva está confirmada.",
     customer: "Cliente",
     serviceDate: "Data do serviço",
     total: "Total",
