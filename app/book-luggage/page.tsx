@@ -186,7 +186,15 @@ function BookLuggageContent() {
 
   function handleBack() {
   clearItems();
-  router.back();
+
+  const params = new URLSearchParams();
+  params.set("lang", language);
+
+  if (searchParams.get("source") === "walkin") {
+    params.set("source", "walkin");
+  }
+
+  router.push(`/book-now?${params.toString()}`);
 }
 
   return (

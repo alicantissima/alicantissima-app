@@ -10,7 +10,7 @@ import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { TIME_SLOTS } from "@/lib/time-slots";
 import { getShowerEndTime } from "@/lib/showers";
 
-function getTodayString() {
+function getTodayString() 
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -265,15 +265,28 @@ const canChooseTime = Boolean(date);
     router.push(`/checkout?${params.toString()}`);
   }
 
+function handleBack() {
+  clearItems();
+
+  const params = new URLSearchParams();
+  params.set("lang", language);
+
+  if (source === "walkin") {
+    params.set("source", "walkin");
+  }
+
+  router.push(`/book-now?${params.toString()}`);
+}
+
   return (
     <main className="mx-auto max-w-md space-y-6 p-6 text-zinc-900 dark:text-white">
       <button
-        type="button"
-        onClick={() => router.push(`/?lang=${language}`)}
-        className={backClass}
-      >
-        ← {t.back}
-      </button>
+  type="button"
+  onClick={handleBack}
+  className={backClass}
+>
+  ← {t.back}
+</button>
 
       <h1 className="text-2xl font-bold uppercase text-zinc-900 dark:text-white">
         {t.bookShowerTitle}
