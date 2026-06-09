@@ -10,7 +10,7 @@ import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { TIME_SLOTS } from "@/lib/time-slots";
 import { getShowerEndTime } from "@/lib/showers";
 
-function getTodayString() 
+function getTodayString() {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
