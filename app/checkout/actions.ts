@@ -3,6 +3,7 @@
 
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { sendPushToAll } from "@/lib/push/send-push";
@@ -36,6 +37,20 @@ type CheckoutPayload = {
 function generateBookingCode() {
   const random = Math.random().toString(36).slice(2, 8).toUpperCase();
   return `ALI-${random}`;
+}
+
+function generateCancellationToken() {
+  return randomBytes(32).toString("hex");
+}
+
+function isFutureDate(value?: string | null) {
+  if (!value) return false;
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return false;
+
+  return date.getTime() > Date.now();
 }
 
 function formatPrice(value: number) {
@@ -270,6 +285,8 @@ function buildConfirmationEmailText(params: {
   customerName: string;
   bookingCode: string;
   bookingUrl: string;
+  cancellationUrl?: string | null;
+  cancelUntil?: string | null;
   items: Array<{
     title: string;
     quantity: number;
@@ -355,7 +372,20 @@ lines.push(`Total items: ${totalItemsAll}`);
 
   lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
   lines.push("");
-  lines.push(t.paymentOnSite);
+  lines.push("Payment confirmed online.");
+
+if (params.cancellationUrl) {
+  lines.push("");
+  lines.push("Free cancellation");
+  lines.push(
+    params.cancelUntil
+      ? `You can cancel this booking for free until ${formatHumanDate(
+          params.cancelUntil.split("T")[0]
+        )}.`
+      : "You can cancel this booking for free up to 24 hours before your booking time."
+  );
+  lines.push(`Cancel booking: ${params.cancellationUrl}`);
+}
 
   if (params.notes) {
     lines.push("");
@@ -377,6 +407,8 @@ function buildConfirmationEmailHtml(params: {
   customerName: string;
   bookingCode: string;
   bookingUrl: string;
+  cancellationUrl?: string | null;
+  cancelUntil?: string | null;
   qrCodeUrl: string;
   items: Array<{
     title: string;
@@ -522,7 +554,30 @@ ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; colo
   </tr>
 </table>
 
-          <p style="margin:0; font-size:15px; line-height:23px; color:#ea580c;">
+          <p style="margin:0; font-size:15px; line-height:23px; color:#047857; font-weight:700;">
+  Payment confirmed online.
+</p>
+
+${
+  params.cancellationUrl
+    ? `
+      <div style="margin:18px 0 0 0; padding:16px 18px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:16px;">
+        <p style="margin:0 0 8px 0; font-size:15px; line-height:23px; color:#14532d; font-weight:700;">
+          Free cancellation
+        </p>
+        <p style="margin:0 0 12px 0; font-size:14px; line-height:21px; color:#166534;">
+          You can cancel this booking for free up to 24 hours before your booking time.
+        </p>
+        <a
+          href="${params.cancellationUrl}"
+          style="display:inline-block; padding:12px 18px; border-radius:999px; background:#14532d; color:#ffffff; text-decoration:none; font-size:14px; line-height:20px; font-weight:700;"
+        >
+          Cancel booking and refund payment
+        </a>
+      </div>
+    `
+    : ""
+}
             ${t.paymentOnSite}
           </p>
 
@@ -796,6 +851,8 @@ async function sendBookingConfirmationEmail(params: {
   bookingCode: string;
   bookingUrl: string;
   qrCodeUrl: string;
+  cancellationUrl?: string | null;
+  cancelUntil?: string | null;
   items: Array<{
     title: string;
     quantity: number;
@@ -983,6 +1040,12 @@ export async function finalizePaidBookingByPaymentReference(paymentReference: st
   const customerBookingUrl = `${appBaseUrl}/b/${booking.booking_code}`;
   const adminBookingUrl = `${appBaseUrl}/admin/booking/${booking.id}`;
   const qrCodeUrl = getQrCodeUrl(customerBookingUrl);
+const cancellationUrl =
+  booking.cancellation_token && isFutureDate(booking.cancel_until)
+    ? `${appBaseUrl}/cancel-booking?code=${encodeURIComponent(
+        booking.booking_code
+      )}&token=${encodeURIComponent(booking.cancellation_token)}`
+    : null;
 
   const items = (bookingItems ?? []).map((item) => ({
     title: item.title,
@@ -994,16 +1057,18 @@ export async function finalizePaidBookingByPaymentReference(paymentReference: st
   }));
 
   await sendBookingConfirmationEmail({
-    customerName: booking.customer_name,
-    customerEmail: booking.customer_email,
-    bookingCode: booking.booking_code,
-    bookingUrl: customerBookingUrl,
-    qrCodeUrl,
-    items,
-    totalAmount: Number(booking.total_amount || 0),
-    notes: booking.notes,
-    language: booking.language,
-  });
+  customerName: booking.customer_name,
+  customerEmail: booking.customer_email,
+  bookingCode: booking.booking_code,
+  bookingUrl: customerBookingUrl,
+  qrCodeUrl,
+  cancellationUrl,
+  cancelUntil: booking.cancel_until,
+  items,
+  totalAmount: Number(booking.total_amount || 0),
+  notes: booking.notes,
+  language: booking.language,
+});
 
   await sendInternalBookingNotification({
     customerName: booking.customer_name,
@@ -1128,8 +1193,10 @@ return {
     const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
     const supabase = createAdminClient();
-    const bookingCode = generateBookingCode();
-    const serviceDate = getServiceDateFromItems(items);
+const bookingCode = generateBookingCode();
+const serviceDate = getServiceDateFromItems(items);
+const cancelUntil = getCancelUntil(items);
+const cancellationToken = isWalkin ? null : generateCancellationToken();
 
 const showerItems = items.filter(
   (item) =>
@@ -1264,7 +1331,9 @@ const activeExistingItems = (existingItems ?? []).filter((existing: any) => {
 status: isWalkin ? "booked" : "pending_payment",
 payment_status: isWalkin ? "unpaid" : "pending_payment",
 payment_provider: isWalkin ? "walkin" : "revolut",
-cancel_until: isWalkin ? null : getCancelUntil(items),
+cancel_until: isWalkin ? null : cancelUntil,
+cancellation_token: isWalkin ? null : cancellationToken,
+cancellation_token_expires_at: isWalkin ? null : cancelUntil,
 payment_expires_at: isWalkin
   ? null
   : new Date(Date.now() + 5 * 60 * 1000).toISOString(),
@@ -1351,7 +1420,9 @@ await supabase
   .from("bookings")
   .update({
     payment_reference: revolutOrder.orderId,
+    revolut_order_id: revolutOrder.orderId,
     payment_url: revolutOrder.checkoutUrl,
+    revolut_checkout_url: revolutOrder.checkoutUrl,
   })
   .eq("id", booking.id);
 
