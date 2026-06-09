@@ -61,6 +61,13 @@ function BookNowContent() {
       params.set("source", "walkin");
     }
 
+    return `${selected.href}?${params.toString()}`;
+  }
+
+  function goToService(service: ServiceKey) {
+    router.push(buildHref(service));
+  }
+
 function getWebsiteBackUrl() {
   if (language === "en") return "https://alicantissima.es/en/book-now/";
   if (language === "es") return "https://alicantissima.es/book-now/";
@@ -77,13 +84,6 @@ function getWebsiteBackUrl() {
 function handleBackToWebsite() {
   window.location.href = getWebsiteBackUrl();
 }
-
-    return `${selected.href}?${params.toString()}`;
-  }
-
-  function goToService(service: ServiceKey) {
-    router.push(buildHref(service));
-  }
 
   if (
     selectedService === "luggage" ||
