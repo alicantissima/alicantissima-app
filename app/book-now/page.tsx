@@ -61,6 +61,23 @@ function BookNowContent() {
       params.set("source", "walkin");
     }
 
+function getWebsiteBackUrl() {
+  if (language === "en") return "https://alicantissima.es/en/book-now/";
+  if (language === "es") return "https://alicantissima.es/book-now/";
+  if (language === "pt") return "https://alicantissima.es/pt/book-now/";
+  if (language === "fr") return "https://alicantissima.es/fr/book-now/";
+  if (language === "it") return "https://alicantissima.es/it/book-now/";
+  if (language === "de") return "https://alicantissima.es/de/book-now/";
+  if (language === "pl") return "https://alicantissima.es/pl/book-now/";
+  if (language === "no") return "https://alicantissima.es/no/book-now/";
+
+  return "https://alicantissima.es/en/book-now/";
+}
+
+function handleBackToWebsite() {
+  window.location.href = getWebsiteBackUrl();
+}
+
     return `${selected.href}?${params.toString()}`;
   }
 
@@ -84,6 +101,13 @@ function BookNowContent() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-8 p-6 text-zinc-900 dark:text-white">
+<button
+  type="button"
+  onClick={handleBackToWebsite}
+  className="text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+>
+  ← Back to website
+</button>
       <section className="space-y-3 text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.25em] text-zinc-500 dark:text-zinc-400">
           Alicantíssima
