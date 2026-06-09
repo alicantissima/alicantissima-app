@@ -78,7 +78,7 @@ function getWebsiteBackUrl() {
   if (language === "pl") return "https://alicantissima.es/pl/book-now/";
   if (language === "no") return "https://alicantissima.es/no/book-now/";
 
-  return "https://alicantissima.es/en/book-now/";
+  return "https://alicantissima.es/en";
 }
 
 function handleBackToWebsite() {
