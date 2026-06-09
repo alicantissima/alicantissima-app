@@ -69,14 +69,14 @@ function BookNowContent() {
   }
 
 function getWebsiteBackUrl() {
-  if (language === "en") return "https://alicantissima.es/en/book-now/";
-  if (language === "es") return "https://alicantissima.es/book-now/";
-  if (language === "pt") return "https://alicantissima.es/pt/book-now/";
-  if (language === "fr") return "https://alicantissima.es/fr/book-now/";
-  if (language === "it") return "https://alicantissima.es/it/book-now/";
-  if (language === "de") return "https://alicantissima.es/de/book-now/";
-  if (language === "pl") return "https://alicantissima.es/pl/book-now/";
-  if (language === "no") return "https://alicantissima.es/no/book-now/";
+  if (language === "en") return "https://alicantissima.es/en";
+  if (language === "es") return "https://alicantissima.es";
+  if (language === "pt") return "https://alicantissima.es/pt";
+  if (language === "fr") return "https://alicantissima.es/fr";
+  if (language === "it") return "https://alicantissima.es/it";
+  if (language === "de") return "https://alicantissima.es/de";
+  if (language === "pl") return "https://alicantissima.es/pl";
+  if (language === "no") return "https://alicantissima.es/no";
 
   return "https://alicantissima.es/en";
 }
