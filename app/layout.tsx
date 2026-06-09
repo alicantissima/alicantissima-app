@@ -4,7 +4,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import "./globals.css";
-import InstallAppButton from "@/components/install-app-button";
 import IframeHeightReporter from "@/components/iframe-height-reporter";
 import RouteScrollReset from "@/components/route-scroll-reset";
 
@@ -35,7 +34,6 @@ export default function RootLayout({
         </Suspense>
         <IframeHeightReporter />
         <main className="min-h-screen">{children}</main>
-        <InstallAppButton />
       </body>
     </html>
   );

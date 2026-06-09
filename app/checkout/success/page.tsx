@@ -3,7 +3,6 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
-import InstallAppButton from "@/components/install-app-button";
 import Link from "next/link";
 
 type SuccessSearchParams = Promise<{ code?: string }>;
@@ -188,7 +187,6 @@ export default async function CheckoutSuccessPage({
           </h2>
           <p className="mt-2 text-sm text-zinc-600">{t.installAppText}</p>
           <div className="mt-4 flex justify-center">
-            <InstallAppButton />
           </div>
         </section>
       </main>
@@ -456,7 +454,6 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
         </h2>
         <p className="mt-2 text-sm text-zinc-600">{t.installAppText}</p>
         <div className="mt-4 flex justify-center">
-          <InstallAppButton />
         </div>
       </section>
 
