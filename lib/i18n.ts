@@ -36,6 +36,11 @@ type Messages = {
   showAtReception: string;
   checkInQr: string;
   paymentOnSite: string;
+paymentConfirmedOnline: string;
+freeCancellationTitle: string;
+freeCancellationText: string;
+cancelBookingRefundButton: string;
+cancelBookingNotAvailableText: string;
   customer: string;
   serviceDate: string;
   total: string;
@@ -140,7 +145,14 @@ const baseMessages: Messages = {
   bookingPassTitle: "Alicantissima Booking Pass",
   showAtReception: "Show this screen at reception for faster check-in.",
   checkInQr: "Check-in QR",
-  paymentOnSite: "Payment received online successfully. Your reservation is confirmed.",
+  paymentOnSite: "Payment at reception by card or cash.",
+paymentConfirmedOnline: "Payment received successfully. Your booking is confirmed.",
+freeCancellationTitle: "Free cancellation",
+freeCancellationText:
+  "You can cancel this booking for free up to 24 hours before your booking time.",
+cancelBookingRefundButton: "Cancel booking and refund payment",
+cancelBookingNotAvailableText:
+  "Online cancellation is no longer available for this booking.",
   customer: "Customer",
   serviceDate: "Service date",
   total: "Total",
@@ -252,6 +264,7 @@ const messages: Record<AppLanguage, Messages> = {
   showAtReception: "Muestra esta pantalla en recepción para un check-in más rápido.",
   checkInQr: "Código QR de check-in",
   paymentOnSite: "Pago online realizado correctamente.",
+paymentConfirmedOnline: "Pago recibido correctamente. Tu reserva está confirmada."
 
   back: "Volver",
   backToProductMenu: "Volver al menú de servicios",
@@ -337,6 +350,7 @@ openInApp: "Abrir en la app",
     showAtReception: "Mostra este ecrã na receção para um check-in mais rápido.",
     checkInQr: "QR de check-in",
     paymentOnSite: "O pagamento é feito no local, por cartão ou dinheiro.",
+paymentConfirmedOnline: "Pagamento recebido com sucesso. A tua reserva está confirmada."
     customer: "Cliente",
     serviceDate: "Data do serviço",
     total: "Total",
@@ -444,6 +458,7 @@ openInApp: "Abrir na app",
   bookLuggageTitle: "Consigne à bagages",
   bookLuggageSubtitle: "Consigne à bagages rapide et sécurisée au centre d’Alicante",
   paymentOnSite: "Aucun paiement en ligne. Le paiement s’effectue à la réception, par carte ou en espèces.",
+paymentConfirmedOnline: "Paiement reçu avec succès. Votre réservation est confirmée.",
 
   chooseDate: "Choisir la date",
   chooseDropOffTime: "Choisir l’heure de dépôt",
@@ -523,6 +538,7 @@ openInApp: "Abrir na app",
   showAtReception: "Mostra questa schermata alla reception per un check-in più rapido.",
   checkInQr: "QR per il check-in",
   paymentOnSite: "Il pagamento si effettua alla reception, con carta o in contanti.",
+paymentConfirmedOnline: "Pagamento ricevuto con successo. La tua prenotazione è confermata.",
   customer: "Cliente",
   serviceDate: "Data del servizio",
   total: "Totale",
@@ -737,6 +753,7 @@ openInApp: "Åpne i appen",
     showAtReception: "Zeige diesen Bildschirm an der Rezeption für einen schnelleren Check-in.",
     checkInQr: "Check-in QR-Code",
     paymentOnSite: "Die Zahlung erfolgt an der Rezeption, per Karte oder bar.",
+paymentConfirmedOnline: "Zahlung erfolgreich erhalten. Deine Buchung ist bestätigt.",
     customer: "Kunde",
     serviceDate: "Servicedatum",
     total: "Gesamt",
@@ -844,6 +861,7 @@ openInApp: "In der App öffnen",
   showAtReception: "Pokaż ten ekran w recepcji, aby przyspieszyć check-in.",
   checkInQr: "Kod QR do check-in",
   paymentOnSite: "Płatność online została pomyślnie odebrana.",
+paymentConfirmedOnline: "Płatność została pomyślnie odebrana. Twoja rezerwacja jest potwierdzona.",
   customer: "Klient",
   serviceDate: "Data usługi",
   total: "Łącznie",
@@ -1052,6 +1070,7 @@ comboBreakdownExtraShowerLabel: "Extra dusch",
     showAtReception: "Näytä tämä näyttö vastaanotossa nopeampaa sisäänkirjautumista varten.",
     checkInQr: "Sisäänkirjautumisen QR-koodi",
     paymentOnSite: "Maksu suoritetaan vastaanotossa kortilla tai käteisellä.",
+paymentConfirmedOnline: "Maksu vastaanotettu onnistuneesti. Varauksesi on vahvistettu.",
     customer: "Asiakas",
     serviceDate: "Palvelupäivä",
     total: "Yhteensä",
