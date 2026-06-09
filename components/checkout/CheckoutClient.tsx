@@ -205,7 +205,15 @@ export default function CheckoutClient() {
       if (result.checkoutUrl) {
   clearItems();
 
-  window.location.assign(result.checkoutUrl);
+  try {
+    if (window.top && window.top !== window.self) {
+      window.top.location.href = result.checkoutUrl;
+    } else {
+      window.location.assign(result.checkoutUrl);
+    }
+  } catch {
+    window.location.assign(result.checkoutUrl);
+  }
 
   return;
 }
