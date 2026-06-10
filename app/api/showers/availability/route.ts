@@ -100,7 +100,8 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
 
     const date = searchParams.get("date") || "";
-    const quantity = Number(searchParams.get("quantity") || "1");
+const quantity = Number(searchParams.get("quantity") || "1");
+const excludeBookingId = searchParams.get("excludeBookingId") || "";
 
     if (!date) {
       return NextResponse.json(
@@ -154,6 +155,10 @@ const activeItems =
     const booking = item.booking;
 
     if (!booking) return false;
+
+    if (excludeBookingId && booking.id === excludeBookingId) {
+      return false;
+    }
 
     const status = booking.status;
     const paymentStatus = booking.payment_status;

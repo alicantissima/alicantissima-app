@@ -109,6 +109,7 @@ export default function InlineEditTime({
         const params = new URLSearchParams();
         params.set("date", serviceDate);
         params.set("quantity", String(quantity));
+        params.set("excludeBookingId", bookingId);
 
         const response = await fetch(
           `/api/showers/availability?${params.toString()}`,
@@ -135,7 +136,7 @@ export default function InlineEditTime({
     }
 
     loadAvailability();
-  }, [isShowerField, serviceDate, quantity, isEditing]);
+  }, [isShowerField, serviceDate, quantity, isEditing, bookingId]);
 
   const options = useMemo(() => {
     if (!isShowerField) {

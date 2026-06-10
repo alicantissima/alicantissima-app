@@ -46,6 +46,7 @@ export default function AddShowerTimeSelect({
         const params = new URLSearchParams();
         params.set("date", serviceDate);
         params.set("quantity", String(quantity || 1));
+        params.set("excludeBookingId", bookingId);
 
         const response = await fetch(
           `/api/showers/availability?${params.toString()}`,
@@ -72,7 +73,7 @@ export default function AddShowerTimeSelect({
     }
 
     loadAvailability();
-  }, [isEditing, serviceDate, quantity]);
+  }, [isEditing, serviceDate, quantity, bookingId]);
 
   function handleSave() {
     if (!showerTime) return;
