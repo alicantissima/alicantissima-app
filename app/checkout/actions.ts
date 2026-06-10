@@ -396,7 +396,7 @@ if (params.cancellationUrl) {
   lines.push(`${t.checkInQrTitle}`);
   lines.push(t.showQrAtReception);
   lines.push("");
-  lines.push(`${t.openInApp}: ${params.bookingUrl}`);
+  lines.push(`View booking details: ${params.bookingUrl}`);
   lines.push("");
   lines.push("Alicantissima | Luggage Storage & Shower Lounge");
 
@@ -615,7 +615,7 @@ ${
             href="${params.bookingUrl}"
             style="display:inline-block; padding:14px 22px; border-radius:999px; background:#111827; color:#ffffff; text-decoration:none; font-size:15px; line-height:22px; font-weight:700;"
           >
-            ${t.openInApp}
+            View booking details
           </a>
         </div>
 
