@@ -1387,6 +1387,37 @@ const adminBookingUrl = `${appBaseUrl}/admin/booking/${booking.id}`;
 const qrCodeUrl = getQrCodeUrl(customerBookingUrl);
 
 if (isWalkin) {
+  try {
+    await sendBookingConfirmationEmail({
+      customerName,
+      customerEmail,
+      bookingCode: booking.booking_code,
+      bookingUrl: customerBookingUrl,
+      qrCodeUrl,
+      cancellationUrl: null,
+      cancelUntil: null,
+      items,
+      totalAmount,
+      notes,
+      language,
+    });
+
+    await sendInternalBookingNotification({
+      customerName,
+      customerCity,
+      customerEmail,
+      customerPhone,
+      bookingCode: booking.booking_code,
+      bookingUrl: adminBookingUrl,
+      qrCodeUrl,
+      items,
+      totalAmount,
+      notes,
+    });
+  } catch (emailError) {
+    console.error("walkin email error:", emailError);
+  }
+
   return {
     ok: true,
     bookingCode: booking.booking_code,
