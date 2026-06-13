@@ -537,6 +537,20 @@ const yesterdayBookings = historyBookings.filter((booking) => {
   return isYesterday(bookingDate);
 });
 
+const paymentYesterdayCounts: Record<string, number> = {};
+const paymentYesterdayRevenue: Record<string, number> = {};
+
+for (const booking of yesterdayBookings) {
+  const payment = booking.payment_method ?? "unpaid";
+  const amount = Number(booking.total_amount || 0);
+
+  paymentYesterdayCounts[payment] =
+    (paymentYesterdayCounts[payment] ?? 0) + 1;
+
+  paymentYesterdayRevenue[payment] =
+    (paymentYesterdayRevenue[payment] ?? 0) + amount;
+}
+
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
       <div className="flex items-start justify-between">
@@ -604,37 +618,35 @@ const yesterdayBookings = historyBookings.filter((booking) => {
       </section>
 
 {yesterdayBookings.length > 0 && (
-  <section className="rounded-xl border p-4">
-    <div className="mb-3 text-sm font-semibold text-gray-700">
-      Results by source yesterday
+  <>
+    <div className="min-w-0 lg:text-right">
+      <div className="mb-3 text-sm font-semibold text-gray-700">
+        Payments yesterday
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-sm lg:justify-end">
+        {Object.entries(paymentYesterdayCounts).map(([payment, count]) => (
+          <span
+            key={payment}
+            className="rounded-full bg-green-100 px-3 py-1 text-green-800"
+          >
+            {payment}: {count} ·{" "}
+            {formatCurrency(paymentYesterdayRevenue[payment] ?? 0, "EUR")}
+          </span>
+        ))}
+      </div>
     </div>
 
-    <div className="flex flex-wrap gap-2 text-sm">
-      {Object.entries(
-        yesterdayBookings.reduce<Record<string, { count: number; revenue: number }>>(
-          (acc, booking) => {
-            const source = booking.source ?? "choose";
-            const amount = Number(booking.total_amount || 0);
+    <section className="rounded-xl border p-4">
+      <div className="mb-3 text-sm font-semibold text-gray-700">
+        Results by source yesterday
+      </div>
 
-            if (!acc[source]) acc[source] = { count: 0, revenue: 0 };
-
-            acc[source].count += 1;
-            acc[source].revenue += amount;
-
-            return acc;
-          },
-          {}
-        )
-      ).map(([source, data]) => (
-        <span
-          key={source}
-          className="rounded-full bg-gray-100 px-3 py-1 text-gray-700"
-        >
-          {source}: {data.count} · {formatCurrency(data.revenue, "EUR")}
-        </span>
-      ))}
-    </div>
-  </section>
+      <div className="flex flex-wrap gap-2 text-sm">
+        ...
+      </div>
+    </section>
+  </>
 )}
 
       {!historyBookings.length ? (
