@@ -248,23 +248,37 @@ export async function updateBookingItemQuantity({
   }
 
   const unitPrice = Number(item.unit_price || 0);
-  const newLineTotal = unitPrice * quantity;
+const newLineTotal = unitPrice * quantity;
 
-  let newMeta = item.meta || {};
+let newMeta = item.meta || {};
 
-  if (item.product_type === "combo") {
-    newMeta = {
-      ...newMeta,
-      breakdown: [
-        {
-          label: "Luggage + Shower",
-          quantity,
-          unitPrice: 18,
-          totalPrice: 18 * quantity,
-        },
-      ],
-    };
-  }
+if (item.product_type === "combo") {
+  const comboTotal = 18 * quantity;
+  const extraLuggageTotal = Math.max(0, newLineTotal - comboTotal);
+  const extraLuggageQuantity = Math.round(extraLuggageTotal / 8);
+
+  newMeta = {
+    ...newMeta,
+    breakdown: [
+      {
+        label: "Luggage + Shower",
+        quantity,
+        unitPrice: 18,
+        totalPrice: comboTotal,
+      },
+      ...(extraLuggageQuantity > 0
+        ? [
+            {
+              label: "Additional luggage",
+              quantity: extraLuggageQuantity,
+              unitPrice: 8,
+              totalPrice: extraLuggageQuantity * 8,
+            },
+          ]
+        : []),
+    ],
+  };
+}
 
   await supabase
     .from("booking_items")
