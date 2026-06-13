@@ -275,6 +275,23 @@ function getTodayString() {
   }).format(new Date());
 }
 
+function getYesterdayString() {
+  const now = new Date();
+  now.setDate(now.getDate() - 1);
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+function isYesterday(date: string | null) {
+  if (!date) return false;
+  return date === getYesterdayString();
+}
+
 function isPast(date: string | null) {
   if (!date) return false;
   return date < getTodayString();
@@ -513,6 +530,13 @@ for (const booking of historyBookings) {
     (sourceHistoryRevenue[currentSource] ?? 0) + bookingRevenue;
 }
 
+const yesterdayBookings = historyBookings.filter((booking) => {
+  const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+  const bookingDate = getBookingDate(booking, meta);
+
+  return isYesterday(bookingDate);
+});
+
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
       <div className="flex items-start justify-between">
@@ -578,6 +602,40 @@ for (const booking of historyBookings) {
             })}
         </div>
       </section>
+
+{yesterdayBookings.length > 0 && (
+  <section className="rounded-xl border p-4">
+    <div className="mb-3 text-sm font-semibold text-gray-700">
+      Results by source yesterday
+    </div>
+
+    <div className="flex flex-wrap gap-2 text-sm">
+      {Object.entries(
+        yesterdayBookings.reduce<Record<string, { count: number; revenue: number }>>(
+          (acc, booking) => {
+            const source = booking.source ?? "choose";
+            const amount = Number(booking.total_amount || 0);
+
+            if (!acc[source]) acc[source] = { count: 0, revenue: 0 };
+
+            acc[source].count += 1;
+            acc[source].revenue += amount;
+
+            return acc;
+          },
+          {}
+        )
+      ).map(([source, data]) => (
+        <span
+          key={source}
+          className="rounded-full bg-gray-100 px-3 py-1 text-gray-700"
+        >
+          {source}: {data.count} · {formatCurrency(data.revenue, "EUR")}
+        </span>
+      ))}
+    </div>
+  </section>
+)}
 
       {!historyBookings.length ? (
         <div className="rounded-2xl border p-6 text-sm text-gray-600">
