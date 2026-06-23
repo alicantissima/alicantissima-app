@@ -402,13 +402,16 @@ function renderSectionTable({
   bookingMetaMap,
   codeFilter,
   cancelled = false,
+  topContent = null,
 }: {
   title: string;
   bookings: BookingRow[];
   bookingMetaMap: Map<string, BookingMetaSummary>;
   codeFilter: string | null;
   cancelled?: boolean;
+  topContent?: React.ReactNode;
 }) {
+
   if (!bookings.length) return null;
 
 
@@ -426,6 +429,8 @@ function renderSectionTable({
     {bookings.length}
   </div>
 </div>
+
+{topContent}
 
       <section
         className={`overflow-x-auto rounded-2xl border ${
@@ -1006,50 +1011,93 @@ const total = revenueBookings.reduce(
     }
   }
 
+function renderTodayResultsBar() {
   return (
-  <section className="rounded-xl border px-3 py-2">
-    <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs">
-        <span className="mr-1 font-semibold text-gray-700">{label}</span>
+    <section className="rounded-xl border px-3 py-2">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="mr-1 font-semibold text-gray-700">
+              Today by source
+            </span>
 
-        {sourceKeys
-          .filter((key) => counts[key] > 0 || revenue[key] > 0)
-          .map((key) => {
-            const colorClass =
-              key === "choose"
-                ? "bg-zinc-100 text-zinc-800"
-                : key === "site"
-                ? "bg-pink-100 text-pink-800"
-                : key === "viator"
-                ? "bg-green-100 text-green-800"
-                : key === "walkin"
-                ? "bg-orange-100 text-orange-800"
-                : key === "turismo"
-                ? "bg-sky-100 text-sky-800"
-                : key === "hector" ||
-                  key === "pilar" ||
-                  key === "melia" ||
-                  key === "other_host"
-                ? "bg-yellow-100 text-yellow-800"
-                : "bg-purple-100 text-purple-800";
+            {sourceKeys
+              .filter(
+                (key) =>
+                  sourceTodayCounts[key] > 0 || sourceTodayRevenue[key] > 0
+              )
+              .map((key) => {
+                const colorClass =
+                  key === "choose"
+                    ? "bg-zinc-100 text-zinc-800"
+                    : key === "site"
+                    ? "bg-pink-100 text-pink-800"
+                    : key === "viator"
+                    ? "bg-green-100 text-green-800"
+                    : key === "walkin"
+                    ? "bg-orange-100 text-orange-800"
+                    : key === "turismo"
+                    ? "bg-sky-100 text-sky-800"
+                    : key === "hector" ||
+                      key === "pilar" ||
+                      key === "melia" ||
+                      key === "other_host"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-purple-100 text-purple-800";
 
-            return (
-              <span key={key} className={`rounded-full px-2 py-0.5 ${colorClass}`}>
-                {key}: {counts[key]} · {formatCurrency(revenue[key], "EUR")}
-              </span>
-            );
-          })}
+                return (
+                  <span
+                    key={key}
+                    className={`rounded-full px-2 py-0.5 ${colorClass}`}
+                  >
+                    {key}: {sourceTodayCounts[key]} ·{" "}
+                    {formatCurrency(sourceTodayRevenue[key], "EUR")}
+                  </span>
+                );
+              })}
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs lg:justify-end">
+            <span className="mr-1 font-semibold text-gray-700">
+              Payments
+            </span>
+
+            {paymentKeys
+              .filter(
+                (key) =>
+                  paymentTodayCounts[key] > 0 || paymentTodayRevenue[key] > 0
+              )
+              .map((key) => {
+                const colorClass =
+                  key === "card"
+                    ? "bg-blue-100 text-blue-800"
+                    : key === "cash"
+                    ? "bg-amber-100 text-amber-800"
+                    : key === "revolut"
+                    ? "bg-gray-950 text-white"
+                    : "bg-green-100 text-green-800";
+
+                return (
+                  <span
+                    key={key}
+                    className={`rounded-full px-2 py-0.5 ${colorClass}`}
+                  >
+                    {key}: {paymentTodayCounts[key]} ·{" "}
+                    {formatCurrency(paymentTodayRevenue[key], "EUR")}
+                  </span>
+                );
+              })}
+          </div>
+        </div>
       </div>
-
-      <div className="shrink-0 text-xs font-semibold text-gray-900 lg:text-right">
-        {revenueBookings.length} · {formatCurrency(total, "EUR")}
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
 }
 
   return (
+
  <main className="mx-auto max-w-7xl space-y-6 p-6">
           <AdminAutoRefresh intervalMs={60000} />
 
@@ -1079,6 +1127,7 @@ const total = revenueBookings.reduce(
   </div>
 
   <LogoutButton className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+</div>
 </div>
 
       {codeFilter && (
@@ -1133,85 +1182,13 @@ const total = revenueBookings.reduce(
   </div>
 </section>
 
-<section className="rounded-xl border px-3 py-2">
-  <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-    <div className="min-w-0">
-      <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        <span className="mr-1 font-semibold text-gray-700">
-          Today by source
-        </span>
-
-        {sourceKeys
-          .filter(
-            (key) => sourceTodayCounts[key] > 0 || sourceTodayRevenue[key] > 0
-          )
-          .map((key) => {
-            const colorClass =
-              key === "choose"
-                ? "bg-zinc-100 text-zinc-800"
-                : key === "site"
-                ? "bg-pink-100 text-pink-800"
-                : key === "viator"
-                ? "bg-green-100 text-green-800"
-                : key === "walkin"
-                ? "bg-orange-100 text-orange-800"
-                : key === "turismo"
-                ? "bg-sky-100 text-sky-800"
-                : key === "hector" ||
-                  key === "pilar" ||
-                  key === "melia" ||
-                  key === "other_host"
-                ? "bg-yellow-100 text-yellow-800"
-                : "bg-purple-100 text-purple-800";
-
-            return (
-              <span key={key} className={`rounded-full px-2 py-0.5 ${colorClass}`}>
-                {key}: {sourceTodayCounts[key]} ·{" "}
-                {formatCurrency(sourceTodayRevenue[key], "EUR")}
-              </span>
-            );
-          })}
-      </div>
-    </div>
-
-    <div className="min-w-0">
-      <div className="flex flex-wrap items-center gap-1.5 text-xs lg:justify-end">
-        <span className="mr-1 font-semibold text-gray-700">
-          Payments
-        </span>
-
-        {paymentKeys
-          .filter(
-            (key) => paymentTodayCounts[key] > 0 || paymentTodayRevenue[key] > 0
-          )
-          .map((key) => {
-            const colorClass =
-              key === "card"
-                ? "bg-blue-100 text-blue-800"
-                : key === "cash"
-                ? "bg-amber-100 text-amber-800"
-                : key === "revolut"
-                ? "bg-gray-950 text-white"
-                : "bg-green-100 text-green-800";
-
-            return (
-              <span key={key} className={`rounded-full px-2 py-0.5 ${colorClass}`}>
-                {key}: {paymentTodayCounts[key]} ·{" "}
-                {formatCurrency(paymentTodayRevenue[key], "EUR")}
-              </span>
-            );
-          })}
-      </div>
-    </div>
-  </div>
-</section>
-
             {renderSectionTable({
-        title: "Today",
-        bookings: todayBookings,
-        bookingMetaMap,
-        codeFilter,
-      })}
+  title: "Today",
+  bookings: todayBookings,
+  bookingMetaMap,
+  codeFilter,
+  topContent: renderTodayResultsBar(),
+})}
 
       {renderSectionTable({
         title: "Inside",
@@ -1235,25 +1212,24 @@ const total = revenueBookings.reduce(
         cancelled: true,
       })}
 
-      {renderRevenueBar(tomorrowBookings, "Results by source tomorrow")}
+      {renderSectionTable({
+  title: "Tomorrow",
+  bookings: tomorrowBookings,
+  bookingMetaMap,
+  codeFilter,
+  topContent: renderRevenueBar(tomorrowBookings, "Results by source tomorrow"),
+})}
+
+      {upcomingBookings.length > 0 && <div className="border-t pt-3" />}
 
       {renderSectionTable({
-        title: "Tomorrow",
-        bookings: tomorrowBookings,
-        bookingMetaMap,
-        codeFilter,
-      })}
+  title: "Upcoming",
+  bookings: upcomingBookings,
+  bookingMetaMap,
+  codeFilter,
+  topContent: renderRevenueBar(upcomingBookings, "Results by source upcoming"),
+})}
 
-      {upcomingBookings.length > 0 && <div className="border-t pt-6" />}
-
-      {renderRevenueBar(upcomingBookings, "Results by source upcoming")}
-
-      {renderSectionTable({
-        title: "Upcoming",
-        bookings: upcomingBookings,
-        bookingMetaMap,
-        codeFilter,
-      })}
     </main>
   );
 }
