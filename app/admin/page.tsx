@@ -1059,31 +1059,27 @@ const total = revenueBookings.reduce(
           <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
         </div>
 
-        <div className="flex flex-col items-start gap-2 lg:items-end">
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            <Link
-              href="/desk"
-              className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-            >
-              Abrir Desk
-            </Link>
+        <div className="flex flex-col items-start gap-1.5 lg:items-end">
+  <div className="flex flex-wrap items-center gap-1.5">
+    <Link
+      href="/desk"
+      className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+    >
+      Desk
+    </Link>
 
-            <LogoutButton className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
-          </div>
+    <AdminQrScanner className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
 
-          <div className="flex flex-wrap items-center gap-1.5">
-            <AdminQrScanner className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+    <Link
+      href="/admin/history"
+      className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+    >
+      Histórico
+    </Link>
+  </div>
 
-            <Link
-              href="/admin/history"
-              className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-
-            >
-              Histórico
-            </Link>
-          </div>
-        </div>
-      </div>
+  <LogoutButton className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+</div>
 
       {codeFilter && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
