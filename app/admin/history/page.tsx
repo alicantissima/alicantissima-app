@@ -23,6 +23,8 @@ type BookingRow = {
   status: string;
   source?: string | null;
   payment_method?: string | null;
+  payment_status?: string | null;
+  refund_status?: string | null;
   city?: string | null;
   service_date?: string | null;
   booking_date?: string | null;
@@ -113,15 +115,43 @@ function getFirstTimeSlot(value?: string | null) {
   return value.split("-")[0]?.trim() || "-";
 }
 
-function normalizeStatus(status: string) {
+function normalizeStatus(status?: string | null) {
   if (status === "received") return "booked";
   if (status === "pending") return "booked";
+  if (status === "pending_payment") return "pending_payment";
   if (status === "inside") return "inside";
   if (status === "completed") return "completed";
   if (status === "finished") return "completed";
   if (status === "cancelled") return "cancelled";
   if (status === "no_show") return "no_show";
+  if (status === "refunded") return "refunded";
   return "booked";
+}
+
+function isPendingPaymentBooking(booking: BookingRow) {
+  return (
+    normalizeStatus(booking.status) === "pending_payment" ||
+    booking.payment_status === "pending_payment"
+  );
+}
+
+function isRefundedBooking(booking: BookingRow) {
+  return (
+    normalizeStatus(booking.status) === "refunded" ||
+    booking.payment_status === "refunded" ||
+    booking.refund_status === "refunded"
+  );
+}
+
+function countsForRevenue(booking: BookingRow) {
+  const status = normalizeStatus(booking.status);
+
+  if (status === "pending_payment") return false;
+  if (status === "cancelled") return false;
+  if (status === "refunded") return false;
+  if (isRefundedBooking(booking)) return false;
+
+  return true;
 }
 
 function getSourceRowClass(source?: string | null) {
@@ -356,7 +386,11 @@ export default async function AdminHistoryPage() {
   .select("*")
   .order("created_at", { ascending: false });
 
-const bookingIds = ((bookings as BookingRow[]) ?? []).map((b) => b.id);
+const visibleBookings = ((bookings as BookingRow[]) ?? []).filter(
+  (booking) => !isPendingPaymentBooking(booking)
+);
+
+const bookingIds = visibleBookings.map((b) => b.id);
 
 let items: BookingItemRow[] = [];
 
@@ -465,7 +499,7 @@ if (bookingIds.length > 0) {
     });
   }
 
-  const historyBookings = [...((bookings as BookingRow[]) ?? [])]
+  const historyBookings = [...visibleBookings]
     .filter((booking) => {
       const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
       const bookingDate = getBookingDate(booking, meta);
@@ -513,6 +547,14 @@ for (const key of sourceKeys) {
 
 for (const booking of historyBookings) {
   const currentSource = booking.source ?? "choose";
+
+  sourceHistoryCounts[currentSource] =
+    (sourceHistoryCounts[currentSource] ?? 0) + 1;
+
+  if (!countsForRevenue(booking)) {
+    continue;
+  }
+
   const bookingItems = items.filter((item) => item.booking_id === booking.id);
 
   const computedRevenue = bookingItems.reduce(
@@ -522,9 +564,6 @@ for (const booking of historyBookings) {
 
   const bookingRevenue =
     computedRevenue > 0 ? computedRevenue : Number(booking.total_amount || 0);
-
-  sourceHistoryCounts[currentSource] =
-    (sourceHistoryCounts[currentSource] ?? 0) + 1;
 
   sourceHistoryRevenue[currentSource] =
     (sourceHistoryRevenue[currentSource] ?? 0) + bookingRevenue;
@@ -542,10 +581,15 @@ const paymentYesterdayRevenue: Record<string, number> = {};
 
 for (const booking of yesterdayBookings) {
   const payment = booking.payment_method ?? "unpaid";
-  const amount = Number(booking.total_amount || 0);
 
   paymentYesterdayCounts[payment] =
     (paymentYesterdayCounts[payment] ?? 0) + 1;
+
+  if (!countsForRevenue(booking)) {
+    continue;
+  }
+
+  const amount = Number(booking.total_amount || 0);
 
   paymentYesterdayRevenue[payment] =
     (paymentYesterdayRevenue[payment] ?? 0) + amount;
