@@ -687,8 +687,8 @@ for (const booking of yesterdayBookings) {
       </div>
 
       <div className="flex flex-wrap gap-2 text-sm">
-        ...
-      </div>
+  <span className="text-gray-500">Em preparação.</span>
+</div>
     </section>
   </>
 )}
