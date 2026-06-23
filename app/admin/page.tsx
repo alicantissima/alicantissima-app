@@ -1153,26 +1153,24 @@ function renderTodayResultsBar() {
           <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
         </div>
 
-        <div className="flex flex-col items-start gap-1.5 lg:items-end">
-  <div className="flex flex-wrap items-center gap-1.5">
+        <div className="w-full lg:w-auto">
+  <div className="grid grid-cols-3 gap-2 lg:w-[420px]">
     <Link
       href="/desk"
-      className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+      className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50"
     >
       Desk
     </Link>
 
-    <AdminQrScanner className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+    <AdminQrScanner className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50" />
 
     <Link
       href="/admin/history"
-      className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+      className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50"
     >
       Histórico
     </Link>
   </div>
-
-  <LogoutButton className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 text-[11px] font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
 </div>
 </div>
 
