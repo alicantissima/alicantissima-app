@@ -1147,31 +1147,31 @@ function renderTodayResultsBar() {
  <main className="mx-auto max-w-7xl space-y-6 p-6">
           <AdminAutoRefresh intervalMs={60000} />
 
-      <div className="flex flex-col gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Admin · Reservas</h1>
-          <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
-        </div>
-
-        <div className="w-full lg:w-auto">
-  <div className="grid grid-cols-3 gap-2 lg:w-[420px]">
-    <Link
-      href="/desk"
-      className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50"
-    >
-      Desk
-    </Link>
-
-    <AdminQrScanner className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50" />
-
-    <Link
-      href="/admin/history"
-      className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50"
-    >
-      Histórico
-    </Link>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+  <div>
+    <h1 className="text-2xl font-bold">Admin · Reservas</h1>
+    <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
   </div>
-</div>
+
+  <div className="w-full lg:w-auto">
+    <div className="flex w-full gap-2 lg:w-auto">
+      <Link
+        href="/desk"
+        className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 lg:w-32 lg:flex-none"
+      >
+        Desk
+      </Link>
+
+      <AdminQrScanner className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 lg:w-32 lg:flex-none" />
+
+      <Link
+        href="/admin/history"
+        className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 lg:w-32 lg:flex-none"
+      >
+        Histórico
+      </Link>
+    </div>
+  </div>
 </div>
 
       {codeFilter && (
