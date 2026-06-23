@@ -412,7 +412,7 @@ function renderSectionTable({
   topContent?: React.ReactNode;
 }) {
 
-  if (!bookings.length) return null;
+  if (!bookings.length && !topContent) return null;
 
 
   return (
@@ -432,6 +432,7 @@ function renderSectionTable({
 
 {topContent}
 
+{bookings.length > 0 && (
       <section
         className={`overflow-x-auto rounded-2xl border ${
           cancelled ? "border-red-200" : ""
@@ -577,6 +578,7 @@ const bookingHref = `/desk/booking/${booking.id}?back=admin`;
           </tbody>
         </table>
       </section>
+)}
     </section>
   );
 }
