@@ -23,6 +23,8 @@ type BookingRow = {
   status: string;
   source?: string | null;
   payment_method?: string | null;
+  payment_status?: string | null;
+  refund_status?: string | null;
   city?: string | null;
   service_date?: string | null;
   booking_date?: string | null;
@@ -160,7 +162,7 @@ function formatRealTime(value?: string | null) {
   }).format(date);
 }
 
-function normalizeStatus(status: string) {
+function normalizeStatus(status?: string | null) {
   if (status === "received") return "booked";
   if (status === "pending") return "booked";
   if (status === "pending_payment") return "pending_payment";
@@ -169,7 +171,34 @@ function normalizeStatus(status: string) {
   if (status === "finished") return "completed";
   if (status === "cancelled") return "cancelled";
   if (status === "no_show") return "no_show";
+  if (status === "refunded") return "refunded";
   return "booked";
+}
+
+function isPendingPaymentBooking(booking: BookingRow) {
+  return (
+    normalizeStatus(booking.status) === "pending_payment" ||
+    booking.payment_status === "pending_payment"
+  );
+}
+
+function isRefundedBooking(booking: BookingRow) {
+  return (
+    normalizeStatus(booking.status) === "refunded" ||
+    booking.payment_status === "refunded" ||
+    booking.refund_status === "refunded"
+  );
+}
+
+function countsForRevenue(booking: BookingRow) {
+  const status = normalizeStatus(booking.status);
+
+  if (status === "pending_payment") return false;
+  if (status === "cancelled") return false;
+  if (status === "refunded") return false;
+  if (isRefundedBooking(booking)) return false;
+
+  return true;
 }
 
 function getSourceRowClass(source?: string | null) {
@@ -585,7 +614,11 @@ export default async function AdminPage({
 
   const { data: bookings } = await bookingsQuery;
 
-  const bookingIds = (bookings ?? []).map((b) => b.id);
+const visibleBookings = ((bookings as BookingRow[]) ?? []).filter(
+  (booking) => !isPendingPaymentBooking(booking)
+);
+
+const bookingIds = visibleBookings.map((b) => b.id);
 
 let items: BookingItemRow[] = [];
 
@@ -771,7 +804,7 @@ const paymentTodayRevenue: Record<PaymentKey, number> = {
 
   const citiesTodayCounts: Record<string, number> = {};
 
-  for (const booking of ((bookings as BookingRow[]) ?? [])) {
+  for (const booking of visibleBookings) {
     const normalizedStatus = normalizeStatus(booking.status);
     const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
     const bookingDate = getBookingDate(booking, meta);
@@ -779,12 +812,8 @@ const paymentTodayRevenue: Record<PaymentKey, number> = {
     const itemsForBooking =
       (items as BookingItemRow[])?.filter((i) => i.booking_id === booking.id) ?? [];
 
-    if (
-  isToday(bookingDate) &&
-  normalizedStatus !== "cancelled" &&
-  normalizedStatus !== "no_show" &&
-  normalizedStatus !== "pending_payment"
-) {
+    if (isToday(bookingDate) && countsForRevenue(booking)) {
+
       const currentSource = (booking.source ?? "choose") as SourceKey;
       const bookingRevenue = Number(booking.total_amount || 0);
       const currentPayment = (booking.payment_method ?? "").toLowerCase() as PaymentKey;
@@ -834,7 +863,7 @@ const paymentTodayRevenue: Record<PaymentKey, number> = {
     }
   }
 
-  const sortedBookings = [...((bookings as BookingRow[]) ?? [])].sort((a, b) => {
+  const sortedBookings = [...visibleBookings].sort((a, b) => {
     const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
     const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
 
@@ -896,7 +925,7 @@ function isUpcoming(date: string | null) {
       continue;
     }
 
-    if (status === "cancelled" || status === "no_show") {
+    if (status === "cancelled" || status === "no_show" || status === "refunded") {
       if (isToday(date)) {
         cancelledBookings.push(booking);
       }
@@ -957,7 +986,9 @@ sortByShowerTimeThenLuggage(tomorrowBookings, bookingMetaMap);
 function renderRevenueBar(bookingsList: BookingRow[], label: string) {
   if (!bookingsList.length) return null;
 
-const total = bookingsList.reduce(
+const revenueBookings = bookingsList.filter(countsForRevenue);
+
+const total = revenueBookings.reduce(
   (sum, booking) => sum + Number(booking.total_amount || 0),
   0
 );
@@ -988,7 +1019,7 @@ const total = bookingsList.reduce(
     other: 0,
   };
 
-  for (const booking of bookingsList) {
+  for (const booking of revenueBookings) {
     const source = (booking.source ?? "choose") as SourceKey;
     const amount = Number(booking.total_amount || 0);
 
