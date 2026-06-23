@@ -1274,6 +1274,10 @@ function renderTodayResultsBar() {
   topContent: renderRevenueBar(upcomingBookings, "Results by source upcoming"),
 })}
 
-        </main>
+<div className="flex justify-center border-t pt-6">
+  <LogoutButton className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-8 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50" />
+</div>
+
+</main>
   );
 }
