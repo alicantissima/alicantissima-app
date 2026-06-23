@@ -741,8 +741,6 @@ if (bookingIds.length > 0) {
   let combosToday = 0;
   let revenueToday = 0;
 
-  let bagsInside = 0;
-  let showersInside = 0;
 
   const sourceKeys = [
     "choose",
@@ -846,19 +844,6 @@ const paymentTodayRevenue: Record<PaymentKey, number> = {
 
       if (cityName) {
         citiesTodayCounts[cityName] = (citiesTodayCounts[cityName] ?? 0) + 1;
-      }
-    }
-
-    if (normalizedStatus === "inside") {
-      for (const item of itemsForBooking) {
-        const code = getItemCode(item);
-        const extraCounts = getExtraCounts(item);
-
-        if (code === "luggage") bagsInside += item.quantity;
-        if (code === "shower") showersInside += item.quantity;
-
-        bagsInside += extraCounts.bags;
-        showersInside += extraCounts.showers;
       }
     }
   }
@@ -1022,10 +1007,10 @@ const total = revenueBookings.reduce(
   }
 
   return (
-  <section className="rounded-xl border px-4 py-3">
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
-        <span className="mr-2 font-semibold text-gray-800">{label}</span>
+  <section className="rounded-xl border px-3 py-2">
+    <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs">
+        <span className="mr-1 font-semibold text-gray-700">{label}</span>
 
         {sourceKeys
           .filter((key) => counts[key] > 0 || revenue[key] > 0)
@@ -1049,15 +1034,15 @@ const total = revenueBookings.reduce(
                 : "bg-purple-100 text-purple-800";
 
             return (
-              <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+              <span key={key} className={`rounded-full px-2 py-0.5 ${colorClass}`}>
                 {key}: {counts[key]} · {formatCurrency(revenue[key], "EUR")}
               </span>
             );
           })}
       </div>
 
-      <div className="shrink-0 text-sm font-semibold text-gray-900">
-        {bookingsList.length} · {formatCurrency(total, "EUR")}
+      <div className="shrink-0 text-xs font-semibold text-gray-900 lg:text-right">
+        {revenueBookings.length} · {formatCurrency(total, "EUR")}
       </div>
     </div>
   </section>
@@ -1075,7 +1060,7 @@ const total = revenueBookings.reduce(
         </div>
 
         <div className="flex flex-col items-start gap-2 lg:items-end">
-          <div className="mt-1 flex flex-wrap items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <Link
               href="/desk"
               className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
@@ -1086,7 +1071,7 @@ const total = revenueBookings.reduce(
             <LogoutButton className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             <AdminQrScanner className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
 
             <Link
@@ -1124,16 +1109,6 @@ const total = revenueBookings.reduce(
           <div className="text-xl font-bold">{combosToday}</div>
         </div>
 
-        <div className="rounded-xl border px-4 py-3">
-          <div className="text-xs text-gray-500">Bags in</div>
-          <div className="text-xl font-bold">{bagsInside}</div>
-        </div>
-
-        <div className="rounded-xl border px-4 py-3">
-          <div className="text-xs text-gray-500">Showers in</div>
-          <div className="text-xl font-bold">{showersInside}</div>
-        </div>
-
         <div className="rounded-xl border px-4 py-3 bg-green-50">
           <div className="text-xs text-gray-500">Revenue today</div>
           <div className="text-xl font-bold">
@@ -1142,35 +1117,33 @@ const total = revenueBookings.reduce(
         </div>
       </section>
 
-      <section className="rounded-xl border p-4">
-        <div className="mb-3 text-sm font-semibold text-gray-700">
-          Cities today
-        </div>
+      <section className="rounded-xl border px-3 py-2">
+  <div className="flex flex-wrap items-center gap-1.5 text-xs">
+    <span className="mr-1 font-semibold text-gray-700">Cities</span>
 
-        {citiesTodayList.length ? (
-          <div className="flex flex-wrap gap-2 text-sm">
-            {citiesTodayList.map(([city, count]) => (
-              <span
-                key={city}
-                className="rounded-full bg-gray-100 px-3 py-1 text-gray-700"
-              >
-                {city}: {count}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <div className="text-sm text-gray-500">No cities yet today.</div>
-        )}
-      </section>
+    {citiesTodayList.length ? (
+      citiesTodayList.map(([city, count]) => (
+        <span
+          key={city}
+          className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-700"
+        >
+          {city}: {count}
+        </span>
+      ))
+    ) : (
+      <span className="text-gray-500">No cities yet today.</span>
+    )}
+  </div>
+</section>
 
-<section className="rounded-xl border p-4">
-  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+<section className="rounded-xl border px-3 py-2">
+  <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
     <div className="min-w-0">
-      <div className="mb-3 text-sm font-semibold text-gray-700">
-        Results by source today
-      </div>
+      <div className="flex flex-wrap items-center gap-1.5 text-xs">
+        <span className="mr-1 font-semibold text-gray-700">
+          Today by source
+        </span>
 
-      <div className="flex flex-wrap gap-2 text-sm">
         {sourceKeys
           .filter(
             (key) => sourceTodayCounts[key] > 0 || sourceTodayRevenue[key] > 0
@@ -1195,7 +1168,7 @@ const total = revenueBookings.reduce(
                 : "bg-purple-100 text-purple-800";
 
             return (
-              <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+              <span key={key} className={`rounded-full px-2 py-0.5 ${colorClass}`}>
                 {key}: {sourceTodayCounts[key]} ·{" "}
                 {formatCurrency(sourceTodayRevenue[key], "EUR")}
               </span>
@@ -1204,28 +1177,28 @@ const total = revenueBookings.reduce(
       </div>
     </div>
 
-    <div className="min-w-0 lg:text-right">
-      <div className="mb-3 text-sm font-semibold text-gray-700">
-        Payments today
-      </div>
+    <div className="min-w-0">
+      <div className="flex flex-wrap items-center gap-1.5 text-xs lg:justify-end">
+        <span className="mr-1 font-semibold text-gray-700">
+          Payments
+        </span>
 
-      <div className="flex flex-wrap gap-2 text-sm lg:justify-end">
         {paymentKeys
           .filter(
             (key) => paymentTodayCounts[key] > 0 || paymentTodayRevenue[key] > 0
           )
           .map((key) => {
             const colorClass =
-  key === "card"
-    ? "bg-blue-100 text-blue-800"
-    : key === "cash"
-    ? "bg-amber-100 text-amber-800"
-    : key === "revolut"
-    ? "bg-gray-950 text-white"
-    : "bg-green-100 text-green-800";
+              key === "card"
+                ? "bg-blue-100 text-blue-800"
+                : key === "cash"
+                ? "bg-amber-100 text-amber-800"
+                : key === "revolut"
+                ? "bg-gray-950 text-white"
+                : "bg-green-100 text-green-800";
 
             return (
-              <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
+              <span key={key} className={`rounded-full px-2 py-0.5 ${colorClass}`}>
                 {key}: {paymentTodayCounts[key]} ·{" "}
                 {formatCurrency(paymentTodayRevenue[key], "EUR")}
               </span>
