@@ -48,6 +48,9 @@ type BookingItemRow = {
     dropOffTime?: string | null;
     pickUpTime?: string | null;
     showerTime?: string | null;
+    shower_time?: string | null;
+    showerStartTime?: string | null;
+    shower_start_time?: string | null;
     comments?: string | null;
     breakdown?: Array<{
       label: string;
@@ -162,6 +165,7 @@ function getSourceRowClass(source?: string | null) {
   if (current === "booking") return "bg-blue-50";
   if (current === "walkin") return "bg-orange-50";
   if (current === "turismo") return "bg-yellow-50";
+
   if (
     current === "hector" ||
     current === "pilar" ||
@@ -174,17 +178,57 @@ function getSourceRowClass(source?: string | null) {
   return "";
 }
 
+function getSourceColorClass(source: string) {
+  if (source === "choose") return "bg-zinc-100 text-zinc-800";
+  if (source === "site") return "bg-pink-100 text-pink-800";
+  if (source === "viator") return "bg-green-100 text-green-800";
+  if (source === "booking") return "bg-blue-100 text-blue-800";
+  if (source === "walkin") return "bg-orange-100 text-orange-800";
+  if (source === "porta") return "bg-orange-200 text-orange-800";
+  if (source === "turismo") return "bg-yellow-100 text-yellow-800";
+
+  if (
+    source === "hector" ||
+    source === "pilar" ||
+    source === "melia" ||
+    source === "other_host"
+  ) {
+    return "bg-amber-100 text-amber-800";
+  }
+
+  return "bg-purple-100 text-purple-800";
+}
+
+function getPaymentColorClass(payment: string) {
+  if (payment === "card") return "bg-blue-100 text-blue-800";
+  if (payment === "cash") return "bg-amber-100 text-amber-800";
+  if (payment === "revolut") return "bg-gray-950 text-white";
+  if (payment === "viator") return "bg-green-100 text-green-800";
+  if (payment === "refunded") return "bg-red-100 text-red-800";
+  if (payment === "unpaid") return "bg-zinc-100 text-zinc-800";
+
+  return "bg-zinc-100 text-zinc-800";
+}
+
 function getItemCode(item: BookingItemRow) {
   const productCode = item.meta?.product_code?.toLowerCase().trim() ?? "";
   const productType = item.product_type?.toLowerCase().trim() ?? "";
   const title = item.title?.toLowerCase().trim() ?? "";
 
   const dropOffTime =
-    typeof item.meta?.dropOffTime === "string" ? item.meta.dropOffTime.trim() : "";
+    typeof item.meta?.dropOffTime === "string"
+      ? item.meta.dropOffTime.trim()
+      : "";
+
   const pickUpTime =
-    typeof item.meta?.pickUpTime === "string" ? item.meta.pickUpTime.trim() : "";
+    typeof item.meta?.pickUpTime === "string"
+      ? item.meta.pickUpTime.trim()
+      : "";
+
   const showerTime =
-    typeof item.meta?.showerTime === "string" ? item.meta.showerTime.trim() : "";
+    typeof item.meta?.showerTime === "string"
+      ? item.meta.showerTime.trim()
+      : "";
 
   const hasBagSignal = !!dropOffTime || !!pickUpTime;
   const hasShowerSignal = !!showerTime;
@@ -192,19 +236,32 @@ function getItemCode(item: BookingItemRow) {
   const text = [productCode, productType, title].filter(Boolean).join(" ");
 
   const hasBagWord =
+    text.includes("equipaje") ||
     text.includes("luggage") ||
     text.includes("bag") ||
     text.includes("bags") ||
     text.includes("bagagem") ||
+    text.includes("mala") ||
+    text.includes("malas") ||
     text.includes("maleta") ||
+    text.includes("maletas") ||
+    text.includes("valise") ||
+    text.includes("valises") ||
     text.includes("bagagli") ||
-    text.includes("bagaglio");
+    text.includes("bagaglio") ||
+    text.includes("bagaż") ||
+    text.includes("bagaz") ||
+    text.includes("walizk");
 
   const hasShowerWord =
     text.includes("shower") ||
+    text.includes("showers") ||
     text.includes("ducha") ||
     text.includes("duche") ||
-    text.includes("doccia");
+    text.includes("doccia") ||
+    text.includes("prysznic") ||
+    text.includes("douche") ||
+    text.includes("dusche");
 
   if (
     productCode === "combo" ||
@@ -219,6 +276,8 @@ function getItemCode(item: BookingItemRow) {
   if (
     productCode === "shower" ||
     productType === "shower" ||
+    productCode === "extra_shower" ||
+    productType === "extra_shower" ||
     hasShowerSignal ||
     hasShowerWord
   ) {
@@ -228,6 +287,8 @@ function getItemCode(item: BookingItemRow) {
   if (
     productCode === "luggage" ||
     productType === "luggage" ||
+    productCode === "extra_luggage" ||
+    productType === "extra_luggage" ||
     hasBagSignal ||
     hasBagWord
   ) {
@@ -262,21 +323,22 @@ function getExtraCounts(item: BookingItemRow) {
         label.includes("supplementaire") ||
         label.includes("suplementar") ||
         label.includes("zusatz") ||
-        label.includes("dodatk");
+        label.includes("dodatk") ||
+        label.includes("lisas");
 
       const isBag =
-  label.includes("luggage") ||
-  label.includes("bag") ||
-  label.includes("bagagem") ||
-  label.includes("mala") ||
-  label.includes("maleta") ||
-  label.includes("equipaje") ||
-  label.includes("valise") ||
-  label.includes("bagag") ||
-  label.includes("baga") ||
-  label.includes("waliz") ||
-  label.includes("gepack") ||
-  label.includes("gepaeck");
+        label.includes("luggage") ||
+        label.includes("bag") ||
+        label.includes("bagagem") ||
+        label.includes("mala") ||
+        label.includes("maleta") ||
+        label.includes("equipaje") ||
+        label.includes("valise") ||
+        label.includes("bagag") ||
+        label.includes("baga") ||
+        label.includes("waliz") ||
+        label.includes("gepack") ||
+        label.includes("gepaeck");
 
       const isShower =
         label.includes("shower") ||
@@ -285,7 +347,8 @@ function getExtraCounts(item: BookingItemRow) {
         label.includes("doccia") ||
         label.includes("douche") ||
         label.includes("dusche") ||
-        label.includes("prysznic");
+        label.includes("prysznic") ||
+        label.includes("suihku");
 
       if (isExtra && isBag) acc.bags += qty;
       if (isExtra && isShower) acc.showers += qty;
@@ -317,16 +380,6 @@ function getYesterdayString() {
   }).format(now);
 }
 
-function isYesterday(date: string | null) {
-  if (!date) return false;
-  return date === getYesterdayString();
-}
-
-function isPast(date: string | null) {
-  if (!date) return false;
-  return date < getTodayString();
-}
-
 function getLocalDateFromCreatedAt(createdAt: string) {
   const date = new Date(createdAt);
 
@@ -341,6 +394,8 @@ function getLocalDateFromCreatedAt(createdAt: string) {
 function getBookingDate(booking: BookingRow, meta: BookingMetaSummary) {
   if (meta.date) return meta.date;
   if (booking.service_date) return booking.service_date;
+  if (booking.booking_date) return booking.booking_date;
+
   return getLocalDateFromCreatedAt(booking.created_at);
 }
 
@@ -360,13 +415,28 @@ function emptyMeta(): BookingMetaSummary {
   };
 }
 
+function getBookingRevenue(
+  booking: BookingRow,
+  bookingItems: BookingItemRow[]
+) {
+  const computedRevenue = bookingItems.reduce(
+    (sum, item) => sum + Number(item.line_total ?? 0),
+    0
+  );
+
+  if (computedRevenue > 0) return computedRevenue;
+
+  return Number(booking.total_amount || 0);
+}
+
 export default async function AdminHistoryPage({
   searchParams,
 }: {
   searchParams: Promise<{ date?: string }>;
 }) {
   const params = await searchParams;
-const selectedDate = params.date?.trim() || getYesterdayString();
+  const selectedDate = params.date?.trim() || getYesterdayString();
+
   const supabase = await createClient();
 
   const {
@@ -388,38 +458,38 @@ const selectedDate = params.date?.trim() || getYesterdayString();
   }
 
   const { data: bookings } = await supabase
-  .from("bookings")
-  .select("*")
-  .order("created_at", { ascending: false });
+    .from("bookings")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-const visibleBookings = ((bookings as BookingRow[]) ?? []).filter(
-  (booking) => !isPendingPaymentBooking(booking)
-);
+  const visibleBookings = ((bookings as BookingRow[]) ?? []).filter(
+    (booking) => !isPendingPaymentBooking(booking)
+  );
 
-const bookingIds = visibleBookings.map((b) => b.id);
+  const bookingIds = visibleBookings.map((booking) => booking.id);
 
-let items: BookingItemRow[] = [];
+  let items: BookingItemRow[] = [];
 
-if (bookingIds.length > 0) {
-  const chunkSize = 100;
+  if (bookingIds.length > 0) {
+    const chunkSize = 100;
 
-  for (let i = 0; i < bookingIds.length; i += chunkSize) {
-    const chunk = bookingIds.slice(i, i + chunkSize);
+    for (let i = 0; i < bookingIds.length; i += chunkSize) {
+      const chunk = bookingIds.slice(i, i + chunkSize);
 
-    const { data, error } = await supabase
-      .from("booking_items")
-      .select("booking_id, quantity, line_total, title, product_type, meta")
-      .in("booking_id", chunk);
+      const { data, error } = await supabase
+        .from("booking_items")
+        .select("booking_id, quantity, line_total, title, product_type, meta")
+        .in("booking_id", chunk);
 
-    if (error) {
-      console.error("history booking_items chunk error:", error);
-    }
+      if (error) {
+        console.error("history booking_items chunk error:", error);
+      }
 
-    if (data) {
-      items = [...items, ...(data as BookingItemRow[])];
+      if (data) {
+        items = [...items, ...(data as BookingItemRow[])];
+      }
     }
   }
-}
 
   const bookingMetaMap = new Map<string, BookingMetaSummary>();
 
@@ -486,8 +556,18 @@ if (bookingIds.length > 0) {
         : current.pick_up;
 
     const showerTime =
-      typeof item.meta?.showerTime === "string"
+      typeof item.meta?.showerTime === "string" &&
+      item.meta.showerTime.trim() !== ""
         ? item.meta.showerTime
+        : typeof item.meta?.shower_time === "string" &&
+          item.meta.shower_time.trim() !== ""
+        ? item.meta.shower_time
+        : typeof item.meta?.showerStartTime === "string" &&
+          item.meta.showerStartTime.trim() !== ""
+        ? item.meta.showerStartTime
+        : typeof item.meta?.shower_start_time === "string" &&
+          item.meta.shower_start_time.trim() !== ""
+        ? item.meta.shower_start_time
         : current.shower_time;
 
     bookingMetaMap.set(item.booking_id, {
@@ -506,267 +586,376 @@ if (bookingIds.length > 0) {
   }
 
   const historyBookings = [...visibleBookings]
-  .filter((booking) => {
-    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-    const bookingDate = getBookingDate(booking, meta);
+    .filter((booking) => {
+      const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+      const bookingDate = getBookingDate(booking, meta);
 
-    return bookingDate === selectedDate;
-  })
+      return bookingDate === selectedDate;
+    })
     .sort((a, b) => {
-      const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
-      const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
-
-      const aDate = getBookingDate(a, aMeta);
-      const bDate = getBookingDate(b, bMeta);
-
-      if (aDate !== bDate) {
-        return bDate.localeCompare(aDate);
-      }
-
       const aTime = a.check_out_time ? new Date(a.check_out_time).getTime() : 0;
       const bTime = b.check_out_time ? new Date(b.check_out_time).getTime() : 0;
 
-      return bTime - aTime;
+      if (aTime !== bTime) return bTime - aTime;
+
+      return b.created_at.localeCompare(a.created_at);
     });
 
-  const sourceKeys = [
-    "choose",
-    "site",
-    "viator",
-    "walkin",
-    "turismo",
-    "hector",
-    "pilar",
-    "melia",
-    "other_host",
-    "other",
-    "booking",
-    "porta",
-  ] as const;
+  let bagsSelected = 0;
+  let showersSelected = 0;
+  let combosSelected = 0;
+  let revenueSelected = 0;
 
-  const sourceHistoryCounts: Record<string, number> = {};
-const sourceHistoryRevenue: Record<string, number> = {};
+  const citiesSelectedCounts: Record<string, number> = {};
+  const sourceSelectedCounts: Record<string, number> = {};
+  const sourceSelectedRevenue: Record<string, number> = {};
+  const paymentSelectedCounts: Record<string, number> = {};
+  const paymentSelectedRevenue: Record<string, number> = {};
 
-for (const key of sourceKeys) {
-  sourceHistoryCounts[key] = 0;
-  sourceHistoryRevenue[key] = 0;
-}
+  for (const booking of historyBookings) {
+    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+    const bookingItems = items.filter((item) => item.booking_id === booking.id);
 
-for (const booking of historyBookings) {
-  const currentSource = booking.source ?? "choose";
+    const currentSource = booking.source ?? "choose";
+    const currentPayment = booking.payment_method ?? "unpaid";
 
-  sourceHistoryCounts[currentSource] =
-    (sourceHistoryCounts[currentSource] ?? 0) + 1;
+    sourceSelectedCounts[currentSource] =
+      (sourceSelectedCounts[currentSource] ?? 0) + 1;
 
-  if (!countsForRevenue(booking)) {
-    continue;
+    paymentSelectedCounts[currentPayment] =
+      (paymentSelectedCounts[currentPayment] ?? 0) + 1;
+
+    if (countsForRevenue(booking)) {
+      const bookingRevenue = getBookingRevenue(booking, bookingItems);
+
+      revenueSelected += bookingRevenue;
+
+      sourceSelectedRevenue[currentSource] =
+        (sourceSelectedRevenue[currentSource] ?? 0) + bookingRevenue;
+
+      paymentSelectedRevenue[currentPayment] =
+        (paymentSelectedRevenue[currentPayment] ?? 0) + bookingRevenue;
+
+      for (const item of bookingItems) {
+        const code = getItemCode(item);
+        const extraCounts = getExtraCounts(item);
+
+        if (code === "luggage") bagsSelected += item.quantity;
+        if (code === "shower") showersSelected += item.quantity;
+        if (code === "combo") combosSelected += item.quantity;
+
+        bagsSelected += extraCounts.bags;
+        showersSelected += extraCounts.showers;
+      }
+    }
+
+    const cityName = (booking.city ?? meta.city ?? "").trim();
+
+    if (cityName) {
+      citiesSelectedCounts[cityName] =
+        (citiesSelectedCounts[cityName] ?? 0) + 1;
+    }
   }
 
-  const bookingItems = items.filter((item) => item.booking_id === booking.id);
-
-  const computedRevenue = bookingItems.reduce(
-    (sum, item) => sum + Number(item.line_total ?? 0),
-    0
-  );
-
-  const bookingRevenue =
-    computedRevenue > 0 ? computedRevenue : Number(booking.total_amount || 0);
-
-  sourceHistoryRevenue[currentSource] =
-    (sourceHistoryRevenue[currentSource] ?? 0) + bookingRevenue;
-}
-
-  const amount = Number(booking.total_amount || 0);
-
-  paymentYesterdayRevenue[payment] =
-    (paymentYesterdayRevenue[payment] ?? 0) + amount;
-}
+  const citiesSelectedList = Object.entries(citiesSelectedCounts)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 12);
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Admin · Histórico de Reservas</h1>
+          <h1 className="text-2xl font-bold">Admin · Histórico</h1>
           <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
         </div>
 
-        <div className="mt-1">
-          <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+        <div className="w-full lg:w-auto">
+          <div className="flex w-full gap-2 lg:w-auto">
+            <Link
+              href="/admin"
+              className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 lg:w-40 lg:flex-none"
+            >
+              Admin
+            </Link>
+
+            <form
+              action="/admin/history"
+              method="get"
+              className="flex flex-[2] gap-2 lg:flex-none"
+            >
+              <input
+                type="date"
+                name="date"
+                defaultValue={selectedDate}
+                max={getTodayString()}
+                className="h-12 min-w-0 flex-1 rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm lg:w-40"
+              />
+
+              <button
+                type="submit"
+                className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50"
+              >
+                Ver
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Link
-          href="/admin"
-          className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
-        >
-          ← Voltar ao admin
-        </Link>
-
-        <div className="rounded-xl border px-4 py-2 text-sm">
-          Total histórico: <strong>{historyBookings.length}</strong>
-        </div>
-      </div>
-
-      <section className="rounded-xl border p-4">
-        <div className="mb-3 text-sm font-semibold text-gray-700">
-          Sources in history
+      <section className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Bags</div>
+          <div className="text-xl font-bold">{bagsSelected}</div>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-sm">
-          {Object.entries(sourceHistoryCounts)
-  .filter(([key, count]) => count > 0 || (sourceHistoryRevenue[key] ?? 0) > 0)
-  .map(([key, count]) => {
-              const colorClass =
-                key === "choose"
-                  ? "bg-zinc-100 text-zinc-800"
-                  : key === "site"
-                  ? "bg-pink-100 text-pink-800"
-                  : key === "viator"
-                  ? "bg-green-100 text-green-800"
-                  : key === "booking"
-                  ? "bg-blue-100 text-blue-800"
-                  : key === "walkin"
-                  ? "bg-orange-100 text-orange-800"
-                  : key === "porta"
-                  ? "bg-orange-200 text-orange-800"
-                  : key === "turismo"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : key === "hector" ||
-                    key === "pilar" ||
-                    key === "melia" ||
-                    key === "other_host"
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-purple-100 text-purple-800";
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Showers</div>
+          <div className="text-xl font-bold">{showersSelected}</div>
+        </div>
 
-              return (
-                <span key={key} className={`rounded-full px-3 py-1 ${colorClass}`}>
-                  {key}: {count} · {formatCurrency(sourceHistoryRevenue[key] ?? 0, "EUR")}
-                </span>
-              );
-            })}
+        <div className="rounded-xl border px-4 py-3">
+          <div className="text-xs text-gray-500">Combos</div>
+          <div className="text-xl font-bold">{combosSelected}</div>
+        </div>
+
+        <div className="rounded-xl border px-4 py-3 bg-green-50">
+          <div className="text-xs text-gray-500">Revenue</div>
+          <div className="text-xl font-bold">
+            {formatCurrency(revenueSelected, "EUR")}
+          </div>
         </div>
       </section>
 
-      {!historyBookings.length ? (
-        <div className="rounded-2xl border p-6 text-sm text-gray-600">
-          Não existem reservas antigas no histórico.
+      <section className="rounded-xl border px-3 py-2">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="mr-1 font-semibold text-gray-700">Cities</span>
+
+          {citiesSelectedList.length ? (
+            citiesSelectedList.map(([city, count]) => (
+              <span
+                key={city}
+                className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-700"
+              >
+                {city}: {count}
+              </span>
+            ))
+          ) : (
+            <span className="text-gray-500">No cities for this day.</span>
+          )}
         </div>
-      ) : (
-        <section className="overflow-x-auto rounded-2xl border">
-          <table className="w-full min-w-[1200px] text-sm">
-            <thead className="bg-gray-50">
-              <tr className="border-b text-left text-[13px]">
-                <th className="px-3 py-2">Código</th>
-                <th className="w-[108px] px-2 py-2">Source</th>
-                <th className="w-[116px] px-2 py-2">Payment</th>
-                <th className="w-[118px] px-2 py-2">Status</th>
-                <th className="px-2 py-2">Date</th>
-                <th className="px-2 py-2">Cliente</th>
-                <th className="px-2 py-2">City</th>
-                <th className="px-2 py-2">Bags</th>
-                <th className="px-2 py-2">Shws</th>
-                <th className="px-2 py-2">Lug+Shw</th>
-                <th className="px-2 py-2">In</th>
-                <th className="px-2 py-2">Out</th>
-                <th className="px-2 py-2">Total</th>
-              </tr>
-            </thead>
+      </section>
 
-            <tbody>
-              {historyBookings.map((booking) => {
-                const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-                const normalizedStatus = normalizeStatus(booking.status);
-                const isFinished = normalizedStatus === "completed";
+      <section className="rounded-xl border px-3 py-2">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+              <span className="mr-1 font-semibold text-gray-700">
+                Day by source
+              </span>
 
-                return (
-                  <tr
-                    key={booking.id}
-                    className={`border-b ${getSourceRowClass(booking.source ?? null)}`}
-                  >
-                    <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
-                      <Link
-                        href={`/admin/booking/${booking.id}`}
-                        className="underline hover:text-blue-600"
-                      >
-                        {booking.booking_code}
-                      </Link>
-                    </td>
+              {Object.entries(sourceSelectedCounts).length ? (
+                Object.entries(sourceSelectedCounts)
+                  .filter(
+                    ([key, count]) =>
+                      count > 0 || (sourceSelectedRevenue[key] ?? 0) > 0
+                  )
+                  .map(([key, count]) => (
+                    <span
+                      key={key}
+                      className={`rounded-full px-2 py-0.5 ${getSourceColorClass(
+                        key
+                      )}`}
+                    >
+                      {key}: {count} ·{" "}
+                      {formatCurrency(sourceSelectedRevenue[key] ?? 0, "EUR")}
+                    </span>
+                  ))
+              ) : (
+                <span className="text-gray-500">No sources.</span>
+              )}
+            </div>
+          </div>
 
-                    <td className="w-[108px] px-2 py-2 align-top">
-                      <AdminSourceSelect
-                        bookingId={booking.id}
-                        value={booking.source ?? "choose"}
-                      />
-                    </td>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 text-xs lg:justify-end">
+              <span className="mr-1 font-semibold text-gray-700">
+                Payments
+              </span>
 
-                    <td className="w-[116px] px-2 py-2 align-top">
-                      <AdminPaymentMethodSelect
-                        bookingId={booking.id}
-                        value={booking.payment_method ?? "unpaid"}
-                      />
-                    </td>
+              {Object.entries(paymentSelectedCounts).length ? (
+                Object.entries(paymentSelectedCounts)
+                  .filter(
+                    ([payment, count]) =>
+                      count > 0 ||
+                      (paymentSelectedRevenue[payment] ?? 0) > 0
+                  )
+                  .map(([payment, count]) => (
+                    <span
+                      key={payment}
+                      className={`rounded-full px-2 py-0.5 ${getPaymentColorClass(
+                        payment
+                      )}`}
+                    >
+                      {payment}: {count} ·{" "}
+                      {formatCurrency(
+                        paymentSelectedRevenue[payment] ?? 0,
+                        "EUR"
+                      )}
+                    </span>
+                  ))
+              ) : (
+                <span className="text-gray-500">No payments.</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
-                    <td className="w-[118px] px-2 py-2 align-top">
-                      <AdminStatusSelect
-                        bookingId={booking.id}
-                        value={normalizeStatus(booking.status)}
-                      />
-                    </td>
+      <section className="space-y-2">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-bold">
+            {formatServiceDate(selectedDate)}
+          </h2>
 
-                    <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
-                      {formatServiceDate(getBookingDate(booking, meta))}
-                    </td>
+          <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-700">
+            {historyBookings.length}
+          </div>
+        </div>
 
-                    <td className="px-2 py-2 align-top">
-                      <div className="max-w-[170px] text-[13px] leading-tight font-medium">
-                        {booking.customer_name}
-                      </div>
-                      <div className="text-[11px] leading-tight text-gray-500">
-                        {booking.source === "viator" ? "-" : booking.customer_email || "-"}
-                      </div>
-                    </td>
+        {!historyBookings.length ? (
+          <div className="rounded-2xl border p-6 text-sm text-gray-600">
+            Não existem reservas para este dia.
+          </div>
+        ) : (
+          <section className="overflow-x-auto rounded-2xl border">
+            <table className="w-full min-w-[1200px] text-sm">
+              <thead className="bg-gray-50">
+                <tr className="border-b text-left text-[13px]">
+                  <th className="px-3 py-2">Código</th>
+                  <th className="w-[108px] px-2 py-2">Source</th>
+                  <th className="w-[116px] px-2 py-2">Payment</th>
+                  <th className="w-[118px] px-2 py-2">Status</th>
+                  <th className="px-2 py-2">Date</th>
+                  <th className="px-2 py-2">Cliente</th>
+                  <th className="px-2 py-2">City</th>
+                  <th className="px-2 py-2">Bags</th>
+                  <th className="px-2 py-2">Shws</th>
+                  <th className="px-2 py-2">Lug+Shw</th>
+                  <th className="px-2 py-2">In</th>
+                  <th className="px-2 py-2">Out</th>
+                  <th className="px-2 py-2">Total</th>
+                </tr>
+              </thead>
 
-                    <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
-                      {booking.city ?? meta.city ?? "-"}
-                    </td>
+              <tbody>
+                {historyBookings.map((booking) => {
+                  const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+                  const normalizedStatus = normalizeStatus(booking.status);
+                  const isFinished = normalizedStatus === "completed";
 
-                    <td className="px-2 py-2 align-top text-[12px]">
-                      {meta.bags || "-"}
-                    </td>
+                  return (
+                    <tr
+                      key={booking.id}
+                      className={`border-b ${getSourceRowClass(
+                        booking.source ?? null
+                      )}`}
+                    >
+                      <td className="px-3 py-2 font-semibold text-[13px] leading-tight">
+                        <Link
+                          href={`/admin/booking/${booking.id}`}
+                          className="underline hover:text-blue-600"
+                        >
+                          {booking.booking_code}
+                        </Link>
+                      </td>
 
-                    <td className="px-2 py-2 align-top text-[12px]">
-                      {meta.showers || "-"}
-                    </td>
+                      <td className="w-[108px] px-2 py-2 align-top">
+                        <AdminSourceSelect
+                          bookingId={booking.id}
+                          value={booking.source ?? "choose"}
+                        />
+                      </td>
 
-                    <td className="px-2 py-2 align-top text-[12px]">
-                      {meta.combo || "-"}
-                    </td>
+                      <td className="w-[116px] px-2 py-2 align-top">
+                        <AdminPaymentMethodSelect
+                          bookingId={booking.id}
+                          value={booking.payment_method ?? "unpaid"}
+                        />
+                      </td>
 
-                    <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-                      {isFinished
-                        ? formatRealTime(booking.check_in_time)
-                        : getFirstTimeSlot(meta.time_in || meta.drop_off)}
-                    </td>
+                      <td className="w-[118px] px-2 py-2 align-top">
+                        <AdminStatusSelect
+                          bookingId={booking.id}
+                          value={normalizeStatus(booking.status)}
+                        />
+                      </td>
 
-                    <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
-                      {isFinished
-                        ? formatRealTime(booking.check_out_time)
-                        : getFirstTimeSlot(
-                            meta.time_out || meta.pick_up || meta.shower_time
-                          )}
-                    </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-[12px] align-top">
+                        {formatServiceDate(getBookingDate(booking, meta))}
+                      </td>
 
-                    <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
-                      {formatCurrency(Number(booking.total_amount), booking.currency)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
-      )}
+                      <td className="px-2 py-2 align-top">
+                        <div className="max-w-[170px] text-[13px] leading-tight font-medium">
+                          {booking.customer_name}
+                        </div>
+                        <div className="text-[11px] leading-tight text-gray-500">
+                          {booking.source === "viator"
+                            ? "-"
+                            : booking.customer_email || "-"}
+                        </div>
+                      </td>
+
+                      <td className="px-2 py-2 align-top text-[12px] leading-tight max-w-[90px]">
+                        {booking.city ?? meta.city ?? "-"}
+                      </td>
+
+                      <td className="px-2 py-2 align-top text-[12px]">
+                        {meta.bags || "-"}
+                      </td>
+
+                      <td className="px-2 py-2 align-top text-[12px]">
+                        {meta.showers || "-"}
+                      </td>
+
+                      <td className="px-2 py-2 align-top text-[12px]">
+                        {meta.combo || "-"}
+                      </td>
+
+                      <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+                        {isFinished
+                          ? formatRealTime(booking.check_in_time)
+                          : getFirstTimeSlot(meta.time_in || meta.drop_off)}
+                      </td>
+
+                      <td className="px-2 py-2 align-top text-[12px] leading-tight whitespace-nowrap">
+                        {isFinished
+                          ? formatRealTime(booking.check_out_time)
+                          : getFirstTimeSlot(
+                              meta.time_out || meta.pick_up || meta.shower_time
+                            )}
+                      </td>
+
+                      <td className="px-2 py-2 align-top text-[12px] font-medium whitespace-nowrap">
+                        {formatCurrency(
+                          getBookingRevenue(
+                            booking,
+                            items.filter((item) => item.booking_id === booking.id)
+                          ),
+                          booking.currency
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        )}
+      </section>
+
+      <div className="flex justify-center border-t pt-6">
+        <LogoutButton className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-8 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50" />
+      </div>
     </main>
   );
 }
