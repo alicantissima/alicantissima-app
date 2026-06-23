@@ -975,14 +975,6 @@ sortByShowerTimeThenLuggage(tomorrowBookings, bookingMetaMap);
     0
   );
 
-    const visibleBookingsCount =
-  todayBookings.length +
-  insideBookings.length +
-  finishedBookings.length +
-  cancelledBookings.length +
-  tomorrowBookings.length +
-  upcomingBookings.length;
-
 function renderRevenueBar(bookingsList: BookingRow[], label: string) {
   if (!bookingsList.length) return null;
 
@@ -1086,28 +1078,23 @@ const total = revenueBookings.reduce(
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <Link
               href="/desk"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+              className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
             >
               Abrir Desk
             </Link>
 
-            <LogoutButton className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+            <LogoutButton className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <AdminQrScanner className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50" />
+            <AdminQrScanner className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
 
             <Link
               href="/admin/history"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+              className="inline-flex h-8 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
             >
               Histórico
             </Link>
-
-            <div className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700">
-              Total visíveis:
-              <strong className="ml-1 font-semibold">{visibleBookingsCount}</strong>
-            </div>
           </div>
         </div>
       </div>
