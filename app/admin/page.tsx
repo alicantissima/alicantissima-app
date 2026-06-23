@@ -968,12 +968,12 @@ sortByShowerTimeThenLuggage(tomorrowBookings, bookingMetaMap);
 function renderRevenueBar(bookingsList: BookingRow[], label: string) {
   if (!bookingsList.length) return null;
 
-const revenueBookings = bookingsList.filter(countsForRevenue);
+  const revenueBookings = bookingsList.filter(countsForRevenue);
 
-const total = revenueBookings.reduce(
-  (sum, booking) => sum + Number(booking.total_amount || 0),
-  0
-);
+  const total = revenueBookings.reduce(
+    (sum, booking) => sum + Number(booking.total_amount || 0),
+    0
+  );
 
   const counts: Record<SourceKey, number> = {
     choose: 0,
@@ -1010,6 +1010,52 @@ const total = revenueBookings.reduce(
       revenue[source] += amount;
     }
   }
+
+  return (
+    <section className="rounded-xl border px-3 py-2">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs">
+          <span className="mr-1 font-semibold text-gray-700">{label}</span>
+
+          {sourceKeys
+            .filter((key) => counts[key] > 0 || revenue[key] > 0)
+            .map((key) => {
+              const colorClass =
+                key === "choose"
+                  ? "bg-zinc-100 text-zinc-800"
+                  : key === "site"
+                  ? "bg-pink-100 text-pink-800"
+                  : key === "viator"
+                  ? "bg-green-100 text-green-800"
+                  : key === "walkin"
+                  ? "bg-orange-100 text-orange-800"
+                  : key === "turismo"
+                  ? "bg-sky-100 text-sky-800"
+                  : key === "hector" ||
+                    key === "pilar" ||
+                    key === "melia" ||
+                    key === "other_host"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-purple-100 text-purple-800";
+
+              return (
+                <span
+                  key={key}
+                  className={`rounded-full px-2 py-0.5 ${colorClass}`}
+                >
+                  {key}: {counts[key]} · {formatCurrency(revenue[key], "EUR")}
+                </span>
+              );
+            })}
+        </div>
+
+        <div className="shrink-0 text-xs font-semibold text-gray-900 lg:text-right">
+          {revenueBookings.length} · {formatCurrency(total, "EUR")}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function renderTodayResultsBar() {
   return (
@@ -1232,5 +1278,4 @@ function renderTodayResultsBar() {
 
         </main>
   );
-}
 }
