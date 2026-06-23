@@ -1230,6 +1230,7 @@ function renderTodayResultsBar() {
   topContent: renderRevenueBar(upcomingBookings, "Results by source upcoming"),
 })}
 
-    </main>
+        </main>
   );
+}
 }
