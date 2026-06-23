@@ -360,7 +360,13 @@ function emptyMeta(): BookingMetaSummary {
   };
 }
 
-export default async function AdminHistoryPage() {
+export default async function AdminHistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const params = await searchParams;
+const selectedDate = params.date?.trim() || getYesterdayString();
   const supabase = await createClient();
 
   const {
@@ -500,11 +506,12 @@ if (bookingIds.length > 0) {
   }
 
   const historyBookings = [...visibleBookings]
-    .filter((booking) => {
-      const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-      const bookingDate = getBookingDate(booking, meta);
-      return isPast(bookingDate);
-    })
+  .filter((booking) => {
+    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+    const bookingDate = getBookingDate(booking, meta);
+
+    return bookingDate === selectedDate;
+  })
     .sort((a, b) => {
       const aMeta = bookingMetaMap.get(a.id) ?? emptyMeta();
       const bMeta = bookingMetaMap.get(b.id) ?? emptyMeta();
@@ -568,26 +575,6 @@ for (const booking of historyBookings) {
   sourceHistoryRevenue[currentSource] =
     (sourceHistoryRevenue[currentSource] ?? 0) + bookingRevenue;
 }
-
-const yesterdayBookings = historyBookings.filter((booking) => {
-  const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-  const bookingDate = getBookingDate(booking, meta);
-
-  return isYesterday(bookingDate);
-});
-
-const paymentYesterdayCounts: Record<string, number> = {};
-const paymentYesterdayRevenue: Record<string, number> = {};
-
-for (const booking of yesterdayBookings) {
-  const payment = booking.payment_method ?? "unpaid";
-
-  paymentYesterdayCounts[payment] =
-    (paymentYesterdayCounts[payment] ?? 0) + 1;
-
-  if (!countsForRevenue(booking)) {
-    continue;
-  }
 
   const amount = Number(booking.total_amount || 0);
 
@@ -660,38 +647,6 @@ for (const booking of yesterdayBookings) {
             })}
         </div>
       </section>
-
-{yesterdayBookings.length > 0 && (
-  <>
-    <div className="min-w-0 lg:text-right">
-      <div className="mb-3 text-sm font-semibold text-gray-700">
-        Payments yesterday
-      </div>
-
-      <div className="flex flex-wrap gap-2 text-sm lg:justify-end">
-        {Object.entries(paymentYesterdayCounts).map(([payment, count]) => (
-          <span
-            key={payment}
-            className="rounded-full bg-green-100 px-3 py-1 text-green-800"
-          >
-            {payment}: {count} ·{" "}
-            {formatCurrency(paymentYesterdayRevenue[payment] ?? 0, "EUR")}
-          </span>
-        ))}
-      </div>
-    </div>
-
-    <section className="rounded-xl border p-4">
-      <div className="mb-3 text-sm font-semibold text-gray-700">
-        Results by source yesterday
-      </div>
-
-      <div className="flex flex-wrap gap-2 text-sm">
-  <span className="text-gray-500">Em preparação.</span>
-</div>
-    </section>
-  </>
-)}
 
       {!historyBookings.length ? (
         <div className="rounded-2xl border p-6 text-sm text-gray-600">
