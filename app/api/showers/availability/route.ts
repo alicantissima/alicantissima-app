@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
+  getFreeShowerRoom,
   getShowerDurationMinutes,
   getShowerEndTime,
   timeToMinutes,
@@ -19,6 +20,7 @@ function getDynamicShowerSlotLabel(startTime: string, quantity: number) {
   const endTime = getShowerEndTime(startTime, quantity);
   return `${timeToDisplay(startTime)}-${timeToDisplay(endTime)}`;
 }
+
 function minutesToTime(totalMinutes: number) {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
@@ -44,18 +46,10 @@ function generateShowerStartTimes(durationMinutes: number) {
   return times;
 }
 
-function rangesOverlap(
-  startA: number,
-  endA: number,
-  startB: number,
-  endB: number
-) {
-  return startA < endB && startB < endA;
-}
-
 function getExistingShowerRange(item: {
   quantity: number | null;
   meta: Record<string, unknown> | null;
+  shower_room?: number | null;
 }) {
   const meta = item.meta ?? {};
 
@@ -66,7 +60,8 @@ function getExistingShowerRange(item: {
         ? meta.shower_time
         : typeof meta.showerStartTime === "string" && meta.showerStartTime.trim()
           ? meta.showerStartTime
-          : typeof meta.shower_start_time === "string" && meta.shower_start_time.trim()
+          : typeof meta.shower_start_time === "string" &&
+              meta.shower_start_time.trim()
             ? meta.shower_start_time
             : "";
 
@@ -92,7 +87,19 @@ function getExistingShowerRange(item: {
     showerTime,
     showerEndTime,
     quantity,
+    showerRoom: item.shower_room ?? null,
   };
+}
+
+function hasShowerTime(meta: Record<string, unknown> | null) {
+  return Boolean(
+    (typeof meta?.showerTime === "string" && meta.showerTime.trim()) ||
+      (typeof meta?.shower_time === "string" && meta.shower_time.trim()) ||
+      (typeof meta?.showerStartTime === "string" &&
+        meta.showerStartTime.trim()) ||
+      (typeof meta?.shower_start_time === "string" &&
+        meta.shower_start_time.trim())
+  );
 }
 
 export async function GET(req: NextRequest) {
@@ -100,8 +107,8 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
 
     const date = searchParams.get("date") || "";
-const quantity = Number(searchParams.get("quantity") || "1");
-const excludeBookingId = searchParams.get("excludeBookingId") || "";
+    const quantity = Number(searchParams.get("quantity") || "1");
+    const excludeBookingId = searchParams.get("excludeBookingId") || "";
 
     if (!date) {
       return NextResponse.json(
@@ -111,34 +118,35 @@ const excludeBookingId = searchParams.get("excludeBookingId") || "";
     }
 
     if (!Number.isFinite(quantity) || quantity <= 0) {
-  return NextResponse.json(
-    { ok: false, error: "Invalid quantity." },
-    { status: 400 }
-  );
-}
+      return NextResponse.json(
+        { ok: false, error: "Invalid quantity." },
+        { status: 400 }
+      );
+    }
 
-const supabase = createAdminClient();
+    const supabase = createAdminClient();
 
-const { data, error } = await supabase
-  .from("booking_items")
-  .select(
-    `
-    id,
-    quantity,
-    product_type,
-    title,
-    meta,
-    booking:bookings!inner (
-      id,
-      status,
-      service_date,
-      payment_status,
-      payment_expires_at
-    )
-  `
-  )
-  .eq("booking.service_date", date)
-  .not("booking.status", "in", '("cancelled","no_show","completed")');
+    const { data, error } = await supabase
+      .from("booking_items")
+      .select(
+        `
+        id,
+        quantity,
+        product_type,
+        title,
+        meta,
+        shower_room,
+        booking:bookings!inner (
+          id,
+          status,
+          service_date,
+          payment_status,
+          payment_expires_at
+        )
+      `
+      )
+      .eq("booking.service_date", date)
+      .not("booking.status", "in", '("cancelled","no_show","completed")');
 
     if (error) {
       console.error("showers availability error:", error);
@@ -148,85 +156,98 @@ const { data, error } = await supabase
       );
     }
 
+    const { data: showerBlocks, error: showerBlocksError } = await supabase
+      .from("shower_blocks")
+      .select("id, shower_room, start_time, end_time, reason")
+      .eq("service_date", date);
+
+    if (showerBlocksError) {
+      console.error("shower blocks availability error:", showerBlocksError);
+      return NextResponse.json(
+        { ok: false, error: showerBlocksError.message },
+        { status: 500 }
+      );
+    }
+
     const nowIso = new Date().toISOString();
 
-const activeItems =
-  data?.filter((item: any) => {
-    const booking = item.booking;
+    const activeItems =
+      data?.filter((item: any) => {
+        const booking = item.booking;
 
-    if (!booking) return false;
+        if (!booking) return false;
 
-    if (excludeBookingId && booking.id === excludeBookingId) {
-      return false;
-    }
+        if (excludeBookingId && booking.id === excludeBookingId) {
+          return false;
+        }
 
-    const status = booking.status;
-    const paymentStatus = booking.payment_status;
-    const paymentExpiresAt = booking.payment_expires_at;
+        const status = booking.status;
+        const paymentStatus = booking.payment_status;
+        const paymentExpiresAt = booking.payment_expires_at;
 
-    if (
-      status === "cancelled" ||
-      status === "no_show" ||
-      status === "completed"
-    ) {
-      return false;
-    }
+        if (
+          status === "cancelled" ||
+          status === "no_show" ||
+          status === "completed"
+        ) {
+          return false;
+        }
 
-    if (status === "booked" || status === "inside") {
-  return true;
-}
+        if (status === "booked" || status === "inside") {
+          return true;
+        }
 
-if (status === "pending_payment" || paymentStatus === "pending_payment") {
-  return Boolean(paymentExpiresAt && paymentExpiresAt > nowIso);
-}
+        if (status === "pending_payment" || paymentStatus === "pending_payment") {
+          return Boolean(paymentExpiresAt && paymentExpiresAt > nowIso);
+        }
 
-return false;
-  }) ?? [];
+        return false;
+      }) ?? [];
 
-const existingRanges =
-  activeItems
-    .filter((item) => {
-  const meta = item.meta as Record<string, unknown> | null;
+    const existingShowerItems = activeItems.filter((item: any) => {
+      const meta = item.meta as Record<string, unknown> | null;
 
-  return Boolean(
-    (typeof meta?.showerTime === "string" && meta.showerTime.trim()) ||
-      (typeof meta?.shower_time === "string" && meta.shower_time.trim()) ||
-      (typeof meta?.showerStartTime === "string" && meta.showerStartTime.trim()) ||
-      (typeof meta?.shower_start_time === "string" && meta.shower_start_time.trim())
-  );
-})
-    .map((item) =>
-      getExistingShowerRange({
-        quantity: item.quantity,
-        meta: item.meta as Record<string, unknown> | null,
-      })
-    )
-    .filter((value) => value !== null);
+      return (
+        (item.product_type === "shower" || item.product_type === "combo") &&
+        hasShowerTime(meta)
+      );
+    });
+
+    const existingRanges = existingShowerItems
+      .map((item: any) =>
+        getExistingShowerRange({
+          quantity: item.quantity,
+          meta: item.meta as Record<string, unknown> | null,
+          shower_room: item.shower_room,
+        })
+      )
+      .filter((value) => value !== null);
 
     const requestedDuration = getShowerDurationMinutes(quantity);
-
     const startTimes = generateShowerStartTimes(requestedDuration);
 
-const slots = startTimes.map((startTime) => {
-  const endTime = getShowerEndTime(startTime, quantity);
+    const slots = startTimes.map((startTime) => {
+      const endTime = getShowerEndTime(startTime, quantity);
 
-  const requestedStart = timeToMinutes(startTime);
-  const requestedEnd = requestedStart + requestedDuration;
+      const availableRoom = getFreeShowerRoom({
+        startTime,
+        endTime,
+        existingBookings: existingShowerItems,
+        showerBlocks: showerBlocks ?? [],
+      });
 
-  const isBlocked = existingRanges.some((range) =>
-    rangesOverlap(requestedStart, requestedEnd, range.start, range.end)
-  );
+      const isAvailable = availableRoom !== null;
+      const baseLabel = getDynamicShowerSlotLabel(startTime, quantity);
 
-  const baseLabel = getDynamicShowerSlotLabel(startTime, quantity);
-
-  return {
-    value: startTime,
-    label: isBlocked ? `${baseLabel} · Reserved` : baseLabel,
-    startTime,
-    endTime,
-    available: !isBlocked,
-  };
-});
+      return {
+        value: startTime,
+        label: isAvailable ? baseLabel : `${baseLabel} · Reserved`,
+        startTime,
+        endTime,
+        available: isAvailable,
+        availableRoom,
+      };
+    });
 
     return NextResponse.json({
       ok: true,
@@ -235,6 +256,7 @@ const slots = startTimes.map((startTime) => {
       durationMinutes: requestedDuration,
       slots,
       existing: existingRanges,
+      showerBlocks: showerBlocks ?? [],
     });
   } catch (error) {
     console.error("showers availability unexpected error:", error);

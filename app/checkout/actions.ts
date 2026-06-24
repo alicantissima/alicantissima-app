@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { sendPushToAll } from "@/lib/push/send-push";
 import {
+  getFreeShowerRoom,
   getShowerDurationMinutes,
   getShowerEndTime,
   timeToMinutes,
@@ -1178,6 +1179,7 @@ const meta = shouldApplyShowerDuration
   : currentMeta;
 
 return {
+  checkoutIndex: index,
   id: item.id,
   title: item.title.trim(),
   quantity,
@@ -1198,79 +1200,87 @@ const cancellationToken = isWalkin ? null : generateCancellationToken();
 
 const showerItems = items.filter(
   (item) =>
-    (item.productType === "shower" ||
-      item.productType === "combo") &&
-    typeof item.meta?.showerTime === "string"
+    (item.productType === "shower" || item.productType === "combo") &&
+    typeof item.meta?.showerTime === "string" &&
+    item.meta.showerTime.trim()
 );
 
-for (const item of showerItems) {
-  const meta = item.meta ?? {};
+const showerRoomByCheckoutIndex = new Map<number, 1 | 2>();
 
-  const showerTime =
-    typeof meta.showerTime === "string"
-      ? meta.showerTime
-      : "";
-
-  if (!showerTime) continue;
-
-  const showerQuantity = Number(
-    meta.showerQuantity || item.quantity || 1
-  );
-
-  const requestedStart =
-    timeToMinutes(showerTime);
-
-  const requestedEnd =
-    timeToMinutes(
-      getShowerEndTime(
-        showerTime,
-        showerQuantity
+if (showerItems.length > 0) {
+  const { data: existingItems, error: existingItemsError } = await supabase
+    .from("booking_items")
+    .select(`
+      id,
+      quantity,
+      product_type,
+      meta,
+      shower_room,
+      booking:bookings!inner (
+        status,
+        service_date,
+        payment_status,
+        payment_expires_at
       )
+    `)
+    .eq("booking.service_date", serviceDate)
+    .not(
+      "booking.status",
+      "in",
+      '("cancelled","no_show","completed")'
     );
 
-  const { data: existingItems } = await supabase
-  .from("booking_items")
-  .select(`
-    quantity,
-    meta,
-    booking:bookings!inner (
-      status,
-      service_date,
-      payment_status,
-      payment_expires_at
-    )
-  `)
-  .eq("booking.service_date", serviceDate)
-  .not(
-    "booking.status",
-    "in",
-    '("cancelled","no_show","completed")'
-  );
+  if (existingItemsError) {
+    console.error("existing shower items error:", existingItemsError);
 
-const nowIso = new Date().toISOString();
-
-const activeExistingItems = (existingItems ?? []).filter((existing: any) => {
-  const booking = existing.booking;
-
-  if (!booking) return false;
-
-  const status = booking.status;
-  const paymentStatus = booking.payment_status;
-  const paymentExpiresAt = booking.payment_expires_at;
-
-  if (status === "cancelled" || status === "no_show" || status === "completed") {
-    return false;
+    return {
+      ok: false,
+      error: existingItemsError.message || "Could not check shower availability.",
+    };
   }
 
-  if (status === "pending_payment" || paymentStatus === "pending_payment") {
-    return Boolean(paymentExpiresAt && paymentExpiresAt > nowIso);
+  const { data: showerBlocks, error: showerBlocksError } = await supabase
+    .from("shower_blocks")
+    .select("shower_room, start_time, end_time")
+    .eq("service_date", serviceDate);
+
+  if (showerBlocksError) {
+    console.error("shower blocks error:", showerBlocksError);
+
+    return {
+      ok: false,
+      error: showerBlocksError.message || "Could not check shower blocks.",
+    };
   }
 
-  return status === "booked" || status === "inside";
-});
+  const nowIso = new Date().toISOString();
 
-  const hasConflict =
-  activeExistingItems.some((existing) => {
+  const activeExistingItems = (existingItems ?? []).filter((existing: any) => {
+    const booking = existing.booking;
+
+    if (!booking) return false;
+
+    const status = booking.status;
+    const paymentStatus = booking.payment_status;
+    const paymentExpiresAt = booking.payment_expires_at;
+
+    if (
+      status === "cancelled" ||
+      status === "no_show" ||
+      status === "completed"
+    ) {
+      return false;
+    }
+
+    if (status === "pending_payment" || paymentStatus === "pending_payment") {
+      return Boolean(paymentExpiresAt && paymentExpiresAt > nowIso);
+    }
+
+    return status === "booked" || status === "inside";
+  });
+
+  const simulatedExistingShowerItems = activeExistingItems
+    .filter((existing: any) => {
       const existingMeta =
         (existing.meta as Record<string, unknown>) ?? {};
 
@@ -1279,37 +1289,56 @@ const activeExistingItems = (existingItems ?? []).filter((existing: any) => {
           ? existingMeta.showerTime
           : "";
 
-      if (!existingTime) return false;
-
-      const existingQuantity = Number(
-        existingMeta.showerQuantity ||
-          existing.quantity ||
-          1
-      );
-
-      const existingStart =
-        timeToMinutes(existingTime);
-
-      const existingEnd =
-        timeToMinutes(
-          getShowerEndTime(
-            existingTime,
-            existingQuantity
-          )
-        );
-
       return (
-        requestedStart < existingEnd &&
-        existingStart < requestedEnd
+        (existing.product_type === "shower" ||
+          existing.product_type === "combo") &&
+        Boolean(existingTime)
       );
+    })
+    .map((existing: any) => ({
+      id: existing.id,
+      quantity: existing.quantity,
+      product_type: existing.product_type,
+      meta: existing.meta,
+      // Reservas antigas sem sala ficam virtualmente na S1.
+      // Assim não deixamos o sistema esquecer reservas já existentes.
+      shower_room: existing.shower_room ?? 1,
+    }));
+
+  for (const item of showerItems) {
+    const meta = item.meta ?? {};
+
+    const showerTime =
+      typeof meta.showerTime === "string" ? meta.showerTime : "";
+
+    if (!showerTime) continue;
+
+    const showerQuantity = Number(meta.showerQuantity || item.quantity || 1);
+    const showerEndTime = getShowerEndTime(showerTime, showerQuantity);
+
+    const freeRoom = getFreeShowerRoom({
+      startTime: showerTime,
+      endTime: showerEndTime,
+      existingBookings: simulatedExistingShowerItems,
+      showerBlocks: showerBlocks ?? [],
     });
 
-  if (hasConflict) {
-    return {
-      ok: false,
-      error:
-        "This shower slot was just booked by another customer.",
-    };
+    if (!freeRoom) {
+      return {
+        ok: false,
+        error: "This shower slot was just booked by another customer.",
+      };
+    }
+
+    showerRoomByCheckoutIndex.set(item.checkoutIndex, freeRoom);
+
+    simulatedExistingShowerItems.push({
+      id: `new-${item.checkoutIndex}`,
+      quantity: item.quantity,
+      product_type: item.productType,
+      meta: item.meta,
+      shower_room: freeRoom,
+    });
   }
 }
 
@@ -1349,16 +1378,24 @@ language,
       };
     }
 
-    const bookingItems = items.map((item) => ({
-      booking_id: booking.id,
-      product_id: item.id,
-      product_type: item.productType,
-      title: item.title,
-      quantity: item.quantity,
-      unit_price: item.unitPrice,
-      line_total: item.totalPrice,
-      meta: item.meta,
-    }));
+    const bookingItems = items.map((item) => {
+  const isShowerItem =
+    item.productType === "shower" || item.productType === "combo";
+
+  return {
+    booking_id: booking.id,
+    product_id: item.id,
+    product_type: item.productType,
+    title: item.title,
+    quantity: item.quantity,
+    unit_price: item.unitPrice,
+    line_total: item.totalPrice,
+    shower_room: isShowerItem
+      ? showerRoomByCheckoutIndex.get(item.checkoutIndex) ?? null
+      : null,
+    meta: item.meta,
+  };
+});
 
     const { error: itemsError } = await supabase
       .from("booking_items")
