@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 type BookingItemRow = {
   id: string;
   quantity: number;
+  shower_room?: number | null;
   product_type?: string | null;
   title?: string | null;
   meta?: {
@@ -222,8 +223,9 @@ function getDeskShowerSummary(booking: BookingRow) {
   const items = booking.booking_items ?? [];
 
   let totalShowers = 0;
-  let showerStart = "";
-  let showerEnd = "";
+let showerStart = "";
+let showerEnd = "";
+let showerRoom = "";
 
   items.forEach((item) => {
     const quantity = Number(item.quantity || 0);
@@ -276,9 +278,13 @@ function getDeskShowerSummary(booking: BookingRow) {
       showerStart = formatDeskTime(start);
     }
 
-    if (!showerEnd && meta.showerEndTime) {
-      showerEnd = formatDeskTime(meta.showerEndTime);
-    }
+    if (!showerRoom && item.shower_room) {
+  showerRoom = `S${item.shower_room}`;
+}
+
+if (!showerRoom && item.shower_room) {
+  showerRoom = `S${item.shower_room}`;
+}
   });
 
   if (!totalShowers) return "";
@@ -290,7 +296,9 @@ function getDeskShowerSummary(booking: BookingRow) {
         ? showerStart
         : "";
 
-  return `${timeLabel ? `${timeLabel} · ` : ""}${totalShowers} shw`;
+  return `${timeLabel ? `${timeLabel} · ` : ""}${
+  showerRoom ? `${showerRoom} · ` : ""
+}${totalShowers} shw`;
 }
 
 function getDeskBagSummary(booking: BookingRow) {
@@ -554,6 +562,7 @@ export default async function DeskPage() {
     booking_items (
   id,
   quantity,
+  shower_room,
   product_type,
   title,
   meta
