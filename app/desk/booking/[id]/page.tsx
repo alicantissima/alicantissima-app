@@ -29,6 +29,7 @@ type BookingItem = {
   title?: string | null;
   quantity: number;
   line_total: number;
+  shower_room?: number | null;
   product_type?: string | null;
   meta?: {
     date?: string;
@@ -273,10 +274,10 @@ export default async function DeskBookingPage({
   if (error || !booking) notFound();
 
   const { data: bookingItemsData } = await supabase
-    .from("booking_items")
-    .select("id, title, quantity, line_total, product_type, meta")
-    .eq("booking_id", booking.id)
-    .order("id", { ascending: true });
+  .from("booking_items")
+  .select("id, title, quantity, line_total, shower_room, product_type, meta")
+  .eq("booking_id", booking.id)
+  .order("id", { ascending: true });
 
   const bookingItems = (bookingItemsData ?? []) as BookingItem[];
 
@@ -460,16 +461,25 @@ const backHref = cameFromAdmin ? "/admin" : "/desk";
                         )}
 
                         {showShowerTime && (
-                          <InlineEditTime
-                            bookingId={booking.id}
-                            itemId={item.id}
-                            label="Shower"
-                            field="showerTime"
-                            value={item.meta?.showerTime}
-                            showerQuantity={getRealShowerQuantity(item)}
-                            serviceDate={booking.service_date}
-                          />
-                        )}
+  <div className="space-y-2">
+    <InlineEditTime
+      bookingId={booking.id}
+      itemId={item.id}
+      label="Shower"
+      field="showerTime"
+      value={item.meta?.showerTime}
+      showerQuantity={getRealShowerQuantity(item)}
+      serviceDate={booking.service_date}
+    />
+
+    {item.shower_room && (
+      <div className="rounded-xl bg-blue-50 p-3 text-sm">
+        <div className="text-xs text-blue-500">Shower room</div>
+        <div className="font-bold text-blue-800">S{item.shower_room}</div>
+      </div>
+    )}
+  </div>
+)}
                       </div>
 
                       {item.meta?.breakdown &&
