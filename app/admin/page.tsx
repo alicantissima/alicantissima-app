@@ -1156,28 +1156,30 @@ function renderTodayResultsBar() {
   </div>
 
   <div className="w-full lg:w-auto">
-    <div className="flex w-full gap-2 lg:w-auto">
-      <Link
-        href="/desk"
-        className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 lg:w-32 lg:flex-none"
-      >
-        Desk
-<Link
-  href="/admin/shower-blocks"
-  className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
->
-  Shower blocks
+    <div className="flex flex-wrap items-center gap-3">
+  <Link
+    href="/desk"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+  >
+    Desk
+  </Link>
 
-      </Link>
+  <Link
+    href="/admin/shower-blocks"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+  >
+    Shower blocks
+  </Link>
 
-      <AdminQrScanner className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 lg:w-32 lg:flex-none" />
+  <Link
+    href="/admin/history"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+  >
+    Histórico
+  </Link>
 
-      <Link
-        href="/admin/history"
-        className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 lg:w-32 lg:flex-none"
-      >
-        Histórico
-      </Link>
+  <LogoutButton />
+</div>
     </div>
   </div>
 </div>
