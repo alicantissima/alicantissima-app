@@ -4,6 +4,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 
 export const revalidate = 0;
@@ -65,14 +66,21 @@ async function createShowerBlock(formData: FormData) {
 
   if (!profile || profile.role !== "admin") return;
 
-  await supabase.from("shower_blocks").insert({
-    service_date: serviceDate,
-    start_time: startTime,
-    end_time: endTime,
-    shower_room: showerRoom,
-    reason,
-    created_by: user.id,
-  });
+  const adminSupabase = createAdminClient();
+
+const { error: insertError } = await adminSupabase.from("shower_blocks").insert({
+  service_date: serviceDate,
+  start_time: startTime,
+  end_time: endTime,
+  shower_room: showerRoom,
+  reason,
+  created_by: user.id,
+});
+
+if (insertError) {
+  console.error("create shower block error:", insertError);
+  return;
+}
 
   revalidatePath("/admin/shower-blocks");
   revalidatePath("/admin");
@@ -102,7 +110,17 @@ async function deleteShowerBlock(formData: FormData) {
 
   if (!profile || profile.role !== "admin") return;
 
-  await supabase.from("shower_blocks").delete().eq("id", blockId);
+  const adminSupabase = createAdminClient();
+
+const { error: deleteError } = await adminSupabase
+  .from("shower_blocks")
+  .delete()
+  .eq("id", blockId);
+
+if (deleteError) {
+  console.error("delete shower block error:", deleteError);
+  return;
+}
 
   revalidatePath("/admin/shower-blocks");
   revalidatePath("/admin");
@@ -134,12 +152,18 @@ export default async function ShowerBlocksPage({
     redirect("/login");
   }
 
-  const { data: blocks } = await supabase
-    .from("shower_blocks")
-    .select("id, service_date, start_time, end_time, shower_room, reason, created_at")
-    .eq("service_date", selectedDate)
-    .order("start_time", { ascending: true })
-    .order("shower_room", { ascending: true });
+  const adminSupabase = createAdminClient();
+
+const { data: blocks, error: blocksError } = await adminSupabase
+  .from("shower_blocks")
+  .select("id, service_date, start_time, end_time, shower_room, reason, created_at")
+  .order("service_date", { ascending: true })
+  .order("start_time", { ascending: true })
+  .order("shower_room", { ascending: true });
+
+if (blocksError) {
+  console.error("shower blocks list error:", blocksError);
+}
 
   return (
     <main className="mx-auto flex min-h-[100dvh] max-w-4xl flex-col gap-6 p-4 md:p-6">
@@ -247,22 +271,11 @@ export default async function ShowerBlocksPage({
 
       <section className="rounded-3xl border bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-bold">Blocks for this date</h2>
+          <h2 className="text-xl font-bold">All shower blocks</h2>
 
-          <form className="flex items-center gap-2">
-            <input
-              type="date"
-              name="date"
-              defaultValue={selectedDate}
-              className="h-10 rounded-xl border px-3 text-sm"
-            />
-            <button
-              type="submit"
-              className="h-10 rounded-xl border px-4 text-sm font-semibold hover:bg-gray-50"
-            >
-              View
-            </button>
-          </form>
+          <span className="rounded-full border px-3 py-1 text-xs font-semibold uppercase text-gray-600">
+  {blocks?.length ?? 0} blocks
+</span>
         </div>
 
         {!blocks || blocks.length === 0 ? (
@@ -274,16 +287,20 @@ export default async function ShowerBlocksPage({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-gray-500">
-                  <th className="px-2 py-2 font-medium">Room</th>
-                  <th className="px-2 py-2 font-medium">Time</th>
-                  <th className="px-2 py-2 font-medium">Reason</th>
-                  <th className="px-2 py-2 text-right font-medium">Action</th>
+                  <th className="px-2 py-2 font-medium">Date</th>
+<th className="px-2 py-2 font-medium">Room</th>
+<th className="px-2 py-2 font-medium">Time</th>
+<th className="px-2 py-2 font-medium">Reason</th>
+<th className="px-2 py-2 text-right font-medium">Action</th>
                 </tr>
               </thead>
 
               <tbody>
                 {blocks.map((block) => (
                   <tr key={block.id} className="border-b last:border-b-0">
+<td className="px-2 py-3 font-semibold">
+  {formatDate(block.service_date)}
+</td>
                     <td className="px-2 py-3">
                       <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700">
                         S{block.shower_room}
