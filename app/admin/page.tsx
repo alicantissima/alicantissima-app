@@ -1282,10 +1282,6 @@ function renderTodayResultsBar() {
   topContent: renderRevenueBar(upcomingBookings, "Results by source upcoming"),
 })}
 
-<div className="flex justify-center border-t pt-6">
-  <LogoutButton className="inline-flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-white px-8 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50" />
-</div>
-
 <section className="mt-8 flex justify-center opacity-70">
   <div className="[&_button]:h-11 [&_button]:rounded-xl [&_button]:border [&_button]:border-gray-300 [&_button]:bg-white [&_button]:px-5 [&_button]:text-sm [&_button]:font-semibold [&_button]:text-gray-900 [&_button]:shadow-sm [&_button:hover]:bg-gray-50">
     <LogoutButton />
