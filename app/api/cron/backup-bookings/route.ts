@@ -78,13 +78,18 @@ async function removeOldBackups(supabase: any, now: Date) {
   const cutoff = new Date(now);
   cutoff.setUTCDate(cutoff.getUTCDate() - RETENTION_DAYS);
 
-  const filesToRemove =
-    data
-      ?.filter((file) => {
-        const backupDate = getDateFromBackupFileName(file.name);
-        return backupDate !== null && backupDate < cutoff;
-      })
-      .map((file) => file.name) ?? [];
+  type StorageFile = {
+  name: string;
+};
+
+const files = (data ?? []) as StorageFile[];
+
+const filesToRemove = files
+  .filter((file: StorageFile) => {
+    const backupDate = getDateFromBackupFileName(file.name);
+    return backupDate !== null && backupDate < cutoff;
+  })
+  .map((file: StorageFile) => file.name);
 
   if (filesToRemove.length === 0) {
     return [];
