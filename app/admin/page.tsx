@@ -1168,7 +1168,7 @@ function renderTodayResultsBar() {
     href="/admin/shower-blocks"
     className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
   >
-    Shower blocks
+    Shw block
   </Link>
 
   <Link
