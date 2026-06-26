@@ -1163,9 +1163,34 @@ const showerTime =
 const shouldApplyShowerDuration =
   (productType === "shower" || productType === "combo") && showerTime;
 
-const showerQuantity = Number(
-  currentMeta.showerQuantity || quantity || 1
-);
+const breakdown = Array.isArray(currentMeta.breakdown)
+  ? currentMeta.breakdown
+  : [];
+
+const showerQuantityFromBreakdown = breakdown.reduce((sum, part) => {
+  if (!part || typeof part !== "object") return sum;
+
+  const entry = part as { label?: unknown; quantity?: unknown };
+  const label = String(entry.label || "").toLowerCase();
+  const qty = Number(entry.quantity || 0);
+
+  const isShower =
+    label.includes("shower") ||
+    label.includes("duche") ||
+    label.includes("ducha") ||
+    label.includes("doccia") ||
+    label.includes("douche") ||
+    label.includes("dusche") ||
+    label.includes("prysznic") ||
+    label.includes("suihku");
+
+  return isShower ? sum + qty : sum;
+}, 0);
+
+const showerQuantity =
+  showerQuantityFromBreakdown > 0
+    ? showerQuantityFromBreakdown
+    : Number(currentMeta.showerQuantity || quantity || 1);;
 
 const meta = shouldApplyShowerDuration
   ? {
