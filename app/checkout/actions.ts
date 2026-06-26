@@ -1192,14 +1192,12 @@ const showerQuantity =
     ? showerQuantityFromBreakdown
     : Number(currentMeta.showerQuantity || quantity || 1);;
 
-const meta = shouldApplyShowerDuration
+const meta: Record<string, unknown> = shouldApplyShowerDuration
   ? {
       ...currentMeta,
       showerQuantity,
-      showerDurationMinutes:
-        getShowerDurationMinutes(showerQuantity),
-      showerEndTime:
-        getShowerEndTime(showerTime, showerQuantity),
+      showerDurationMinutes: getShowerDurationMinutes(showerQuantity),
+      showerEndTime: getShowerEndTime(showerTime, showerQuantity),
     }
   : currentMeta;
 
