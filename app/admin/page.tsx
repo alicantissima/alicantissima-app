@@ -312,12 +312,15 @@ function getExtraCounts(item: BookingItemRow) {
   label.includes("suplementar") ||
   label.includes("zusatz") ||
   label.includes("dodatk") ||
+  label.includes("aggiunt") ||
   label.includes("lisas");
 
       const isBag =
   label.includes("luggage") ||
   label.includes("bag") ||
   label.includes("bagagem") ||
+  label.includes("bagaglio") ||
+  label.includes("bagagli") ||
   label.includes("mala") ||
   label.includes("maleta") ||
   label.includes("equipaje") ||

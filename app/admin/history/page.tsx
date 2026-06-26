@@ -323,6 +323,7 @@ function getExtraCounts(item: BookingItemRow) {
         label.includes("supplementaire") ||
         label.includes("suplementar") ||
         label.includes("zusatz") ||
+        label.includes("aggiunt") ||
         label.includes("dodatk") ||
         label.includes("lisas");
 
@@ -335,6 +336,8 @@ function getExtraCounts(item: BookingItemRow) {
         label.includes("equipaje") ||
         label.includes("valise") ||
         label.includes("bagag") ||
+        label.includes("bagaglio") ||
+        label.includes("bagagli") ||
         label.includes("baga") ||
         label.includes("waliz") ||
         label.includes("gepack") ||
