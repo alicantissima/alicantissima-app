@@ -137,6 +137,41 @@ function getDeskSortableTime(value?: string | null) {
     .replace("h", ":") || "99:99";
 }
 
+function getDeskShowerRoom(booking: BookingRow) {
+  const items = booking.booking_items ?? [];
+
+  for (const item of items) {
+    const meta = item.meta ?? {};
+
+    const roomFromMeta = meta.shower_room;
+    const roomFromItem = item.shower_room;
+
+    if (roomFromMeta) {
+      const cleanRoom = String(roomFromMeta).toUpperCase().trim();
+      return cleanRoom.startsWith("S") ? cleanRoom : `S${cleanRoom}`;
+    }
+
+    if (roomFromItem) {
+      const cleanRoom = String(roomFromItem).toUpperCase().trim();
+      return cleanRoom.startsWith("S") ? cleanRoom : `S${cleanRoom}`;
+    }
+  }
+
+  return "";
+}
+
+function getDeskShowerRoomRank(booking: BookingRow) {
+  const showerTime = getDeskShowerSortTime(booking);
+  const room = getDeskShowerRoom(booking);
+
+  if (!showerTime) return 99;
+
+  if (room === "S1") return 1;
+  if (room === "S2") return 2;
+
+  return 3;
+}
+
 function getDeskShowerSortTime(booking: BookingRow) {
   const items = booking.booking_items ?? [];
 
@@ -204,6 +239,13 @@ function isDeskShowerDone(booking: BookingRow) {
 
 function sortDeskByShowerTimeThenLuggage(bookings: BookingRow[]) {
   return bookings.sort((a, b) => {
+    const aRoomRank = getDeskShowerRoomRank(a);
+    const bRoomRank = getDeskShowerRoomRank(b);
+
+    if (aRoomRank !== bRoomRank) {
+      return aRoomRank - bRoomRank;
+    }
+
     const aShowerTime = getDeskShowerSortTime(a);
     const bShowerTime = getDeskShowerSortTime(b);
 
@@ -314,9 +356,9 @@ function getDeskShowerSummary(booking: BookingRow) {
       ? `${showerStart}–${showerEnd}`
       : showerStart || "";
 
-  return `${timeLabel ? `${timeLabel} · ` : ""}${
-    showerRoom ? `${showerRoom} · ` : ""
-  }${totalShowers} shw`;
+  return `${showerRoom ? `${showerRoom} · ` : ""}${
+  timeLabel ? `${timeLabel} · ` : ""
+}${totalShowers} shw`;
 }
 
 function getDeskBagSummary(booking: BookingRow) {
