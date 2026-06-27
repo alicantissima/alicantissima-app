@@ -14,6 +14,7 @@ import InlineEditTime from "@/components/inline-edit-time";
 import ChangeBookingItemProductSelect from "@/components/change-booking-item-product-select";
 import UpdateBookingItemQuantity from "@/components/update-booking-item-quantity";
 import AddShowerTimeSelect from "@/components/add-shower-time-select";
+import UpdateShowerRoomSelect from "@/components/update-shower-room-select";
 
 type PageProps = {
   params: Promise<{
@@ -37,6 +38,7 @@ type BookingItem = {
     pickUpTime?: string | null;
     showerTime?: string | null;
     comments?: string | null;
+shower_room?: string | number | null;
     showerQuantity?: number | null;
     showerDurationMinutes?: number | null;
     showerEndTime?: string | null;
@@ -472,11 +474,12 @@ const backHref = cameFromAdmin ? "/admin" : "/desk";
       serviceDate={booking.service_date}
     />
 
-    {item.shower_room && (
-      <div className="rounded-xl bg-blue-50 p-3 text-sm">
-        <div className="text-xs text-blue-500">Shower room</div>
-        <div className="font-bold text-blue-800">S{item.shower_room}</div>
-      </div>
+    {profile.role === "admin" && (
+      <UpdateShowerRoomSelect
+        bookingId={booking.id}
+        itemId={item.id}
+        value={item.meta?.shower_room}
+      />
     )}
   </div>
 )}

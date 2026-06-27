@@ -102,6 +102,23 @@ function getProductTitle(type: ChangeProductInput["newType"]) {
   return "Luggage + Shower";
 }
 
+async function getBookingSource(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  bookingId: string
+) {
+  const { data: booking, error } = await supabase
+    .from("bookings")
+    .select("source")
+    .eq("id", bookingId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return booking?.source?.toLowerCase().trim() ?? "";
+}
+
 export async function changeBookingItemProduct({
   bookingId,
   itemId,
@@ -130,6 +147,12 @@ export async function changeBookingItemProduct({
   if (!profile || !["admin", "desk"].includes(profile.role)) {
     throw new Error("Unauthorized");
   }
+
+const bookingSource = await getBookingSource(supabase, bookingId);
+
+if (bookingSource === "viator") {
+  throw new Error("Viator bookings have locked prices and products.");
+}
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
@@ -233,6 +256,12 @@ export async function updateBookingItemQuantity({
   if (!profile || !["admin", "desk"].includes(profile.role)) {
     throw new Error("Unauthorized");
   }
+
+const bookingSource = await getBookingSource(supabase, bookingId);
+
+if (bookingSource === "viator") {
+  throw new Error("Viator bookings have locked prices and quantities.");
+}
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
@@ -391,6 +420,82 @@ export async function updateBookingItemShowerTime({
       currentMeta.shower_room.trim()
         ? currentMeta.shower_room.trim()
         : "s1",
+  };
+
+  const { error: updateError } = await supabase
+    .from("booking_items")
+    .update({ meta: newMeta })
+    .eq("id", itemId)
+    .eq("booking_id", bookingId);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
+
+  revalidatePath(`/desk/booking/${bookingId}`);
+  revalidatePath(`/admin/booking/${bookingId}`);
+  revalidatePath("/desk");
+  revalidatePath("/admin");
+}
+
+type UpdateShowerRoomInput = {
+  bookingId: string;
+  itemId: string;
+  showerRoom: "s1" | "s2";
+};
+
+export async function updateBookingItemShowerRoom({
+  bookingId,
+  itemId,
+  showerRoom,
+}: UpdateShowerRoomInput) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  if (!profile || profile.role !== "admin") {
+    throw new Error("Only admin can edit shower room.");
+  }
+
+  const { data: item, error: itemError } = await supabase
+    .from("booking_items")
+    .select("id, booking_id, meta")
+    .eq("id", itemId)
+    .eq("booking_id", bookingId)
+    .maybeSingle();
+
+  if (itemError) {
+    throw new Error(itemError.message);
+  }
+
+  if (!item) {
+    throw new Error("Booking item not found.");
+  }
+
+  const currentMeta =
+    item.meta && typeof item.meta === "object" && !Array.isArray(item.meta)
+      ? (item.meta as Record<string, unknown>)
+      : {};
+
+  const newMeta = {
+    ...currentMeta,
+    shower_room: showerRoom,
   };
 
   const { error: updateError } = await supabase
