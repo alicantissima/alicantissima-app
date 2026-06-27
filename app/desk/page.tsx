@@ -23,6 +23,7 @@ type BookingItemRow = {
   showerStartTime?: string | null;
   shower_start_time?: string | null;
   showerEndTime?: string | null;
+  shower_room?: string | number | null;
   showerDone?: boolean | null;
   shower_done?: boolean | null;
   showerDurationMinutes?: number | null;
@@ -274,12 +275,19 @@ let showerRoom = "";
       meta.shower_start_time ||
       "";
 
-    if (!showerStart && start) {
-      showerStart = formatDeskTime(start);
-    }
+    const roomFromMeta = meta.shower_room;
+const roomFromItem = item.shower_room;
 
-    if (!showerRoom && item.shower_room) {
-  showerRoom = `S${item.shower_room}`;
+if (!showerRoom && roomFromMeta) {
+  const cleanRoom = String(roomFromMeta).toUpperCase().trim();
+
+  showerRoom = cleanRoom.startsWith("S") ? cleanRoom : `S${cleanRoom}`;
+}
+
+if (!showerRoom && roomFromItem) {
+  const cleanRoom = String(roomFromItem).toUpperCase().trim();
+
+  showerRoom = cleanRoom.startsWith("S") ? cleanRoom : `S${cleanRoom}`;
 }
 
 if (!showerRoom && item.shower_room) {
@@ -440,12 +448,11 @@ function DeskTable({
         <div className="overflow-x-auto">
           <table className="w-full table-fixed text-sm">
             <thead>
-              <tr className="border-b text-left text-gray-500">
-                <th className="w-[34px] px-1 py-2 text-center font-medium" />
-                <th className="px-2 py-2 font-medium">Customer</th>
-                <th className="w-1/3 px-2 py-2 font-medium">City</th>
-              </tr>
-            </thead>
+  <tr className="border-b text-left text-gray-500">
+    <th className="px-2 py-2 font-medium">Customer</th>
+    <th className="w-1/3 px-2 py-2 font-medium">City</th>
+  </tr>
+</thead>
 
             <tbody>
               {rows.map((booking) => {
@@ -455,20 +462,10 @@ const showerDone = isDeskShowerDone(booking);
 
                 return (
                   <tr
-                    key={booking.id}
-                    className="border-b last:border-b-0 hover:bg-gray-50"
-                  >
-                    <td className="p-0 align-top">
-                      <Link
-                        href={`/desk/booking/${booking.id}`}
-                        className="flex h-full min-h-[58px] w-full items-start justify-center px-1 py-3 text-base font-black leading-none text-gray-700 hover:opacity-80"
-                        title={booking.booking_code}
-                      >
-                        +
-                      </Link>
-                    </td>
-
-                    <td className="p-0 align-top" colSpan={2}>
+  key={booking.id}
+  className="border-b last:border-b-0 hover:bg-gray-50"
+>
+  <td className="p-0 align-top" colSpan={2}>
                       <Link
                         href={`/desk/booking/${booking.id}`}
                         className="block h-full min-h-[58px] w-full px-2 py-2 hover:opacity-80"
