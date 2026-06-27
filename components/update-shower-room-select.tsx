@@ -26,17 +26,26 @@ export default function UpdateShowerRoomSelect({
   value,
 }: Props) {
   const [room, setRoom] = useState<"s1" | "s2">(normalizeRoom(value));
+  const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function handleChange(nextRoom: "s1" | "s2") {
     setRoom(nextRoom);
+    setMessage("");
 
     startTransition(async () => {
-      await updateBookingItemShowerRoom({
-        bookingId,
-        itemId,
-        showerRoom: nextRoom,
-      });
+      try {
+        await updateBookingItemShowerRoom({
+          bookingId,
+          itemId,
+          showerRoom: nextRoom,
+        });
+
+        setMessage("Saved");
+      } catch (err) {
+        setRoom(room);
+        setMessage(err instanceof Error ? err.message : "Failed to save");
+      }
     });
   }
 
@@ -53,6 +62,10 @@ export default function UpdateShowerRoomSelect({
         <option value="s1">S1</option>
         <option value="s2">S2</option>
       </select>
+
+      <div className="mt-1 text-xs text-gray-500">
+        {isPending ? "Saving..." : message}
+      </div>
     </div>
   );
 }
