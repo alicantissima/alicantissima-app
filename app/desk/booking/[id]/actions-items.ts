@@ -134,11 +134,16 @@ if (
       });
 
       newMeta = {
-        ...newMeta,
-        showerQuantity,
-        showerDurationMinutes: getShowerDurationMinutes(showerQuantity),
-        showerEndTime: getShowerEndTime(cleanValue, showerQuantity),
-      };
+  ...newMeta,
+  showerQuantity,
+  showerDurationMinutes: getShowerDurationMinutes(showerQuantity),
+  showerEndTime: getShowerEndTime(cleanValue, showerQuantity),
+  shower_room:
+    typeof currentMeta.shower_room === "string" &&
+    currentMeta.shower_room.trim()
+      ? currentMeta.shower_room
+      : "s1",
+};
     } else {
       newMeta = {
         ...newMeta,

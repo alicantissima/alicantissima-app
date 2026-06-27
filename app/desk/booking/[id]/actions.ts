@@ -5,6 +5,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getShowerDurationMinutes,
+  getShowerEndTime,
+} from "@/lib/showers";
 
 type UpdateBookingFieldInput = {
   bookingId: string;
@@ -318,30 +322,38 @@ export async function updateBookingItemShowerTime({
   bookingId,
   itemId,
   showerTime,
-}: UpdateShowerTimeInput) {
+}: {
+  bookingId: string;
+  itemId: string;
+  showerTime: string;
+}) {
   const supabase = await createClient();
 
-const {
-  data: { user },
-} = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-if (!user) {
-  throw new Error("Not authenticated");
-}
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
 
-const { data: profile } = await supabase
-  .from("profiles")
-  .select("role")
-  .eq("id", user.id)
-  .single();
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
-if (profile?.role === "desk") {
-  throw new Error("Desk cannot edit shower times.");
-}
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  if (!profile || !["admin", "desk"].includes(profile.role)) {
+    throw new Error("Unauthorized");
+  }
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
-    .select("meta")
+    .select("id, booking_id, quantity, meta")
     .eq("id", itemId)
     .eq("booking_id", bookingId)
     .single();
@@ -350,9 +362,35 @@ if (profile?.role === "desk") {
     throw new Error(itemError.message);
   }
 
+  const currentMeta =
+    item.meta && typeof item.meta === "object" && !Array.isArray(item.meta)
+      ? (item.meta as Record<string, unknown>)
+      : {};
+
+  const storedShowerQuantity = Number(currentMeta.showerQuantity);
+
+  const showerQuantity =
+    Number.isFinite(storedShowerQuantity) && storedShowerQuantity > 0
+      ? storedShowerQuantity
+      : Number(item.quantity || 1);
+
+  const cleanShowerTime = showerTime.trim();
+
   const newMeta = {
-    ...(item?.meta || {}),
-    showerTime: showerTime || null,
+    ...currentMeta,
+    showerTime: cleanShowerTime || null,
+    showerQuantity,
+    showerDurationMinutes: cleanShowerTime
+      ? getShowerDurationMinutes(showerQuantity)
+      : null,
+    showerEndTime: cleanShowerTime
+      ? getShowerEndTime(cleanShowerTime, showerQuantity)
+      : null,
+    shower_room:
+      typeof currentMeta.shower_room === "string" &&
+      currentMeta.shower_room.trim()
+        ? currentMeta.shower_room.trim()
+        : "s1",
   };
 
   const { error: updateError } = await supabase
@@ -366,4 +404,7 @@ if (profile?.role === "desk") {
   }
 
   revalidatePath(`/desk/booking/${bookingId}`);
+  revalidatePath(`/admin/booking/${bookingId}`);
+  revalidatePath("/desk");
+  revalidatePath("/admin");
 }
