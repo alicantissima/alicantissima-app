@@ -224,9 +224,9 @@ function getDeskShowerSummary(booking: BookingRow) {
   const items = booking.booking_items ?? [];
 
   let totalShowers = 0;
-let showerStart = "";
-let showerEnd = "";
-let showerRoom = "";
+  let showerStart = "";
+  let showerEnd = "";
+  let showerRoom = "";
 
   items.forEach((item) => {
     const quantity = Number(item.quantity || 0);
@@ -234,17 +234,26 @@ let showerRoom = "";
     const title = item.title?.toLowerCase() ?? "";
     const productType = item.product_type?.toLowerCase() ?? "";
 
+    const rawStart =
+      meta.showerTime ||
+      meta.shower_time ||
+      meta.showerStartTime ||
+      meta.shower_start_time ||
+      "";
+
+    const rawEnd = meta.showerEndTime || "";
+
     const hasShower =
-      Boolean(
-        meta.showerTime ||
-          meta.shower_time ||
-          meta.showerStartTime ||
-          meta.shower_start_time
-      ) ||
+      Boolean(rawStart) ||
       productType === "shower" ||
       productType === "combo" ||
       title.includes("shower") ||
-      title.includes("combo");
+      title.includes("ducha") ||
+      title.includes("duche") ||
+      title.includes("douche") ||
+      title.includes("doccia") ||
+      title.includes("dusche") ||
+      title.includes("prysznic");
 
     if (!hasShower) return;
 
@@ -268,31 +277,34 @@ let showerRoom = "";
       totalShowers += quantity;
     }
 
-    const start =
-      meta.showerTime ||
-      meta.shower_time ||
-      meta.showerStartTime ||
-      meta.shower_start_time ||
-      "";
+    if (!showerStart && rawStart) {
+      const cleanStart = formatDeskTime(rawStart);
+
+      if (cleanStart.includes("-")) {
+        const [start, end] = cleanStart.split("-");
+        showerStart = start?.trim() || "";
+        showerEnd = end?.trim() || "";
+      } else {
+        showerStart = cleanStart;
+      }
+    }
+
+    if (!showerEnd && rawEnd) {
+      showerEnd = formatDeskTime(rawEnd);
+    }
 
     const roomFromMeta = meta.shower_room;
-const roomFromItem = item.shower_room;
+    const roomFromItem = item.shower_room;
 
-if (!showerRoom && roomFromMeta) {
-  const cleanRoom = String(roomFromMeta).toUpperCase().trim();
+    if (!showerRoom && roomFromMeta) {
+      const cleanRoom = String(roomFromMeta).toUpperCase().trim();
+      showerRoom = cleanRoom.startsWith("S") ? cleanRoom : `S${cleanRoom}`;
+    }
 
-  showerRoom = cleanRoom.startsWith("S") ? cleanRoom : `S${cleanRoom}`;
-}
-
-if (!showerRoom && roomFromItem) {
-  const cleanRoom = String(roomFromItem).toUpperCase().trim();
-
-  showerRoom = cleanRoom.startsWith("S") ? cleanRoom : `S${cleanRoom}`;
-}
-
-if (!showerRoom && item.shower_room) {
-  showerRoom = `S${item.shower_room}`;
-}
+    if (!showerRoom && roomFromItem) {
+      const cleanRoom = String(roomFromItem).toUpperCase().trim();
+      showerRoom = cleanRoom.startsWith("S") ? cleanRoom : `S${cleanRoom}`;
+    }
   });
 
   if (!totalShowers) return "";
@@ -300,13 +312,11 @@ if (!showerRoom && item.shower_room) {
   const timeLabel =
     showerStart && showerEnd
       ? `${showerStart}–${showerEnd}`
-      : showerStart
-        ? showerStart
-        : "";
+      : showerStart || "";
 
   return `${timeLabel ? `${timeLabel} · ` : ""}${
-  showerRoom ? `${showerRoom} · ` : ""
-}${totalShowers} shw`;
+    showerRoom ? `${showerRoom} · ` : ""
+  }${totalShowers} shw`;
 }
 
 function getDeskBagSummary(booking: BookingRow) {
