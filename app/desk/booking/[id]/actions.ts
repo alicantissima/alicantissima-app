@@ -96,6 +96,53 @@ function buildBreakdown(type: ChangeProductInput["newType"], quantity: number) {
   return [];
 }
 
+function getShowerQuantityFromMeta(
+  quantity: number | null | undefined,
+  meta: Record<string, unknown>
+) {
+  const storedShowerQuantity = Number(meta.showerQuantity);
+
+  if (Number.isFinite(storedShowerQuantity) && storedShowerQuantity > 0) {
+    return storedShowerQuantity;
+  }
+
+  const breakdown = meta.breakdown;
+
+  if (Array.isArray(breakdown)) {
+    let totalShowers = 0;
+
+    breakdown.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+
+      const part = entry as {
+        label?: unknown;
+        quantity?: unknown;
+      };
+
+      const label = String(part.label || "").toLowerCase();
+
+      if (
+        label.includes("shower") ||
+        label.includes("duche") ||
+        label.includes("ducha") ||
+        label.includes("douche") ||
+        label.includes("doccia") ||
+        label.includes("dusche") ||
+        label.includes("prysznic") ||
+        label.includes("zuhany") ||
+        label.includes("suihku") ||
+        label.includes("dusj")
+      ) {
+        totalShowers += Number(part.quantity || 0);
+      }
+    });
+
+    if (totalShowers > 0) return totalShowers;
+  }
+
+  return Number(quantity || 1);
+}
+
 function getProductTitle(type: ChangeProductInput["newType"]) {
   if (type === "luggage") return "Luggage Storage";
   if (type === "shower") return "Shower";
@@ -396,12 +443,10 @@ export async function updateBookingItemShowerTime({
       ? (item.meta as Record<string, unknown>)
       : {};
 
-  const storedShowerQuantity = Number(currentMeta.showerQuantity);
-
-  const showerQuantity =
-    Number.isFinite(storedShowerQuantity) && storedShowerQuantity > 0
-      ? storedShowerQuantity
-      : Number(item.quantity || 1);
+  const showerQuantity = getShowerQuantityFromMeta(
+  item.quantity,
+  currentMeta
+);
 
   const cleanShowerTime = showerTime.trim();
 
