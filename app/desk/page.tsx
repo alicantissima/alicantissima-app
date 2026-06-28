@@ -295,37 +295,37 @@ function getDeskShowerSummary(booking: BookingRow) {
       title.includes("douche") ||
       title.includes("doccia") ||
       title.includes("dusche") ||
-      title.includes("prysznic");
+      title.includes("prysznic") ||
+      title.includes("zuhany") ||
+      title.includes("suihku") ||
+      title.includes("dusj") ||
+      title.includes("combo");
 
     if (!hasShower) return;
 
     if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
-  let showersFromBreakdown = 0;
+      let showersFromBreakdown = 0;
 
-  meta.breakdown.forEach((part) => {
-    const label = String(part.label || "").toLowerCase();
+      meta.breakdown.forEach((part) => {
+        const label = String(part.label || "").toLowerCase();
 
-    if (
-      label.includes("shower") ||
-      label.includes("ducha") ||
-      label.includes("duche") ||
-      label.includes("douche") ||
-      label.includes("doccia") ||
-      label.includes("dusche") ||
-      label.includes("prysznic") ||
-      label.includes("zuhany") ||
-      label.includes("suihku") ||
-      label.includes("dusj")
-    ) {
-      showersFromBreakdown += Number(part.quantity || 0);
-    }
-  });
-
-  totalShowers += showersFromBreakdown || quantity;
-} else {
-  totalShowers += quantity;
-}
+        if (
+          label.includes("shower") ||
+          label.includes("ducha") ||
+          label.includes("duche") ||
+          label.includes("douche") ||
+          label.includes("doccia") ||
+          label.includes("dusche") ||
+          label.includes("prysznic") ||
+          label.includes("zuhany") ||
+          label.includes("suihku") ||
+          label.includes("dusj")
+        ) {
+          showersFromBreakdown += Number(part.quantity || 0);
+        }
       });
+
+      totalShowers += showersFromBreakdown || quantity;
     } else {
       totalShowers += quantity;
     }
@@ -368,8 +368,8 @@ function getDeskShowerSummary(booking: BookingRow) {
       : showerStart || "";
 
   return `${showerRoom ? `${showerRoom} · ` : ""}${
-  timeLabel ? `${timeLabel} · ` : ""
-}${totalShowers} shw`;
+    timeLabel ? `${timeLabel} · ` : ""
+  }${totalShowers} shw`;
 }
 
 function getDeskBagSummary(booking: BookingRow) {
