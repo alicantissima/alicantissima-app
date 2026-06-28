@@ -131,12 +131,19 @@ function getRealShowerQuantity(item: BookingItem) {
       const label = String(part.label || "").toLowerCase();
 
       if (
-        label.includes("shower") ||
-        label.includes("duche") ||
-        label.includes("ducha")
-      ) {
-        totalShowers += Number(part.quantity || 0);
-      }
+  label.includes("shower") ||
+  label.includes("duche") ||
+  label.includes("ducha") ||
+  label.includes("douche") ||
+  label.includes("doccia") ||
+  label.includes("dusche") ||
+  label.includes("prysznic") ||
+  label.includes("zuhany") ||
+  label.includes("suihku") ||
+  label.includes("dusj")
+) {
+  totalShowers += Number(part.quantity || 0);
+}
     });
 
     if (totalShowers > 0) return totalShowers;

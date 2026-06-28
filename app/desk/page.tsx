@@ -300,20 +300,31 @@ function getDeskShowerSummary(booking: BookingRow) {
     if (!hasShower) return;
 
     if (Array.isArray(meta.breakdown) && meta.breakdown.length > 0) {
-      meta.breakdown.forEach((part) => {
-        const label = String(part.label || "").toLowerCase();
+  let showersFromBreakdown = 0;
 
-        if (
-          label.includes("shower") ||
-          label.includes("ducha") ||
-          label.includes("duche") ||
-          label.includes("douche") ||
-          label.includes("doccia") ||
-          label.includes("dusche") ||
-          label.includes("prysznic")
-        ) {
-          totalShowers += Number(part.quantity || 0);
-        }
+  meta.breakdown.forEach((part) => {
+    const label = String(part.label || "").toLowerCase();
+
+    if (
+      label.includes("shower") ||
+      label.includes("ducha") ||
+      label.includes("duche") ||
+      label.includes("douche") ||
+      label.includes("doccia") ||
+      label.includes("dusche") ||
+      label.includes("prysznic") ||
+      label.includes("zuhany") ||
+      label.includes("suihku") ||
+      label.includes("dusj")
+    ) {
+      showersFromBreakdown += Number(part.quantity || 0);
+    }
+  });
+
+  totalShowers += showersFromBreakdown || quantity;
+} else {
+  totalShowers += quantity;
+}
       });
     } else {
       totalShowers += quantity;
