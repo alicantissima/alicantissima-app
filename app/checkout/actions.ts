@@ -35,6 +35,50 @@ type CheckoutPayload = {
   items: CheckoutItem[];
 };
 
+function getTodayMadridDate() {
+  const now = new Date();
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+function itemHasLuggage(item: {
+  productCode?: string;
+  productName?: string;
+  title?: string;
+}) {
+  const productCode = String(item.productCode || "").toLowerCase();
+  const productName = String(item.productName || item.title || "").toLowerCase();
+
+  return (
+    productCode === "luggage" ||
+    productCode === "combo" ||
+    productName.includes("luggage") ||
+    productName.includes("bagagem") ||
+    productName.includes("equipaje") ||
+    productName.includes("bagagli") ||
+    productName.includes("bagasje") ||
+    productName.includes("bagaż") ||
+    productName.includes("gepäck") ||
+    productName.includes("csomag") ||
+    productName.includes("matkatavara")
+  );
+}
+
+function getItemServiceDate(item: {
+  date?: string;
+  serviceDate?: string;
+  meta?: {
+    date?: string;
+  };
+}) {
+  return item.date || item.serviceDate || item.meta?.date || "";
+}
+
 function generateBookingCode() {
   const random = Math.random().toString(36).slice(2, 8).toUpperCase();
   return `ALI-${random}`;
@@ -1131,6 +1175,20 @@ export async function submitCheckout(payload: CheckoutPayload) {
       const quantity = Number(item.quantity);
       const unitPrice = Number(item.unitPrice);
       const totalPrice = Number(item.totalPrice);
+
+const todayMadrid = getTodayMadridDate();
+
+const hasLuggageForToday = rawItems.some((item) => {
+  const serviceDate = getItemServiceDate(item);
+
+  return serviceDate === todayMadrid && itemHasLuggage(item);
+});
+
+if (hasLuggageForToday) {
+  throw new Error(
+    "Luggage storage is fully booked for today. Shower bookings are still available. Please choose another date for luggage storage."
+  );
+}
 
       if (!item.id) {
         throw new Error(`Item ${index + 1} is missing product id.`);
