@@ -1176,19 +1176,19 @@ export async function submitCheckout(payload: CheckoutPayload) {
       const unitPrice = Number(item.unitPrice);
       const totalPrice = Number(item.totalPrice);
 
-const todayMadrid = getTodayMadridDate();
+// const todayMadrid = getTodayMadridDate();
 
-const hasLuggageForToday = rawItems.some((item) => {
-  const serviceDate = getItemServiceDate(item);
+// const hasLuggageForToday = rawItems.some((item) => {
+//   const serviceDate = getItemServiceDate(item);
 
-  return serviceDate === todayMadrid && itemHasLuggage(item);
-});
+//   return serviceDate === todayMadrid && itemHasLuggage(item);
+// });
 
-if (hasLuggageForToday) {
-  throw new Error(
-    "Luggage storage is fully booked for today. Shower bookings are still available. Please choose another date for luggage storage."
-  );
-}
+// if (hasLuggageForToday) {
+//   throw new Error(
+//     "Luggage storage is fully booked for today. Shower bookings are still available. Please choose another date for luggage storage."
+//   );
+// }
 
       if (!item.id) {
         throw new Error(`Item ${index + 1} is missing product id.`);
