@@ -332,6 +332,7 @@ function buildConfirmationEmailText(params: {
   bookingUrl: string;
   cancellationUrl?: string | null;
   cancelUntil?: string | null;
+  isWalkin?: boolean;
   items: Array<{
     title: string;
     quantity: number;
@@ -345,11 +346,16 @@ function buildConfirmationEmailText(params: {
   language?: string;
 }) {
   const t = getMessages(params.language);
+const isWalkin = params.isWalkin === true;
   const lines: string[] = [];
 
-  lines.push(`${t.bookingConfirmedTitle}`);
-  lines.push("");
-  lines.push(`${t.thankYouBookingCodePrefix} ${params.bookingCode}.`);
+  lines.push(isWalkin ? "Reservation received" : `${t.bookingConfirmedTitle}`);
+lines.push("");
+lines.push(
+  isWalkin
+    ? `Thank you. Your reservation code is ${params.bookingCode}.`
+    : `${t.thankYouBookingCodePrefix} ${params.bookingCode}.`
+);
   lines.push("");
   lines.push(`${t.bookingSummary}`);
   lines.push("");
@@ -417,8 +423,11 @@ lines.push(`Total items: ${totalItemsAll}`);
 
   lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
   lines.push("");
-  lines.push("Payment confirmed online.");
-
+lines.push(
+  isWalkin
+    ? "Payment pending. Please pay by card or cash with a member of our staff at reception to confirm your reservation."
+    : "Payment confirmed online."
+);
 if (params.cancellationUrl) {
   lines.push("");
   lines.push("Free cancellation");
@@ -454,6 +463,7 @@ function buildConfirmationEmailHtml(params: {
   bookingUrl: string;
   cancellationUrl?: string | null;
   cancelUntil?: string | null;
+  isWalkin?: boolean;
   qrCodeUrl: string;
   items: Array<{
     title: string;
@@ -468,6 +478,7 @@ function buildConfirmationEmailHtml(params: {
   language?: string;
 }) {
   const t = getMessages(params.language);
+const isWalkin = params.isWalkin === true;
 
   const itemBlocks = params.items
     .map((item) => {
@@ -565,11 +576,15 @@ ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; colo
       <div style="max-width:680px; margin:0 auto; padding:24px 16px; font-family:Arial,Helvetica,sans-serif;">
         <div style="text-align:center; padding:4px 0 0 0;">
           <h1 style="margin:0 0 10px 0; font-size:26px; line-height:32px; color:#111827; font-weight:700;">
-            ${t.bookingConfirmedTitle}
+            ${isWalkin ? "Reservation received" : t.bookingConfirmedTitle}
           </h1>
 
           <p style="margin:0 0 24px 0; font-size:16px; line-height:24px; color:#374151;">
-            ${t.thankYouBookingCodePrefix} <strong>${params.bookingCode}</strong>.
+            ${
+  isWalkin
+    ? `Thank you. Your reservation code is <strong>${params.bookingCode}</strong>.`
+    : `${t.thankYouBookingCodePrefix} <strong>${params.bookingCode}</strong>.`
+}
           </p>
         </div>
 
@@ -599,9 +614,24 @@ ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; colo
   </tr>
 </table>
 
-          <p style="margin:0; font-size:15px; line-height:23px; color:#047857; font-weight:700;">
-  Payment confirmed online.
-</p>
+          ${
+  isWalkin
+    ? `
+      <div style="margin:0; padding:14px 16px; background:#fff7ed; border:1px solid #fed7aa; border-radius:14px;">
+        <p style="margin:0 0 5px 0; font-size:15px; line-height:23px; color:#9a3412; font-weight:700;">
+          Payment pending
+        </p>
+        <p style="margin:0; font-size:14px; line-height:21px; color:#9a3412;">
+          Please pay by card or cash with a member of our staff at reception to confirm your reservation.
+        </p>
+      </div>
+    `
+    : `
+      <p style="margin:0; font-size:15px; line-height:23px; color:#047857; font-weight:700;">
+        Payment confirmed online.
+      </p>
+    `
+}
 
 ${
   params.cancellationUrl
@@ -896,6 +926,7 @@ async function sendBookingConfirmationEmail(params: {
   qrCodeUrl: string;
   cancellationUrl?: string | null;
   cancelUntil?: string | null;
+isWalkin?: boolean;
   items: Array<{
     title: string;
     quantity: number;
@@ -908,7 +939,9 @@ async function sendBookingConfirmationEmail(params: {
   notes?: string | null;
   language?: string;
 }) {
-  const subject = `Alicantissima booking confirmation – ${params.bookingCode}`;
+  const subject = params.isWalkin
+  ? `Alicantissima reservation received – ${params.bookingCode}`
+  : `Alicantissima booking confirmation – ${params.bookingCode}`;
 
   await sendEmail({
     to: params.customerEmail,
@@ -1514,6 +1547,7 @@ if (isWalkin) {
       qrCodeUrl,
       cancellationUrl: null,
       cancelUntil: null,
+      isWalkin: true,
       items,
       totalAmount,
       notes,
