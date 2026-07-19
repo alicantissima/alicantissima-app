@@ -204,7 +204,8 @@ export default async function CheckoutSuccessPage({
   .single();
 
   const language = normalizeLanguage(booking?.language);
-  const t = getMessages(language);
+const t = getMessages(language);
+const isWalkin = booking?.source === "walkin";
 
 let paymentConfirmed =
   booking?.payment_status === "paid" || booking?.status === "booked";
