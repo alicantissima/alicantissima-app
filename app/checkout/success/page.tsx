@@ -196,13 +196,12 @@ export default async function CheckoutSuccessPage({
   const supabase = createAdminClient();
 
   const { data: booking } = await supabase
-    .from("bookings")
-    .select(
+  .from("bookings")
   .select(
-  "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id, source"
-)
-    .eq("booking_code", code)
-    .single();
+    "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id, source"
+  )
+  .eq("booking_code", code)
+  .single();
 
   const language = normalizeLanguage(booking?.language);
   const t = getMessages(language);
@@ -459,15 +458,6 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
   </Link>
 </div>
 
-      </section>
-
-      <section className="mx-auto mt-8 max-w-xl rounded-[22px] border border-zinc-300 bg-white p-5 text-center text-zinc-900 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">
-          {t.installAppTitle}
-        </h2>
-        <p className="mt-2 text-sm text-zinc-600">{t.installAppText}</p>
-        <div className="mt-4 flex justify-center">
-        </div>
       </section>
 
       <p className="mt-8 text-sm text-zinc-600 dark:text-zinc-400">
