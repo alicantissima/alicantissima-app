@@ -198,7 +198,8 @@ export default async function CheckoutSuccessPage({
   const { data: booking } = await supabase
     .from("bookings")
     .select(
-  "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id"
+  .select(
+  "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id, source"
 )
     .eq("booking_code", code)
     .single();
@@ -263,11 +264,13 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
     <main className="mx-auto max-w-3xl px-4 py-12 text-center text-zinc-900 dark:text-white">
       <section>
         <h1 className="mb-3 text-2xl font-semibold text-zinc-900 dark:text-white">
-          {t.bookingConfirmedTitle}
+          {isWalkin ? "Reservation received" : t.bookingConfirmedTitle}
         </h1>
 
         <p className="text-base text-zinc-700 dark:text-zinc-300">
-          {t.thankYouBookingCodePrefix}{" "}
+          {isWalkin
+  ? "Thank you. Your reservation code is"
+  : t.thankYouBookingCodePrefix}{" "}
           <strong className="text-zinc-900 dark:text-white">{code}</strong>.
         </p>
       </section>
@@ -405,7 +408,17 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
     </p>
   </div>
 
-  {paymentConfirmed ? (
+  {isWalkin ? (
+  <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+    <p className="font-semibold text-orange-800">
+      Payment pending
+    </p>
+
+    <p className="mt-1 text-sm leading-6 text-orange-700">
+      Please pay by card or cash with a member of our staff at reception to confirm your reservation.
+    </p>
+  </div>
+) : paymentConfirmed ? (
   <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-[14px] leading-6 text-emerald-700">
     Payment confirmed. Your booking is confirmed.
   </p>
