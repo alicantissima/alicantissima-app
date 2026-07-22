@@ -614,9 +614,12 @@ export default async function AdminPage({
   }
 
   let bookingsQuery = supabase
-    .from("bookings")
-    .select("*")
-    .order("created_at", { ascending: false });
+  .from("bookings")
+  .select("*")
+  .gte("service_date", getTodayString())
+  .order("service_date", { ascending: true })
+  .order("created_at", { ascending: true })
+  .limit(2000);
 
   if (codeFilter) {
     bookingsQuery = bookingsQuery.eq("booking_code", codeFilter);
