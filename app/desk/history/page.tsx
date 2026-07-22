@@ -6,6 +6,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DeskCustomerSearch from "@/components/desk-customer-search";
 import CopyEmailButton from "@/components/copy-email-button";
+import ReviewReplyStatus from "@/components/review-reply-status";
+
+type ReviewReply = {
+  replied_at: string | null;
+  replied_by: string | null;
+};
 
 type HistoryBooking = {
   id: string;
@@ -15,6 +21,7 @@ type HistoryBooking = {
   customer_email: string | null;
   source: string | null;
   review_email_sent_at: string | null;
+  review_replies: ReviewReply[] | null;
 };
 
 type PageProps = {
@@ -174,16 +181,20 @@ export default async function DeskHistoryPage({
   let query = supabase
     .from("bookings")
     .select(
-      `
-        id,
-        service_date,
-        customer_name,
-        city,
-        customer_email,
-        source,
-        review_email_sent_at
-      `
+  `
+    id,
+    service_date,
+    customer_name,
+    city,
+    customer_email,
+    source,
+    review_email_sent_at,
+    review_replies (
+      replied_at,
+      replied_by
     )
+  `
+)
     .lt("service_date", todayMadrid)
     .in("status", ["completed", "no_show"])
     .order("service_date", { ascending: false })
@@ -228,7 +239,42 @@ export default async function DeskHistoryPage({
 
   const { data, error } = await query;
 
-  const bookings = (data ?? []) as HistoryBooking[];
+  const rawBookings = (data ?? []) as HistoryBooking[];
+
+const repliedUserIds = Array.from(
+  new Set(
+    rawBookings
+      .flatMap((booking) => booking.review_replies ?? [])
+      .map((reply) => reply.replied_by)
+      .filter((id): id is string => Boolean(id))
+  )
+);
+
+const { data: replyProfiles } =
+  repliedUserIds.length > 0
+    ? await supabase
+        .from("profiles")
+        .select("id, email")
+        .in("id", repliedUserIds)
+    : { data: [] };
+
+const replyUserEmailById = new Map(
+  (replyProfiles ?? []).map((replyProfile) => [
+    replyProfile.id,
+    replyProfile.email,
+  ])
+);
+
+const bookings =
+  filter === "pending"
+    ? rawBookings.filter(
+        (booking) => !booking.review_replies?.length
+      )
+    : filter === "replied"
+      ? rawBookings.filter(
+          (booking) => Boolean(booking.review_replies?.length)
+        )
+      : rawBookings;
 
   function filterHref(nextFilter: string) {
     const urlParams = new URLSearchParams();
@@ -296,6 +342,20 @@ export default async function DeskHistoryPage({
             Review queue · 48h
           </FilterLink>
 
+<FilterLink
+  href={filterHref("pending")}
+  active={filter === "pending"}
+>
+  Pending replies
+</FilterLink>
+
+<FilterLink
+  href={filterHref("replied")}
+  active={filter === "replied"}
+>
+  Replied
+</FilterLink>
+
           <FilterLink
             href={filterHref("site")}
             active={filter === "site"}
@@ -332,18 +392,19 @@ export default async function DeskHistoryPage({
           </div>
         ) : (
           <div className="max-h-[70dvh] overflow-auto">
-            <table className="w-full min-w-[980px] text-sm">
+            <table className="w-full min-w-[1140px] text-sm">
               <thead className="sticky top-0 z-10 bg-gray-50 shadow-sm">
                 <tr className="border-b text-left text-gray-500">
-                  <th className="px-4 py-3 font-medium">Service date</th>
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">City</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
-                  <th className="px-4 py-3 font-medium">Source</th>
-                  <th className="px-4 py-3 text-center font-medium">
-                    Search
-                  </th>
-                </tr>
+  <th className="px-4 py-3 font-medium">Service date</th>
+  <th className="px-4 py-3 font-medium">Name</th>
+  <th className="px-4 py-3 font-medium">City</th>
+  <th className="px-4 py-3 font-medium">Email</th>
+  <th className="px-4 py-3 font-medium">Source</th>
+  <th className="px-4 py-3 font-medium">Review</th>
+  <th className="px-4 py-3 text-center font-medium">
+    Search
+  </th>
+</tr>
               </thead>
 
               <tbody>
@@ -353,12 +414,18 @@ export default async function DeskHistoryPage({
                     booking.customer_name?.trim() || "Customer";
 
                   const googleSearchUrl =
-                    "https://www.google.com/search?q=" +
-                    encodeURIComponent(
-                      `"${customerName}" Alicante Google Maps review`
-                    );
+  "https://www.google.com/search?q=" +
+  encodeURIComponent(
+    `"${customerName}" Alicante Google Maps review`
+  );
 
-                  return (
+const reply = booking.review_replies?.[0] ?? null;
+
+const repliedByEmail = reply?.replied_by
+  ? replyUserEmailById.get(reply.replied_by) ?? null
+  : null;
+
+return (
                     <tr
                       key={booking.id}
                       className={`border-b last:border-b-0 hover:bg-blue-50 ${
@@ -391,18 +458,27 @@ export default async function DeskHistoryPage({
                       </td>
 
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getSourceClasses(
-                            booking.source
-                          )}`}
-                        >
-                          {getSourceLabel(booking.source)}
-                        </span>
-                      </td>
+  <span
+    className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getSourceClasses(
+      booking.source
+    )}`}
+  >
+    {getSourceLabel(booking.source)}
+  </span>
+</td>
 
-                      <td className="px-4 py-3 text-center">
-                        <a
-                          href={googleSearchUrl}
+<td className="px-4 py-3 align-top">
+  <ReviewReplyStatus
+    bookingId={booking.id}
+    replied={Boolean(reply)}
+    repliedAt={reply?.replied_at}
+    repliedBy={repliedByEmail}
+  />
+</td>
+
+<td className="px-4 py-3 text-center">
+  <a
+    href={googleSearchUrl}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex h-9 items-center justify-center rounded-xl border px-3 text-sm font-medium hover:bg-white"
