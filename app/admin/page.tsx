@@ -911,9 +911,9 @@ function isUpcoming(date: string | null) {
 }
 
   for (const booking of sortedBookings) {
-    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-    const date = getBookingDate(booking, meta);
-    const status = normalizeStatus(booking.status);
+  const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+  const date = getBookingDate(booking, meta);
+  const status = normalizeStatus(booking.status);
 
     if (status === "inside") {
       insideBookings.push(booking);
