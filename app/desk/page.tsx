@@ -687,23 +687,25 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
           <p className="text-sm text-gray-500">Session: {profile.email}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-3">
+  <Link
+    href="/desk/history"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+  >
+    History
+  </Link>
+
   {profile.role === "admin" && (
     <Link
       href="/admin"
-      className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+      className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
     >
       Open Admin
     </Link>
   )}
 
-  <div className="[&_button]:h-11 [&_button]:rounded-xl [&_button]:border [&_button]:border-gray-300 [&_button]:bg-white [&_button]:px-5 [&_button]:text-sm [&_button]:font-semibold [&_button]:text-gray-900 [&_button]:shadow-sm [&_button:hover]:bg-gray-50">
-    <DeskQrScanner />
-  </div>
-
-  <div className="[&_button]:h-11 [&_button]:rounded-xl [&_button]:border [&_button]:border-gray-300 [&_button]:bg-white [&_button]:px-5 [&_button]:text-sm [&_button]:font-semibold [&_button]:text-gray-900 [&_button]:shadow-sm [&_button:hover]:bg-gray-50">
-    <LogoutButton />
-  </div>
+  <LogoutButton />
+</div>
 </div>
       </div>
 
