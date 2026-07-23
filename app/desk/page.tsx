@@ -689,11 +689,11 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
     </p>
   </div>
 
-  <div className="flex flex-wrap items-center gap-3">
+  <div className="grid grid-cols-3 gap-3">
   {profile.role === "admin" && (
     <Link
       href="/admin"
-      className="inline-flex h-11 min-w-[140px] items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+      className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
     >
       Admin
     </Link>
@@ -703,7 +703,7 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
 
   <Link
     href="/desk/history"
-    className="inline-flex h-11 min-w-[140px] items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+    className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
   >
     History
   </Link>
