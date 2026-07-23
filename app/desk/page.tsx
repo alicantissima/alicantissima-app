@@ -699,12 +699,7 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
     </Link>
   )}
 
-  <a
-    href="#scan-qr"
-    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
-  >
-    Scan QR
-  </a>
+  <DeskQrScanner />
 
   <Link
     href="/desk/history"
@@ -714,23 +709,6 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
   </Link>
 </div>
 </div>
-
-<section
-  id="scan-qr"
-  className="scroll-mt-6 rounded-3xl border bg-white p-4 shadow-sm md:p-6"
->
-  <div className="mb-5">
-    <h2 className="text-2xl font-bold">Scan QR</h2>
-
-    <p className="mt-1 text-sm text-gray-500">
-      Scan the customer&apos;s QR code to open the booking.
-    </p>
-  </div>
-
-  <div className="flex justify-center">
-    <DeskQrScanner />
-  </div>
-</section>
 
       <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
         <DeskTable

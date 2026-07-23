@@ -174,8 +174,7 @@ router.push(`/desk/booking/${booking.id}`);
           lastScanAtRef.current = 0;
           setOpen((prev) => !prev);
         }}
-        className="rounded-xl border px-4 py-2 font-medium"
-      >
+className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-medium hover:bg-gray-50"      >
         {open ? "Close scanner" : "Scan QR"}
       </button>
 
