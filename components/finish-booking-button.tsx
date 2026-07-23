@@ -23,43 +23,25 @@ export default function FinishBookingButton({
   const supabase = createClient();
 
   async function handleFinish() {
-    if (loading) return;
+  try {
+    setIsLoading(true);
+    setError(null);
 
-    if (currentStatus !== "inside") {
-      alert("Esta reserva não está em estado válido para finalizar.");
-      return;
-    }
+    await finishBooking({
+      bookingId,
+      currentStatus,
+      checkOutTime,
+    });
 
-    setLoading(true);
-
-    const updateData: {
-      status: string;
-      updated_at: string;
-      check_out_time?: string;
-    } = {
-      status: "completed",
-      updated_at: new Date().toISOString(),
-    };
-
-    if (!checkOutTime) {
-      updateData.check_out_time = new Date().toISOString();
-    }
-
-    const { error } = await supabase
-      .from("bookings")
-      .update(updateData)
-      .eq("id", bookingId)
-      .eq("status", "inside");
-
-    setLoading(false);
-
-    if (error) {
-      alert("Não foi possível finalizar a reserva.");
-      return;
-    }
-
-    router.refresh();
+    router.replace("/desk");
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to finish booking"
+    );
+  } finally {
+    setIsLoading(false);
   }
+}
 
   return (
     <button
