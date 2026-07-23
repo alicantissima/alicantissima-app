@@ -24,7 +24,7 @@ export default function FinishBookingButton({
 
   async function handleFinish() {
   try {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     await finishBooking({
@@ -39,7 +39,7 @@ export default function FinishBookingButton({
       err instanceof Error ? err.message : "Failed to finish booking"
     );
   } finally {
-    setIsLoading(false);
+    setLoading(false);
   }
 }
 
