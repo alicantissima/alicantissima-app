@@ -690,25 +690,47 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
   </div>
 
   <div className="flex flex-wrap items-center gap-3">
+  {profile.role === "admin" && (
     <Link
-      href="/desk/history"
+      href="/admin"
       className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
     >
-      History
+      Admin
     </Link>
+  )}
 
-    {profile.role === "admin" && (
-      <Link
-        href="/admin"
-        className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
-      >
-        Open Admin
-      </Link>
-    )}
+  <a
+    href="#scan-qr"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+  >
+    Scan QR
+  </a>
 
-    <LogoutButton />
-  </div>
+  <Link
+    href="/desk/history"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+  >
+    History
+  </Link>
 </div>
+</div>
+
+<section
+  id="scan-qr"
+  className="scroll-mt-6 rounded-3xl border bg-white p-4 shadow-sm md:p-6"
+>
+  <div className="mb-5">
+    <h2 className="text-2xl font-bold">Scan QR</h2>
+
+    <p className="mt-1 text-sm text-gray-500">
+      Scan the customer&apos;s QR code to open the booking.
+    </p>
+  </div>
+
+  <div className="flex justify-center">
+    <DeskQrScanner />
+  </div>
+</section>
 
       <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
         <DeskTable
@@ -737,9 +759,13 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
         />
       </section>
 
-      <section className="mt-8 flex justify-center opacity-70">
-        <EnablePushButton />
-      </section>
+      <section className="mt-8 flex flex-col items-center justify-center gap-4">
+  <div className="opacity-70">
+    <EnablePushButton />
+  </div>
+
+  <LogoutButton />
+</section>
     </main>
   );
 }
