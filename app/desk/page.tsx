@@ -693,7 +693,7 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
   {profile.role === "admin" && (
     <Link
       href="/admin"
-      className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+      className="inline-flex h-11 min-w-[140px] items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
     >
       Admin
     </Link>
@@ -703,7 +703,7 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
 
   <Link
     href="/desk/history"
-    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
+    className="inline-flex h-11 min-w-[140px] items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium hover:bg-gray-50"
   >
     History
   </Link>
