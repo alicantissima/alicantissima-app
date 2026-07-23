@@ -25,7 +25,6 @@ export default function FinishBookingButton({
   async function handleFinish() {
   try {
     setLoading(true);
-    setError(null);
 
     await finishBooking({
       bookingId,
@@ -35,9 +34,7 @@ export default function FinishBookingButton({
 
     router.replace("/desk");
   } catch (err) {
-    setError(
-      err instanceof Error ? err.message : "Failed to finish booking"
-    );
+    console.error("Failed to finish booking:", err);
   } finally {
     setLoading(false);
   }
