@@ -4,8 +4,8 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   bookingId: string;
@@ -23,31 +23,47 @@ export default function FinishBookingButton({
   const supabase = createClient();
 
   async function handleFinish() {
-  try {
-    setLoading(true);
+    if (loading) return;
 
-    await finishBooking({
-      bookingId,
-      currentStatus,
-      checkOutTime,
-    });
+    try {
+      setLoading(true);
 
-    router.replace("/desk");
-  } catch (err) {
-    console.error("Failed to finish booking:", err);
-  } finally {
-    setLoading(false);
+      const { error } = await supabase
+        .from("bookings")
+        .update({
+          status: "completed",
+          check_out_time: checkOutTime ?? new Date().toISOString(),
+        })
+        .eq("id", bookingId);
+
+      if (error) {
+        throw error;
+      }
+
+      router.replace("/desk");
+    } catch (error) {
+      console.error("Failed to finish booking:", error);
+      alert("Não foi possível concluir o check-out. Tenta novamente.");
+    } finally {
+      setLoading(false);
+    }
   }
-}
+
+  const alreadyFinished =
+    currentStatus === "completed" || currentStatus === "finished";
 
   return (
     <button
       type="button"
       onClick={handleFinish}
-      disabled={loading}
-      className="rounded-xl border border-blue-700 bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+      disabled={loading || alreadyFinished}
+      className="rounded-xl border border-blue-700 bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {loading ? "A finalizar..." : "Confirm check-out"}
+      {loading
+        ? "A finalizar..."
+        : alreadyFinished
+          ? "Check-out concluído"
+          : "Confirm check-out"}
     </button>
   );
 }
