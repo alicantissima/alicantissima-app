@@ -37,26 +37,88 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    console.log("REVOLUT BODY:", body);
 
-    const amountInCents = toCents(body.amount);
-    const currency = String(body.currency || "EUR").toUpperCase();
     const bookingCode = String(body.bookingCode || "").trim();
-    const customerEmail = String(body.customerEmail || "").trim();
-    const customerName = String(body.customerName || "").trim();
+
+    if (!bookingCode) {
+      return NextResponse.json(
+        { ok: false, error: "Booking code is required." },
+        { status: 400 }
+      );
+    }
+
+    const supabase = createAdminClient();
+
+    const { data: booking, error: bookingError } = await supabase
+      .from("bookings")
+      .select(
+        `
+          id,
+          booking_code,
+          customer_email,
+          customer_name,
+          total_amount,
+          currency,
+          status,
+          payment_status,
+          revolut_order_id,
+          revolut_checkout_url
+        `
+      )
+      .eq("booking_code", bookingCode)
+      .maybeSingle();
+
+    if (bookingError) {
+      console.error("Failed to load booking:", bookingError);
+
+      return NextResponse.json(
+        { ok: false, error: "Failed to load booking." },
+        { status: 500 }
+      );
+    }
+
+    if (!booking) {
+      return NextResponse.json(
+        { ok: false, error: "Booking not found." },
+        { status: 404 }
+      );
+    }
+
+    if (booking.payment_status === "paid") {
+      return NextResponse.json(
+        { ok: false, error: "Booking is already paid." },
+        { status: 409 }
+      );
+    }
+
+    /*
+     * Never create a second Revolut order for the same booking.
+     * Return the existing checkout URL instead.
+     */
+    if (booking.revolut_order_id) {
+      return NextResponse.json({
+        ok: true,
+        reused: true,
+        order_id: booking.revolut_order_id,
+        checkout_url: booking.revolut_checkout_url,
+      });
+    }
+
+    const amountInCents = toCents(booking.total_amount);
+    const currency = String(booking.currency || "EUR").toUpperCase();
+    const customerEmail = String(booking.customer_email || "").trim();
+    const customerName = String(booking.customer_name || "").trim();
 
     if (!amountInCents) {
       return NextResponse.json(
-        { ok: false, error: "Invalid amount." },
+        { ok: false, error: "Invalid booking amount." },
         { status: 400 }
       );
     }
 
     const appBaseUrl = getAppBaseUrl();
 
-    const description = bookingCode
-      ? `Alicantissima booking ${bookingCode}`
-      : "Alicantissima booking";
+    const description = `Alicantissima booking ${bookingCode}`;
 
     const response = await fetch("https://merchant.revolut.com/api/orders", {
       method: "POST",
@@ -69,14 +131,17 @@ export async function POST(request: NextRequest) {
         amount: amountInCents,
         currency,
         description,
-        redirect_url: `${appBaseUrl}/checkout/success${
-          bookingCode ? `?code=${encodeURIComponent(bookingCode)}` : ""
-        }`,
+        redirect_url: `${appBaseUrl}/checkout/success?code=${encodeURIComponent(
+          bookingCode
+        )}`,
         merchant_order_data: {
-          reference: bookingCode || `ALI-${Date.now()}`,
+          reference: bookingCode,
         },
         metadata: {
           bookingCode,
+          bookingId: booking.id,
+          expectedAmount: amountInCents,
+          currency,
           customerEmail,
           customerName,
         },
@@ -98,36 +163,72 @@ export async function POST(request: NextRequest) {
     }
 
     const orderId = data?.id ? String(data.id) : "";
-    const checkoutUrl = data?.checkout_url ? String(data.checkout_url) : "";
+    const checkoutUrl = data?.checkout_url
+      ? String(data.checkout_url)
+      : "";
 
-    if (bookingCode && orderId) {
-      const supabase = createAdminClient();
-
-      const { error: updateError } = await supabase
-        .from("bookings")
-        .update({
-          revolut_order_id: orderId,
-          revolut_checkout_url: checkoutUrl || null,
-          payment_status: "pending",
-          payment_method: "revolut",
-        })
-        .eq("booking_code", bookingCode);
-
-      if (updateError) {
-        console.error("Failed to save Revolut order on booking:", updateError);
-
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "Revolut order created, but failed to save it on booking.",
-            revolut_order_id: orderId,
-            checkout_url: checkoutUrl,
-            details: updateError.message,
-          },
-          { status: 500 }
-        );
-      }
+    if (!orderId) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Revolut did not return an order ID.",
+        },
+        { status: 502 }
+      );
     }
+
+    const { error: updateError } = await supabase
+      .from("bookings")
+      .update({
+        revolut_order_id: orderId,
+        revolut_checkout_url: checkoutUrl || null,
+        payment_status: "pending",
+        payment_method: "revolut",
+      })
+      .eq("id", booking.id)
+      .is("revolut_order_id", null);
+
+    if (updateError) {
+      console.error(
+        "Failed to save Revolut order on booking:",
+        updateError
+      );
+
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Revolut order created, but failed to save it on booking.",
+          revolut_order_id: orderId,
+          checkout_url: checkoutUrl,
+          details: updateError.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      reused: false,
+      order: data,
+      order_id: orderId,
+      checkout_url: checkoutUrl,
+    });
+  } catch (error) {
+    console.error("Revolut create order error:", error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unexpected Revolut error.",
+      },
+      { status: 500 }
+    );
+  }
+}
 
     return NextResponse.json({
       ok: true,
