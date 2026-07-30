@@ -377,10 +377,12 @@ const backHref = cameFromAdmin ? "/admin" : "/desk";
     )}
 
     <FinishBookingButton
-      bookingId={booking.id}
-      currentStatus={booking.status}
-      checkOutTime={booking.check_out_time}
-    />
+  bookingId={booking.id}
+  currentStatus={booking.status}
+  checkOutTime={booking.check_out_time}
+  showerTime={showerTime}
+  showerDone={showerDone}
+/>
   </>
 )}
           </div>

@@ -22,18 +22,20 @@ type BookingItem = {
   line_total: number;
   product_type?: string | null;
   meta?: {
-    date?: string;
-    dropOffTime?: string | null;
-    pickUpTime?: string | null;
-    showerTime?: string | null;
-    comments?: string | null;
-    breakdown?: Array<{
-      label: string;
-      quantity: number;
-      unitPrice: number;
-      totalPrice: number;
-    }>;
-  } | null;
+  date?: string;
+  dropOffTime?: string | null;
+  pickUpTime?: string | null;
+  showerTime?: string | null;
+  showerDone?: boolean | null;
+  shower_done?: boolean | null;
+  comments?: string | null;
+  breakdown?: Array<{
+    label: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }>;
+} | null;
 };
 
 function formatDate(value?: string | null) {
@@ -114,6 +116,19 @@ export default async function BookingPage({ params }: PageProps) {
 
   const bookingItems = (bookingItemsData ?? []) as BookingItem[];
 
+const showerItem = bookingItems.find(
+  (item) =>
+    item.product_type === "shower" ||
+    item.product_type === "combo" ||
+    Boolean(item.meta?.showerTime)
+);
+
+const showerTime = showerItem?.meta?.showerTime ?? null;
+
+const showerDone =
+  showerItem?.meta?.showerDone === true ||
+  showerItem?.meta?.shower_done === true;
+
   const backHref = isAdmin ? "/admin" : "/desk";
   const backLabel = isAdmin ? "Return to admin" : "Return";
 
@@ -143,10 +158,12 @@ export default async function BookingPage({ params }: PageProps) {
 
             {booking.status === "inside" && (
               <FinishBookingButton
-                bookingId={booking.id}
-                currentStatus={booking.status}
-                checkOutTime={booking.check_out_time}
-              />
+  bookingId={booking.id}
+  currentStatus={booking.status}
+  checkOutTime={booking.check_out_time}
+  showerTime={showerTime}
+  showerDone={showerDone}
+/>
             )}
           </div>
         </div>

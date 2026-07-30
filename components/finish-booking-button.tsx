@@ -11,12 +11,16 @@ type Props = {
   bookingId: string;
   currentStatus: string;
   checkOutTime?: string | null;
+  showerTime?: string | null;
+  showerDone?: boolean;
 };
 
 export default function FinishBookingButton({
   bookingId,
   currentStatus,
   checkOutTime,
+  showerTime,
+  showerDone = false,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -24,6 +28,16 @@ export default function FinishBookingButton({
 
   async function handleFinish() {
     if (loading) return;
+
+    const hasPendingShower = Boolean(showerTime) && !showerDone;
+
+    if (hasPendingShower) {
+      const confirmed = window.confirm(
+        `Esta reserva ainda tem um duche marcado para as ${showerTime}. Confirmar check-out mesmo assim?`,
+      );
+
+      if (!confirmed) return;
+    }
 
     try {
       setLoading(true);
