@@ -290,6 +290,19 @@ export default async function DeskBookingPage({
 
   const bookingItems = (bookingItemsData ?? []) as BookingItem[];
 
+const showerItem = bookingItems.find(
+  (item) =>
+    item.product_type === "shower" ||
+    item.product_type === "combo" ||
+    Boolean(item.meta?.showerTime)
+);
+
+const showerTime = showerItem?.meta?.showerTime ?? null;
+
+const showerDone =
+  showerItem?.meta?.showerDone === true ||
+  showerItem?.meta?.shower_done === true;
+
 const showerDoneItem = getShowerDoneItem(bookingItems);
 const showerDone = isShowerDone(showerDoneItem);
 
