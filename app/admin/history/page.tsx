@@ -319,6 +319,7 @@ function getExtraCounts(item: BookingItemRow) {
       const isExtra =
         label.includes("additional") ||
         label.includes("extra") ||
+        label.includes("ekstra") ||
         label.includes("adicional") ||
         label.includes("supplementaire") ||
         label.includes("suplementar") ||
