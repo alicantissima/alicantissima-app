@@ -1011,10 +1011,7 @@ function getCancelUntil(items: Array<{ meta?: Record<string, unknown> }>) {
 }
 
 async function createRevolutOrder(params: {
-  amount: number;
   bookingCode: string;
-  customerEmail: string;
-  customerName: string;
   language: string;
 }) {
   const secretKey = process.env.REVOLUT_SECRET_KEY;
@@ -1023,44 +1020,143 @@ async function createRevolutOrder(params: {
     throw new Error("REVOLUT_SECRET_KEY is missing.");
   }
 
-  const appBaseUrl = getAppBaseUrl();
-  const amountInCents = Math.round(params.amount * 100);
+  const supabase = createAdminClient();
 
-  const response = await fetch("https://merchant.revolut.com/api/orders", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
-      "Content-Type": "application/json",
-      "Revolut-Api-Version": "2024-09-01",
-    },
-    body: JSON.stringify({
-      amount: amountInCents,
-      currency: "EUR",
-      description: `Alicantissima booking ${params.bookingCode}`,
-      redirect_url: `${appBaseUrl}/checkout/success?code=${encodeURIComponent(
-        params.bookingCode
-      )}&lang=${encodeURIComponent(params.language)}`,
-      merchant_order_data: {
-        reference: params.bookingCode,
+  /*
+   * A reserva guardada na base de dados é a única fonte de verdade.
+   * Não aceitamos o montante, nome ou email calculados fora da booking.
+   */
+  const { data: booking, error: bookingError } = await supabase
+    .from("bookings")
+    .select(`
+      id,
+      booking_code,
+      customer_email,
+      customer_name,
+      total_amount,
+      currency,
+      payment_status,
+      revolut_order_id,
+      revolut_checkout_url
+    `)
+    .eq("booking_code", params.bookingCode)
+    .maybeSingle();
+
+  if (bookingError) {
+    throw new Error(
+      `Could not load booking before Revolut order: ${bookingError.message}`
+    );
+  }
+
+  if (!booking) {
+    throw new Error(
+      `Booking ${params.bookingCode} was not found before Revolut order creation.`
+    );
+  }
+
+  if (booking.payment_status === "paid") {
+    throw new Error(
+      `Booking ${params.bookingCode} is already paid.`
+    );
+  }
+
+  /*
+   * Não criamos uma segunda ordem para a mesma reserva.
+   */
+  if (booking.revolut_order_id) {
+    if (!booking.revolut_checkout_url) {
+      throw new Error(
+        `Booking ${params.bookingCode} already has a Revolut order but no checkout URL.`
+      );
+    }
+
+    return {
+      orderId: String(booking.revolut_order_id),
+      checkoutUrl: String(booking.revolut_checkout_url),
+      reused: true,
+    };
+  }
+
+  const amount = Number(booking.total_amount);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error(
+      `Booking ${params.bookingCode} has an invalid total amount.`
+    );
+  }
+
+  const amountInCents = Math.round(amount * 100);
+  const currency = String(booking.currency || "EUR").toUpperCase();
+
+  const customerEmail = String(
+    booking.customer_email || ""
+  ).trim();
+
+  const customerName = String(
+    booking.customer_name || ""
+  ).trim();
+
+  const appBaseUrl = getAppBaseUrl();
+
+  const response = await fetch(
+    "https://merchant.revolut.com/api/orders",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        "Content-Type": "application/json",
+        "Revolut-Api-Version": "2024-09-01",
       },
-      metadata: {
-        bookingCode: params.bookingCode,
-        customerEmail: params.customerEmail,
-        customerName: params.customerName,
-      },
-    }),
-    cache: "no-store",
-  });
+      body: JSON.stringify({
+        amount: amountInCents,
+        currency,
+
+        description: `Alicantissima booking ${booking.booking_code}`,
+
+        redirect_url: `${appBaseUrl}/checkout/success?code=${encodeURIComponent(
+          booking.booking_code
+        )}&lang=${encodeURIComponent(params.language)}`,
+
+        merchant_order_data: {
+          reference: booking.booking_code,
+        },
+
+        metadata: {
+          bookingCode: booking.booking_code,
+          bookingId: booking.id,
+          expectedAmount: amountInCents,
+          currency,
+          customerEmail,
+          customerName,
+        },
+      }),
+      cache: "no-store",
+    }
+  );
 
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(`Revolut order error: ${response.status} ${JSON.stringify(data)}`);
+    throw new Error(
+      `Revolut order error: ${response.status} ${JSON.stringify(data)}`
+    );
+  }
+
+  const orderId = data?.id ? String(data.id) : "";
+  const checkoutUrl = data?.checkout_url
+    ? String(data.checkout_url)
+    : "";
+
+  if (!orderId || !checkoutUrl) {
+    throw new Error(
+      `Revolut returned an incomplete order for booking ${booking.booking_code}.`
+    );
   }
 
   return {
-    orderId: data?.id as string,
-    checkoutUrl: data?.checkout_url as string,
+    orderId,
+    checkoutUrl,
+    reused: false,
   };
 }
 
@@ -1580,12 +1676,9 @@ let revolutOrder: { orderId: string; checkoutUrl: string };
 
 try {
   revolutOrder = await createRevolutOrder({
-    amount: totalAmount,
-    bookingCode: booking.booking_code,
-    customerEmail,
-    customerName,
-    language,
-  });
+  bookingCode: booking.booking_code,
+  language,
+});
 } catch (revolutError) {
   console.error("revolut order error:", revolutError);
 
