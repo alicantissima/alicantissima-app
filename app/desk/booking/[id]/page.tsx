@@ -299,15 +299,11 @@ const showerItem = bookingItems.find(
 
 const showerTime = showerItem?.meta?.showerTime ?? null;
 
-const showerDone =
-  showerItem?.meta?.showerDone === true ||
-  showerItem?.meta?.shower_done === true;
-
 const showerDoneItem = getShowerDoneItem(bookingItems);
 const showerDone = isShowerDone(showerDoneItem);
 
 const backHref = cameFromAdmin ? "/admin" : "/desk";
-  const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
+const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
 
   return (
     <main className="mx-auto max-w-5xl space-y-4 p-3 md:p-6">
