@@ -46,24 +46,24 @@ export async function GET(request: NextRequest) {
   const results = [];
 
   results.push(
-    await testEndpoint("items", "/items?limit=100")
+    await testEndpoint("items", "/items?limit=30")
   );
 
   results.push(
-    await testEndpoint("taxes", "/taxes?limit=100")
+    await testEndpoint("taxes", "/taxes?limit=30")
   );
 
   results.push(
     await testEndpoint(
       "numberTemplates",
-      "/number-templates?limit=100"
+      "/number-templates?limit=30"
     )
   );
 
   results.push(
     await testEndpoint(
       "bankAccounts",
-      "/bank-accounts?limit=100"
+      "/bank-accounts?limit=30"
     )
   );
 
