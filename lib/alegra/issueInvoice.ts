@@ -250,7 +250,20 @@ async function resolveAlegraContactId(
   const reusableContactId =
     await findReusableContactId(booking);
 
-  const supabase = createAdminClient();
+const supabase = createAdminClient();
+
+const { error: contactSaveError } = await supabase
+  .from("bookings")
+  .update({
+    alegra_contact_id: contactId,
+  })
+  .eq("id", booking.id);
+
+if (contactSaveError) {
+  throw new Error(
+    `Unable to save Alegra public contact id: ${contactSaveError.message}`
+  );
+}
 
   if (reusableContactId) {
     const { error } = await supabase
@@ -487,8 +500,9 @@ export async function issueAlegraInvoice(
     const bookingItems =
       await loadBookingItems(booking.id);
 
-    const contactId =
-      await resolveAlegraContactId(booking);
+    const contactId = requiredEnv(
+  "ALEGRA_PUBLIC_CONTACT_ID"
+);
 
     const totalAmount = toPositiveNumber(
       booking.total_amount,
