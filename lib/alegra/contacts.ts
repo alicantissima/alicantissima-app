@@ -55,23 +55,17 @@ function buildContactName(
 }
 
 function buildIdentificationNumber(
-  email: string | null,
   bookingCode: string
 ) {
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedBookingCode = cleanText(bookingCode);
 
-  /*
-   * A identificação é obrigatória na Alegra Espanha.
-   *
-   * Para clientes turísticos sem NIF/passaporte,
-   * usamos primeiro o email e, se não existir,
-   * o booking code, que é único.
-   */
-  return (
-    normalizedEmail ??
-    cleanText(bookingCode) ??
-    `ALI-${Date.now()}`
-  );
+  if (!normalizedBookingCode) {
+    throw new Error(
+      "Booking code is required to create the Alegra contact."
+    );
+  }
+
+  return normalizedBookingCode;
 }
 
 export async function createAlegraContact({
@@ -84,24 +78,21 @@ export async function createAlegraContact({
   const normalizedPhone = cleanText(phone);
 
   const identificationNumber =
-    buildIdentificationNumber(
-      normalizedEmail,
-      bookingCode
-    );
+  buildIdentificationNumber(bookingCode);
 
   const payload: CreateAlegraContactInput = {
-    name: buildContactName(name, normalizedEmail),
+  name: buildContactName(name, normalizedEmail),
 
-    identification: identificationNumber,
+  identification: identificationNumber,
 
-    identificationObject: {
-      type: "DPO",
-      number: identificationNumber,
-    },
+  identificationObject: {
+    type: "DPO",
+    number: identificationNumber,
+  },
 
-    type: ["client"],
-    status: "active",
-  };
+  type: ["client"],
+  status: "active",
+};
 
   if (normalizedEmail) {
     payload.email = normalizedEmail;
