@@ -102,13 +102,18 @@ export async function createAlegraContact({
     payload.phonePrimary = normalizedPhone;
   }
 
-  const contact = await alegraRequest<AlegraContact>(
-    "/contacts",
-    {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }
-  );
+  console.log(
+  "ALEGRA CONTACT PAYLOAD:",
+  JSON.stringify(payload, null, 2)
+);
+
+const contact = await alegraRequest<AlegraContact>(
+  "/contacts",
+  {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }
+);
 
   if (!contact?.id) {
     throw new Error(
