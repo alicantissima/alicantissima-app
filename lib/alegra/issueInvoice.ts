@@ -415,11 +415,6 @@ export async function issueAlegraInvoice(
     );
   }
 
-  const totalAmount = toPositiveNumber(
-    booking.total_amount,
-    "booking total_amount"
-  );
-
 const totalAmount = toPositiveNumber(
   booking.total_amount,
   "booking total_amount"
