@@ -37,11 +37,7 @@ export type CreateAlegraContactInput = {
   name: string;
 
   identification: string;
-
-  identificationObject: {
-    type: "DPO" | "NIF" | "NIF-IVA";
-    number: string;
-  };
+  identificationType: "DPO" | "NIF" | "NIF-IVA";
 
   email?: string;
   phonePrimary?: string;

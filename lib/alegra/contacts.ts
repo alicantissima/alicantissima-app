@@ -84,11 +84,7 @@ export async function createAlegraContact({
   name: buildContactName(name, normalizedEmail),
 
   identification: identificationNumber,
-
-  identificationObject: {
-    type: "DPO",
-    number: identificationNumber,
-  },
+identificationType: "DPO",
 
   type: ["client"],
   status: "active",
