@@ -504,10 +504,25 @@ export async function issueAlegraInvoice(
   "ALEGRA_PUBLIC_CONTACT_ID"
 );
 
-    const totalAmount = toPositiveNumber(
-      booking.total_amount,
-      "booking total_amount"
-    );
+const supabase = createAdminClient();
+
+const { error: contactSaveError } = await supabase
+  .from("bookings")
+  .update({
+    alegra_contact_id: contactId,
+  })
+  .eq("id", booking.id);
+
+if (contactSaveError) {
+  throw new Error(
+    `Unable to save Alegra public contact id: ${contactSaveError.message}`
+  );
+}
+
+const totalAmount = toPositiveNumber(
+  booking.total_amount,
+  "booking total_amount"
+);
 
     const invoiceDate = getMadridDate();
 
@@ -570,7 +585,6 @@ export async function issueAlegraInvoice(
      * A partir deste momento, mesmo que a obtenção do PDF falhe,
      * nunca tentaremos emitir uma segunda fatura.
      */
-    const supabase = createAdminClient();
 
     const { error: saveInvoiceError } =
       await supabase
