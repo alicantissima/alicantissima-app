@@ -183,6 +183,7 @@ export type BookingForAlegraInvoice = {
   invoice_status: string | null;
   invoice_issued_at: string | null;
   invoice_error: string | null;
+  alegra_contact_id: string | null;
 };
 
 export type BookingItemForAlegraInvoice = {
