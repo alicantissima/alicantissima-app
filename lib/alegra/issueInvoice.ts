@@ -3,8 +3,6 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
-import { createAlegraContact } from "@/lib/alegra/contacts";
-
 import {
   createAlegraInvoice,
   extractAlegraInvoiceNumber,
@@ -41,10 +39,6 @@ function cleanText(value: unknown) {
   const cleaned = String(value ?? "").trim();
 
   return cleaned || null;
-}
-
-function normalizeEmail(value: unknown) {
-  return cleanText(value)?.toLowerCase() ?? null;
 }
 
 function toPositiveNumber(value: unknown, fieldName: string) {
@@ -209,63 +203,6 @@ async function acquireInvoiceLock(
   return Boolean(data?.id);
 }
 
-async function findReusableContactId(
-  booking: BookingForAlegraInvoice
-) {
-  if (booking.alegra_contact_id) {
-    return booking.alegra_contact_id;
-  }
-
-  const email = normalizeEmail(
-    booking.customer_email
-  );
-
-  if (!email) {
-    return null;
-  }
-
-  const supabase = createAdminClient();
-
-  const { data, error } = await supabase
-    .from("bookings")
-    .select("alegra_contact_id")
-    .ilike("customer_email", email)
-    .not("alegra_contact_id", "is", null)
-    .neq("id", booking.id)
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(
-      `Unable to search reusable Alegra contact: ${error.message}`
-    );
-  }
-
-  return cleanText(data?.alegra_contact_id);
-}
-
-async function resolveAlegraContactId(
-  booking: BookingForAlegraInvoice
-) {
-  const reusableContactId =
-    await findReusableContactId(booking);
-
-  if (reusableContactId) {
-    const { error } = await supabase
-      .from("bookings")
-      .update({
-        alegra_contact_id: reusableContactId,
-      })
-      .eq("id", booking.id);
-
-    if (error) {
-      throw new Error(
-        `Unable to save reused Alegra contact id: ${error.message}`
-      );
-    }
-
-    return reusableContactId;
-  }
 
   const contact = await createAlegraContact({
   name: booking.customer_name,
@@ -484,10 +421,6 @@ export async function issueAlegraInvoice(
   try {
     const bookingItems =
       await loadBookingItems(booking.id);
-
-    const contactId = requiredEnv(
-  "ALEGRA_PUBLIC_CONTACT_ID"
-);
 
 const supabase = createAdminClient();
 
