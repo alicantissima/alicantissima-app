@@ -203,32 +203,6 @@ async function acquireInvoiceLock(
   return Boolean(data?.id);
 }
 
-
-  const contact = await createAlegraContact({
-  name: booking.customer_name,
-  email: booking.customer_email,
-  phone: booking.customer_phone,
-  bookingCode: booking.booking_code,
-});
-
-  const contactId = String(contact.id);
-
-  const { error } = await supabase
-    .from("bookings")
-    .update({
-      alegra_contact_id: contactId,
-    })
-    .eq("id", booking.id);
-
-  if (error) {
-    throw new Error(
-      `Unable to save Alegra contact id: ${error.message}`
-    );
-  }
-
-  return contactId;
-}
-
 async function loadBooking(bookingId: string) {
   const supabase = createAdminClient();
 
@@ -419,23 +393,32 @@ export async function issueAlegraInvoice(
   }
 
   try {
-    const bookingItems =
-      await loadBookingItems(booking.id);
+  const bookingItems =
+    await loadBookingItems(booking.id);
 
-const supabase = createAdminClient();
-
-const { error: contactSaveError } = await supabase
-  .from("bookings")
-  .update({
-    alegra_contact_id: contactId,
-  })
-  .eq("id", booking.id);
-
-if (contactSaveError) {
-  throw new Error(
-    `Unable to save Alegra public contact id: ${contactSaveError.message}`
+  const contactId = requiredEnv(
+    "ALEGRA_PUBLIC_CONTACT_ID"
   );
-}
+
+  const supabase = createAdminClient();
+
+  const { error: contactSaveError } = await supabase
+    .from("bookings")
+    .update({
+      alegra_contact_id: contactId,
+    })
+    .eq("id", booking.id);
+
+  if (contactSaveError) {
+    throw new Error(
+      `Unable to save Alegra public contact id: ${contactSaveError.message}`
+    );
+  }
+
+  const totalAmount = toPositiveNumber(
+    booking.total_amount,
+    "booking total_amount"
+  );
 
 const totalAmount = toPositiveNumber(
   booking.total_amount,
