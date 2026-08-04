@@ -250,21 +250,6 @@ async function resolveAlegraContactId(
   const reusableContactId =
     await findReusableContactId(booking);
 
-const supabase = createAdminClient();
-
-const { error: contactSaveError } = await supabase
-  .from("bookings")
-  .update({
-    alegra_contact_id: contactId,
-  })
-  .eq("id", booking.id);
-
-if (contactSaveError) {
-  throw new Error(
-    `Unable to save Alegra public contact id: ${contactSaveError.message}`
-  );
-}
-
   if (reusableContactId) {
     const { error } = await supabase
       .from("bookings")
