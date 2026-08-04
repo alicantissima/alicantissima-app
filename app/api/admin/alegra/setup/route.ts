@@ -61,11 +61,18 @@ export async function GET(request: NextRequest) {
   );
 
   results.push(
-    await testEndpoint(
-      "bankAccounts",
-      "/bank-accounts?limit=30"
-    )
-  );
+  await testEndpoint(
+    "bankAccounts",
+    "/bank-accounts?limit=30"
+  )
+);
+
+results.push(
+  await testEndpoint(
+    "contacts",
+    "/contacts?limit=5"
+  )
+);
 
   return NextResponse.json({
     ok: true,
