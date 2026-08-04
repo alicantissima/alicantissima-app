@@ -270,10 +270,11 @@ async function resolveAlegraContactId(
   }
 
   const contact = await createAlegraContact({
-    name: booking.customer_name,
-    email: booking.customer_email,
-    phone: booking.customer_phone,
-  });
+  name: booking.customer_name,
+  email: booking.customer_email,
+  phone: booking.customer_phone,
+  bookingCode: booking.booking_code,
+});
 
   const contactId = String(contact.id);
 

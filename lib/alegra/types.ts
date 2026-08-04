@@ -8,11 +8,19 @@ export type AlegraContactType = "client" | "provider";
 export type AlegraContact = {
   id: AlegraId;
   name: string;
+
   identification?: string | null;
+
+  identificationObject?: {
+    type?: string;
+    number?: string;
+  } | null;
+
   email?: string | null;
   phonePrimary?: string | null;
   phoneSecondary?: string | null;
   mobile?: string | null;
+
   status?: "active" | "inactive";
   type?: AlegraContactType[];
 };
@@ -27,9 +35,18 @@ export type AlegraContactsListResponse = {
 
 export type CreateAlegraContactInput = {
   name: string;
+
+  identification: string;
+
+  identificationObject: {
+    type: "DPO" | "NIF" | "NIF-IVA";
+    number: string;
+  };
+
   email?: string;
   phonePrimary?: string;
   mobile?: string;
+
   type: AlegraContactType[];
   status: "active";
 };

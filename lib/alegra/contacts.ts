@@ -2,6 +2,7 @@
 
 
 import { alegraRequest } from "@/lib/alegra/client";
+
 import type {
   AlegraContact,
   CreateAlegraContactInput,
@@ -11,6 +12,7 @@ type CreateContactParams = {
   name: string | null;
   email: string | null;
   phone: string | null;
+  bookingCode: string;
 };
 
 function cleanText(value: string | null | undefined) {
@@ -26,10 +28,6 @@ function normalizeEmail(value: string | null | undefined) {
     return null;
   }
 
-  /*
-   * Validação simples, suficiente para evitar enviar lixo óbvio
-   * para a API da Alegra.
-   */
   if (!email.includes("@") || !email.includes(".")) {
     return null;
   }
@@ -41,31 +39,66 @@ function buildContactName(
   name: string | null,
   email: string | null
 ) {
-  const cleanName = cleanText(name);
+  const normalizedName = cleanText(name);
 
-  if (cleanName) {
-    return cleanName;
+  if (normalizedName) {
+    return normalizedName;
   }
 
-  const cleanEmail = normalizeEmail(email);
+  const normalizedEmail = normalizeEmail(email);
 
-  if (cleanEmail) {
-    return cleanEmail;
+  if (normalizedEmail) {
+    return normalizedEmail;
   }
 
   return "Cliente Alicantíssima";
+}
+
+function buildIdentificationNumber(
+  email: string | null,
+  bookingCode: string
+) {
+  const normalizedEmail = normalizeEmail(email);
+
+  /*
+   * A identificação é obrigatória na Alegra Espanha.
+   *
+   * Para clientes turísticos sem NIF/passaporte,
+   * usamos primeiro o email e, se não existir,
+   * o booking code, que é único.
+   */
+  return (
+    normalizedEmail ??
+    cleanText(bookingCode) ??
+    `ALI-${Date.now()}`
+  );
 }
 
 export async function createAlegraContact({
   name,
   email,
   phone,
+  bookingCode,
 }: CreateContactParams): Promise<AlegraContact> {
   const normalizedEmail = normalizeEmail(email);
   const normalizedPhone = cleanText(phone);
 
+  const identificationNumber =
+    buildIdentificationNumber(
+      normalizedEmail,
+      bookingCode
+    );
+
   const payload: CreateAlegraContactInput = {
     name: buildContactName(name, normalizedEmail),
+
+    identification: identificationNumber,
+
+    identificationObject: {
+      type: "DPO",
+      number: identificationNumber,
+    },
+
     type: ["client"],
     status: "active",
   };
@@ -98,6 +131,8 @@ export async function createAlegraContact({
     contactId: String(contact.id),
     name: contact.name,
     email: normalizedEmail,
+    identificationType: "DPO",
+    identificationNumber,
   });
 
   return contact;
