@@ -89,7 +89,7 @@ export type AlegraPaymentInput = {
     | "credit-card"
     | "debit-card";
 
-  annotations?: string;
+  anotations?: string;
   observations?: string;
 };
 
