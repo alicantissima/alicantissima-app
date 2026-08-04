@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { finalizePaidBookingByPaymentReference } from "@/app/checkout/actions";
+import { issueAlegraInvoice } from "@/lib/alegra/issueInvoice";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -308,11 +309,28 @@ console.log("REVOLUT PAYMENT VERIFIED:", {
 
 const result = await finalizePaidBookingByPaymentReference(orderId);
 
+let invoiceResult: unknown = null;
+
+try {
+  invoiceResult = await issueAlegraInvoice(booking.id);
+
+  console.log("ALEGRA AUTO INVOICE SUCCESS:", {
+    bookingCode: booking.booking_code,
+    invoiceResult,
+  });
+} catch (error) {
+  console.error("ALEGRA AUTO INVOICE FAILED:", {
+    bookingCode: booking.booking_code,
+    error,
+  });
+}
+
 return NextResponse.json({
   ok: true,
   orderId,
   eventName,
   result,
+  invoiceResult,
 });
 
   } catch (error) {
