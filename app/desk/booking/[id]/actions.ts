@@ -543,11 +543,16 @@ export async function updateBookingItemShowerRoom({
     shower_room: showerRoom,
   };
 
-  const { error: updateError } = await supabase
-    .from("booking_items")
-    .update({ meta: newMeta })
-    .eq("id", itemId)
-    .eq("booking_id", bookingId);
+  const roomNumber = showerRoom === "s2" ? 2 : 1;
+
+const { error: updateError } = await supabase
+  .from("booking_items")
+  .update({
+    shower_room: roomNumber,
+    meta: newMeta,
+  })
+  .eq("id", itemId)
+  .eq("booking_id", bookingId);
 
   if (updateError) {
     throw new Error(updateError.message);

@@ -117,7 +117,18 @@ export function getFreeShowerRoom({
         return false;
       }
 
-      const itemRoom = item.shower_room ?? 1;
+      const metaRoom = String(item.meta?.shower_room || "")
+  .trim()
+  .toLowerCase();
+
+const itemRoom =
+  item.shower_room === 1 || item.shower_room === 2
+    ? item.shower_room
+    : metaRoom === "s1" || metaRoom === "1"
+    ? 1
+    : metaRoom === "s2" || metaRoom === "2"
+    ? 2
+    : null;
       const itemStart = item.meta?.showerTime;
       const itemEnd = item.meta?.showerEndTime;
 
