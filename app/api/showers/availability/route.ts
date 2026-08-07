@@ -16,6 +16,24 @@ function timeToDisplay(time: string) {
   return time;
 }
 
+function getNormalizedShowerRoom(item: {
+  shower_room?: number | null;
+  meta?: Record<string, unknown> | null;
+}) {
+  if (item.shower_room === 1 || item.shower_room === 2) {
+    return item.shower_room;
+  }
+
+  const metaRoom = String(item.meta?.shower_room || "")
+    .trim()
+    .toLowerCase();
+
+  if (metaRoom === "s1" || metaRoom === "1") return 1;
+  if (metaRoom === "s2" || metaRoom === "2") return 2;
+
+  return null;
+}
+
 function getDynamicShowerSlotLabel(startTime: string, quantity: number) {
   const endTime = getShowerEndTime(startTime, quantity);
   return `${timeToDisplay(startTime)}-${timeToDisplay(endTime)}`;
@@ -213,7 +231,15 @@ export async function GET(req: NextRequest) {
       );
     });
 
-    const existingRanges = existingShowerItems
+const normalizedExistingShowerItems = existingShowerItems.map((item: any) => ({
+  ...item,
+  shower_room: getNormalizedShowerRoom({
+    shower_room: item.shower_room,
+    meta: item.meta as Record<string, unknown> | null,
+  }),
+}));
+
+    const existingRanges = normalizedExistingShowerItems
       .map((item: any) =>
         getExistingShowerRange({
           quantity: item.quantity,
@@ -232,7 +258,7 @@ export async function GET(req: NextRequest) {
       const availableRoom = getFreeShowerRoom({
         startTime,
         endTime,
-        existingBookings: existingShowerItems,
+        existingBookings: normalizedExistingShowerItems,
         showerBlocks: showerBlocks ?? [],
       });
 
