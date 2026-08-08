@@ -122,12 +122,12 @@ export function getFreeShowerRoom({
   .toLowerCase();
 
 const itemRoom =
-  item.shower_room === 1 || item.shower_room === 2
-    ? item.shower_room
-    : metaRoom === "s1" || metaRoom === "1"
+  metaRoom === "s1" || metaRoom === "1"
     ? 1
     : metaRoom === "s2" || metaRoom === "2"
     ? 2
+    : item.shower_room === 1 || item.shower_room === 2
+    ? item.shower_room
     : null;
       const itemStart = item.meta?.showerTime;
       const itemEnd = item.meta?.showerEndTime;

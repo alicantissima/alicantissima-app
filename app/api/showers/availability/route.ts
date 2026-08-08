@@ -20,16 +20,16 @@ function getNormalizedShowerRoom(item: {
   shower_room?: number | null;
   meta?: Record<string, unknown> | null;
 }) {
-  if (item.shower_room === 1 || item.shower_room === 2) {
-    return item.shower_room;
-  }
-
   const metaRoom = String(item.meta?.shower_room || "")
     .trim()
     .toLowerCase();
 
   if (metaRoom === "s1" || metaRoom === "1") return 1;
   if (metaRoom === "s2" || metaRoom === "2") return 2;
+
+  if (item.shower_room === 1 || item.shower_room === 2) {
+    return item.shower_room;
+  }
 
   return null;
 }
