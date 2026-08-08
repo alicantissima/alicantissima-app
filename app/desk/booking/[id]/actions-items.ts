@@ -8,7 +8,9 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getShowerDurationMinutes,
   getShowerEndTime,
+  timesOverlap,
 } from "@/lib/showers";
+
 
 type UpdateTimeInput = {
   bookingId: string;
@@ -92,16 +94,16 @@ export async function updateBookingItemTime({
   }
 
   if (!profile || !["admin", "desk"].includes(profile.role)) {
-  throw new Error("Unauthorized");
-}
+    throw new Error("Unauthorized");
+  }
 
-if (profile.role === "desk" && field === "showerTime") {
-  throw new Error("Desk cannot edit shower times.");
-}
+  if (profile.role === "desk" && field === "showerTime") {
+    throw new Error("Desk cannot edit shower times.");
+  }
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
-    .select("id, booking_id, quantity, product_type, meta")
+    .select("id, booking_id, quantity, product_type, meta, shower_room")
     .eq("id", itemId)
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -114,12 +116,12 @@ if (profile.role === "desk" && field === "showerTime") {
     throw new Error("Booking item not found or access blocked");
   }
 
-if (
-  profile.role === "desk" &&
-  (item.product_type === "shower" || item.product_type === "combo")
-) {
-  throw new Error("Desk cannot edit shower or combo times.");
-}
+  if (
+    profile.role === "desk" &&
+    (item.product_type === "shower" || item.product_type === "combo")
+  ) {
+    throw new Error("Desk cannot edit shower or combo times.");
+  }
 
   const currentMeta =
     item.meta && typeof item.meta === "object" && !Array.isArray(item.meta)
@@ -133,6 +135,20 @@ if (
     [field]: cleanValue,
   };
 
+  let normalizedRoom: 1 | 2 | null =
+    item.shower_room === 1 || item.shower_room === 2
+      ? item.shower_room
+      : null;
+
+  const metaRoom = String(currentMeta.shower_room || "")
+    .trim()
+    .toLowerCase();
+
+  if (!normalizedRoom) {
+    if (metaRoom === "s1" || metaRoom === "1") normalizedRoom = 1;
+    if (metaRoom === "s2" || metaRoom === "2") normalizedRoom = 2;
+  }
+
   if (field === "showerTime") {
     if (cleanValue) {
       const showerQuantity = getShowerQuantityFromItem({
@@ -140,17 +156,161 @@ if (
         meta: currentMeta,
       });
 
+      const showerEndTime = getShowerEndTime(
+        cleanValue,
+        showerQuantity
+      );
+
+      if (!normalizedRoom) {
+        throw new Error(
+          "This shower has no room assigned. Choose S1 or S2 first."
+        );
+      }
+
+      /*
+       * Descobrir a data da reserva.
+       */
+      const { data: booking, error: bookingError } = await supabase
+        .from("bookings")
+        .select("service_date")
+        .eq("id", bookingId)
+        .maybeSingle();
+
+      if (bookingError) {
+        throw new Error(bookingError.message);
+      }
+
+      if (!booking?.service_date) {
+        throw new Error("Booking service date not found.");
+      }
+
+      /*
+       * Procurar todos os duches activos desse dia.
+       */
+      const { data: otherItems, error: availabilityError } =
+        await supabase
+          .from("booking_items")
+          .select(`
+            id,
+            shower_room,
+            product_type,
+            meta,
+            booking:bookings!inner (
+              id,
+              status,
+              payment_status,
+              payment_expires_at,
+              service_date
+            )
+          `)
+          .eq("booking.service_date", booking.service_date)
+          .not(
+            "booking.status",
+            "in",
+            '("cancelled","no_show","completed")'
+          );
+
+      if (availabilityError) {
+        throw new Error(availabilityError.message);
+      }
+
+      const nowIso = new Date().toISOString();
+
+      const conflict = (otherItems ?? []).some((other: any) => {
+        /*
+         * A própria linha nunca entra em conflito consigo mesma.
+         */
+        if (other.id === itemId) return false;
+
+        if (
+          other.product_type !== "shower" &&
+          other.product_type !== "combo"
+        ) {
+          return false;
+        }
+
+        const otherBooking = other.booking;
+
+        if (!otherBooking) return false;
+
+        const status = otherBooking.status;
+        const paymentStatus = otherBooking.payment_status;
+        const paymentExpiresAt = otherBooking.payment_expires_at;
+
+        const active =
+          status === "booked" ||
+          status === "inside" ||
+          ((status === "pending_payment" ||
+            paymentStatus === "pending_payment") &&
+            Boolean(
+              paymentExpiresAt &&
+                paymentExpiresAt > nowIso
+            ));
+
+        if (!active) return false;
+
+        const otherMeta =
+          other.meta &&
+          typeof other.meta === "object" &&
+          !Array.isArray(other.meta)
+            ? (other.meta as Record<string, unknown>)
+            : {};
+
+        const otherMetaRoom = String(
+          otherMeta.shower_room || ""
+        )
+          .trim()
+          .toLowerCase();
+
+        const otherRoom =
+          otherMetaRoom === "s1" || otherMetaRoom === "1"
+            ? 1
+            : otherMetaRoom === "s2" || otherMetaRoom === "2"
+            ? 2
+            : other.shower_room === 1 || other.shower_room === 2
+            ? other.shower_room
+            : null;
+
+        if (otherRoom !== normalizedRoom) {
+          return false;
+        }
+
+        const otherStart =
+          typeof otherMeta.showerTime === "string"
+            ? otherMeta.showerTime
+            : "";
+
+        const otherEnd =
+          typeof otherMeta.showerEndTime === "string"
+            ? otherMeta.showerEndTime
+            : "";
+
+        if (!otherStart || !otherEnd) {
+          return false;
+        }
+
+        return timesOverlap(
+          cleanValue,
+          showerEndTime,
+          otherStart,
+          otherEnd
+        );
+      });
+
+      if (conflict) {
+        throw new Error(
+          `S${normalizedRoom} is already occupied during this time.`
+        );
+      }
+
       newMeta = {
-  ...newMeta,
-  showerQuantity,
-  showerDurationMinutes: getShowerDurationMinutes(showerQuantity),
-  showerEndTime: getShowerEndTime(cleanValue, showerQuantity),
-  shower_room:
-    typeof currentMeta.shower_room === "string" &&
-    currentMeta.shower_room.trim()
-      ? currentMeta.shower_room
-      : "s1",
-};
+        ...newMeta,
+        showerQuantity,
+        showerDurationMinutes:
+          getShowerDurationMinutes(showerQuantity),
+        showerEndTime,
+        shower_room: `s${normalizedRoom}`,
+      };
     } else {
       newMeta = {
         ...newMeta,
@@ -163,7 +323,13 @@ if (
 
   const { data: updatedItem, error: updateError } = await supabase
     .from("booking_items")
-    .update({ meta: newMeta })
+    .update({
+      meta: newMeta,
+
+      ...(field === "showerTime" && normalizedRoom
+        ? { shower_room: normalizedRoom }
+        : {}),
+    })
     .eq("id", itemId)
     .eq("booking_id", bookingId)
     .select("id")
