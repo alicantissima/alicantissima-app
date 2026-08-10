@@ -1405,25 +1405,6 @@ return {
     const supabase = createAdminClient();
 const bookingCode = generateBookingCode();
 const serviceDate = getServiceDateFromItems(items);
-const todayMadrid = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Europe/Madrid",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-}).format(new Date());
-
-const isLuggageOnly = items.every(
-  (item) =>
-    item.productType === "booking" ||
-    item.productType === "luggage"
-);
-
-if (isLuggageOnly && serviceDate === todayMadrid) {
-  return {
-    ok: false,
-    error: "Luggage Storage is fully booked today. Please choose another date.",
-  };
-}
 const cancelUntil = getCancelUntil(items);
 const cancellationToken = isWalkin ? null : generateCancellationToken();
 
