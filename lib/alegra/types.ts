@@ -174,6 +174,7 @@ export type AlegraInvoiceWithPdf = AlegraInvoice & {
 export type BookingForAlegraInvoice = {
   id: string;
   booking_code: string;
+payment_method: string | null;
 
   customer_name: string | null;
   customer_email: string | null;

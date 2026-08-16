@@ -12,6 +12,7 @@ type BuildAlegraPaymentParams = {
   bankAccountId: AlegraId;
   bookingCode: string;
   paymentReference?: string | null;
+  paymentMethod?: "cash" | "credit-card";
 };
 
 function validateDate(value: string) {
@@ -34,6 +35,7 @@ export function buildAlegraInvoicePayment({
   bankAccountId,
   bookingCode,
   paymentReference,
+  paymentMethod = "credit-card",
 }: BuildAlegraPaymentParams): AlegraPaymentInput {
   const normalizedAmount = roundCurrency(Number(amount));
 
@@ -58,7 +60,7 @@ export function buildAlegraInvoicePayment({
 
     amount: normalizedAmount,
 
-    paymentMethod: "credit-card",
+    paymentMethod,
 
     anotations: `Pagamento online ${bookingCode}`,
 
