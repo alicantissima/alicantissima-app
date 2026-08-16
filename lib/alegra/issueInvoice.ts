@@ -423,18 +423,16 @@ const totalAmount = toPositiveNumber(
   "booking total_amount"
 );
 
-    const invoiceDate = getMadridDate();
-
 const isWalkin =
   String(booking.source ?? "").toLowerCase() === "walkin";
 
-const paymentMethod =
+const bookingPaymentMethod =
   String(booking.payment_method ?? "").toLowerCase();
 
 if (
   isWalkin &&
-  paymentMethod !== "card" &&
-  paymentMethod !== "cash"
+  bookingPaymentMethod !== "card" &&
+  bookingPaymentMethod !== "cash"
 ) {
   throw new Error(
     `Walk-in ${booking.booking_code} cannot be invoiced with payment method ${booking.payment_method}.`
@@ -446,15 +444,17 @@ const numberTemplateId = isWalkin
   : requiredEnv("ALEGRA_NUMBER_TEMPLATE_ID");
 
 const bankAccountId = isWalkin
-  ? paymentMethod === "cash"
+  ? bookingPaymentMethod === "cash"
     ? requiredEnv("ALEGRA_WALKIN_CASH_ACCOUNT_ID")
     : requiredEnv("ALEGRA_WALKIN_CARD_ACCOUNT_ID")
   : requiredEnv("ALEGRA_BANK_ACCOUNT_ID");
 
-const alegraPaymentMethod =
-  isWalkin && paymentMethod === "cash"
+const alegraPaymentMethod: "cash" | "credit-card" =
+  isWalkin && bookingPaymentMethod === "cash"
     ? "cash"
     : "credit-card";
+
+    const invoiceDate = getMadridDate();
 
     const invoicePayload: CreateAlegraInvoiceInput =
       {

@@ -5,7 +5,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { updateBookingPaymentMethod } from "@/app/admin/payment-actions";
 
 type PaymentMethod =
   | "unpaid"
@@ -17,7 +17,10 @@ type PaymentMethod =
   | "cancelled"
   | "missed_payment";
 
-const OPTIONS: Array<{ value: PaymentMethod; label: string }> = [
+const OPTIONS: Array<{
+  value: PaymentMethod;
+  label: string;
+}> = [
   { value: "unpaid", label: "Unpaid" },
   { value: "viator", label: "Viator" },
   { value: "card", label: "Card" },
@@ -25,7 +28,10 @@ const OPTIONS: Array<{ value: PaymentMethod; label: string }> = [
   { value: "revolut", label: "Revolut" },
   { value: "refunded", label: "Refunded" },
   { value: "cancelled", label: "Cancelled" },
-  { value: "missed_payment", label: "Missed payment" },
+  {
+    value: "missed_payment",
+    label: "Missed payment",
+  },
 ];
 
 export default function AdminPaymentMethodSelect({
@@ -36,22 +42,44 @@ export default function AdminPaymentMethodSelect({
   value: string;
 }) {
   const router = useRouter();
-  const supabase = createClient();
-  const [currentValue, setCurrentValue] = useState(value);
-  const [isPending, startTransition] = useTransition();
 
-  async function handleChange(nextValue: string) {
+  const [currentValue, setCurrentValue] =
+    useState(value);
+
+  const [isPending, startTransition] =
+    useTransition();
+
+  async function handleChange(
+    nextValue: PaymentMethod
+  ) {
+    const previousValue = currentValue;
+
     setCurrentValue(nextValue);
 
-    const { error } = await supabase
-      .from("bookings")
-      .update({ payment_method: nextValue })
-      .eq("id", bookingId);
+    const result =
+      await updateBookingPaymentMethod({
+        bookingId,
+        paymentMethod: nextValue,
+      });
 
-    if (error) {
-      setCurrentValue(value);
-      alert("Não foi possível atualizar o payment method.");
+    if (!result.ok) {
+      setCurrentValue(previousValue);
+
+      alert(
+        result.error ||
+          "Não foi possível atualizar o payment method."
+      );
+
       return;
+    }
+
+    if (
+      result.invoiceError
+    ) {
+      console.error(
+        "Walk-in paid but invoice failed:",
+        result.invoiceError
+      );
     }
 
     startTransition(() => {
@@ -60,15 +88,22 @@ export default function AdminPaymentMethodSelect({
   }
 
   return (
-    <div className="relative inline-block w-[132px] min-w-[132px] shrink-0">
+    <div className="relative">
       <select
         value={currentValue}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) =>
+          handleChange(
+            e.target.value as PaymentMethod
+          )
+        }
         disabled={isPending}
         className="h-8 w-full appearance-none truncate rounded-xl border border-gray-300 bg-white px-3 pr-8 text-[12px] font-medium leading-none outline-none transition focus:border-gray-400"
       >
         {OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option
+            key={option.value}
+            value={option.value}
+          >
             {option.label}
           </option>
         ))}
