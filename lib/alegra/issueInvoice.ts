@@ -423,6 +423,8 @@ const totalAmount = toPositiveNumber(
   "booking total_amount"
 );
 
+    const invoiceDate = getMadridDate();
+
 const isWalkin =
   String(booking.source ?? "").toLowerCase() === "walkin";
 
@@ -454,48 +456,44 @@ const alegraPaymentMethod: "cash" | "credit-card" =
     ? "cash"
     : "credit-card";
 
-    const invoiceDate = getMadridDate();
 
-    const invoicePayload: CreateAlegraInvoiceInput =
-      {
-        date: invoiceDate,
-        dueDate: invoiceDate,
+    const invoicePayload: CreateAlegraInvoiceInput = {
+  date: invoiceDate,
+  dueDate: invoiceDate,
 
-        client: {
-          id: contactId,
-        },
+  client: {
+    id: contactId,
+  },
 
-        numberTemplate: {
-  id: numberTemplateId,
-},
-        },
+  numberTemplate: {
+    id: numberTemplateId,
+  },
 
-        items: bookingItems.map(
-          buildInvoiceItem
-        ),
+  items: bookingItems.map(
+    buildInvoiceItem
+  ),
 
-        payments: [
-          buildAlegraInvoicePayment({
-            date: invoiceDate,
-            amount: totalAmount,
-            bankAccountId,
-paymentMethod: alegraPaymentMethod,
-            bookingCode:
-              booking.booking_code,
-            paymentReference:
-              booking.payment_reference,
-          }),
-        ],
+  payments: [
+    buildAlegraInvoicePayment({
+      date: invoiceDate,
+      amount: totalAmount,
+      bankAccountId,
+      bookingCode: booking.booking_code,
+      paymentReference:
+        booking.payment_reference,
+      paymentMethod: alegraPaymentMethod,
+    }),
+  ],
 
-        observations: [
-          `Reserva: ${booking.booking_code}`,
-          booking.payment_reference
-            ? `Revolut: ${booking.payment_reference}`
-            : null,
-        ]
-          .filter(Boolean)
-          .join(" | "),
-      };
+  observations: [
+    `Reserva: ${booking.booking_code}`,
+    booking.payment_reference
+      ? `Revolut: ${booking.payment_reference}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" | "),
+};
 
     const invoice =
       await createAlegraInvoice(
