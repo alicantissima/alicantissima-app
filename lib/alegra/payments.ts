@@ -35,7 +35,7 @@ export function buildAlegraInvoicePayment({
   bankAccountId,
   bookingCode,
   paymentReference,
-paymentMethod,
+  paymentMethod = "credit-card",
 }: BuildAlegraPaymentParams): AlegraPaymentInput {
   const normalizedAmount = roundCurrency(Number(amount));
 
