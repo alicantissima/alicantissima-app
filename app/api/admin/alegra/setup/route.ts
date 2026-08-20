@@ -1,12 +1,16 @@
+
+
+
 import { NextRequest, NextResponse } from "next/server";
 import { alegraRequest } from "@/lib/alegra/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-
 export async function GET(request: NextRequest) {
-  const expectedSecret = process.env.ALEGRA_SETUP_SECRET?.trim();
+  const expectedSecret =
+    process.env.ALEGRA_SETUP_SECRET?.trim();
+
   const receivedSecret =
     request.nextUrl.searchParams.get("secret")?.trim();
 
@@ -20,7 +24,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  async function testEndpoint(name: string, path: string) {
+  async function testEndpoint(
+    name: string,
+    path: string
+  ) {
     try {
       const data = await alegraRequest<unknown>(path);
 
@@ -46,50 +53,23 @@ export async function GET(request: NextRequest) {
   const results = [];
 
   results.push(
-    await testEndpoint("items", "/items?limit=30")
-  );
-
-  results.push(
-    await testEndpoint("taxes", "/taxes?limit=30")
-  );
-
-  results.push(
     await testEndpoint(
-      "numberTemplates",
-      "/number-templates?limit=30"
+      "manualInvoice474",
+      "/invoices/474"
     )
   );
 
   results.push(
-  await testEndpoint(
-    "bankAccounts",
-    "/bank-accounts?limit=30"
-  )
-);
-
-results.push(
-  await testEndpoint(
-    "contacts",
-    "/contacts?limit=5"
-  )
-);
+    await testEndpoint(
+      "automaticInvoice590",
+      "/invoices/590"
+    )
+  );
 
   return NextResponse.json({
     ok: true,
     results,
   });
-
-results.push(
-  await testEndpoint(
-    "manualInvoice474",
-    "/invoices/474"
-  )
-);
-
-results.push(
-  await testEndpoint(
-    "automaticInvoice590",
-    "/invoices/590"
-  )
-);
 }
+
+
