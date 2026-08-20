@@ -101,6 +101,13 @@ results.push(
   )
 );
 
+results.push(
+  await testEndpoint(
+    "creditNote1",
+    "/credit-notes/1"
+  )
+);
+
 return NextResponse.json({
   ok: true,
   results,
