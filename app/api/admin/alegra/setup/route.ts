@@ -94,6 +94,13 @@ results.push(
   )
 );
 
+results.push(
+  await testEndpoint(
+    "creditNotes",
+    "/credit-notes?limit=30"
+  )
+);
+
 return NextResponse.json({
   ok: true,
   results,
