@@ -233,3 +233,69 @@ export type AlegraInvoiceIssueResult = {
   invoiceNumber: string | null;
   invoicePdfUrl: string | null;
 };
+
+export type AlegraCreditNoteInvoiceReference = {
+  id: number;
+  amount: number;
+};
+
+export type AlegraCreditNoteRefundInput = {
+  date: string;
+  account: number;
+  amount: number;
+  observations?: string;
+};
+
+export type CreateAlegraCreditNoteInput = {
+  date: string;
+  dueDate?: string;
+
+  client: {
+    id: AlegraId;
+  };
+
+  numberTemplate: {
+    id: AlegraId;
+  };
+
+  items: AlegraInvoiceItemInput[];
+
+  invoices: AlegraCreditNoteInvoiceReference[];
+
+  refunds?: AlegraCreditNoteRefundInput[];
+
+  anotation?: string;
+  observations?: string;
+  termsConditions?: string;
+};
+
+export type AlegraCreditNote = {
+  id: AlegraId;
+
+  number?: number | string;
+  fullNumber?: string;
+
+  date?: string;
+  dueDate?: string;
+  status?: string;
+
+  total?: number | string;
+  subtotal?: number | string;
+
+  numberTemplate?: AlegraInvoiceNumberTemplate;
+};
+
+export type AlegraCreditNoteIssueResult = {
+  ok: true;
+  alreadyIssued: boolean;
+
+  bookingId: string;
+  bookingCode: string;
+
+  invoiceId: string;
+
+  creditNoteId: string;
+  creditNoteNumber: string | null;
+
+  refundAmount: number;
+};
