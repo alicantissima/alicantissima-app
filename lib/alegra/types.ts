@@ -109,6 +109,7 @@ export type AlegraPaymentInput = {
 export type CreateAlegraInvoiceInput = {
   date: string;
   dueDate: string;
+  paymentMethod?: "cash" | "credit-card";
 
   client: {
     id: AlegraId;

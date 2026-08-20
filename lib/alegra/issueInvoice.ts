@@ -469,6 +469,8 @@ const alegraPaymentMethod: "cash" | "credit-card" =
     id: numberTemplateId,
   },
 
+  paymentMethod: alegraPaymentMethod,
+
   items: bookingItems.map(
     buildInvoiceItem
   ),
