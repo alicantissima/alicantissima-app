@@ -78,4 +78,18 @@ results.push(
     ok: true,
     results,
   });
+
+results.push(
+  await testEndpoint(
+    "manualInvoice474",
+    "/invoices/474"
+  )
+);
+
+results.push(
+  await testEndpoint(
+    "automaticInvoice590",
+    "/invoices/590"
+  )
+);
 }
