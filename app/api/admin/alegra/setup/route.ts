@@ -54,15 +54,36 @@ export async function GET(request: NextRequest) {
 
   results.push(
     await testEndpoint(
-      "manualInvoice474",
-      "/invoices/474"
+      "items",
+      "/items?limit=30"
     )
   );
 
   results.push(
     await testEndpoint(
-      "automaticInvoice590",
-      "/invoices/590"
+      "taxes",
+      "/taxes?limit=30"
+    )
+  );
+
+  results.push(
+    await testEndpoint(
+      "numberTemplates",
+      "/number-templates?limit=30"
+    )
+  );
+
+  results.push(
+    await testEndpoint(
+      "bankAccounts",
+      "/bank-accounts?limit=30"
+    )
+  );
+
+  results.push(
+    await testEndpoint(
+      "contacts",
+      "/contacts?limit=5"
     )
   );
 
@@ -71,5 +92,3 @@ export async function GET(request: NextRequest) {
     results,
   });
 }
-
-
