@@ -260,9 +260,12 @@ export type CreateAlegraCreditNoteInput = {
 
   items: AlegraInvoiceItemInput[];
 
-  invoices: AlegraCreditNoteInvoiceReference[];
+  invoices?: AlegraCreditNoteInvoiceReference[];
 
   refunds?: AlegraCreditNoteRefundInput[];
+
+  type?: "DIFFERENCE";
+  cause?: string;
 
   anotation?: string;
   observations?: string;

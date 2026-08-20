@@ -669,69 +669,51 @@ export async function issueAlegraCreditNote(
         "ALEGRA_BANK_ACCOUNT_ID"
       );
 
-    const originalInvoiceId =
-      Number(booking.invoice_id);
+    const payload: CreateAlegraCreditNoteInput = {
+  date: creditNoteDate,
+  dueDate: creditNoteDate,
 
-    if (
-      !Number.isInteger(
-        originalInvoiceId
-      ) ||
-      originalInvoiceId <= 0
-    ) {
-      throw new Error(
-        `Invalid original Alegra invoice id: ${booking.invoice_id}.`
-      );
-    }
+  client: {
+    id: contactId,
+  },
 
-    const payload:
-      CreateAlegraCreditNoteInput = {
+  numberTemplate: {
+    id: requiredEnv(
+      "ALEGRA_CREDIT_NOTE_NUMBER_TEMPLATE_ID"
+    ),
+  },
+
+  items,
+
+  type: "DIFFERENCE",
+
+  cause: `Refund reserva ${booking.booking_code}`,
+
+  refunds: [
+    {
       date: creditNoteDate,
-      dueDate: creditNoteDate,
-
-      client: {
-        id: contactId,
-      },
-
-      numberTemplate: {
-        id: requiredEnv(
-          "ALEGRA_CREDIT_NOTE_NUMBER_TEMPLATE_ID"
-        ),
-      },
-
-      items,
-
-      invoices: [
-        {
-          id: originalInvoiceId,
-          amount: refundAmount,
-        },
-      ],
-
-      refunds: [
-        {
-          date: creditNoteDate,
-          account:
-            refundAccountId,
-          amount:
-            refundAmount,
-          observations:
-            `Refund reserva ${booking.booking_code}`,
-        },
-      ],
-
-      anotation:
-        `Reembolso reserva ${booking.booking_code}`,
-
+      account: refundAccountId,
+      amount: refundAmount,
       observations:
-        [
-          `Reserva: ${booking.booking_code}`,
-          booking.invoice_number
-            ? `Factura original: ${booking.invoice_number}`
-            : null,
-        ]
-          .filter(Boolean)
-          .join(" | "),
-    };
+        `Refund reserva ${booking.booking_code}`,
+    },
+  ],
+
+  anotation:
+    `Reembolso reserva ${booking.booking_code}`,
+
+  observations: [
+    `Reserva: ${booking.booking_code}`,
+    booking.invoice_number
+      ? `Factura original: ${booking.invoice_number}`
+      : null,
+    booking.invoice_id
+      ? `Alegra invoice ID: ${booking.invoice_id}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" | "),
+};
 
     const creditNote =
       await alegraRequest<AlegraCreditNote>(
