@@ -530,10 +530,11 @@ const showerDone = isDeskShowerDone(booking);
 >
   <td className="p-0 align-top" colSpan={2}>
                       <Link
-                        href={`/desk/booking/${booking.id}`}
-                        className="block h-full min-h-[58px] w-full px-2 py-2 hover:opacity-80"
-                        title={booking.customer_name}
-                      >
+  href={`/desk/booking/${booking.id}`}
+  prefetch={false}
+  className="block h-full min-h-[58px] w-full px-2 py-2 hover:opacity-80"
+  title={booking.customer_name}
+>
                         <div className="grid grid-cols-[2fr_1fr] gap-3">
                           <div className="truncate text-sm font-semibold leading-snug text-gray-950">
                             {booking.customer_name}
