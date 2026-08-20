@@ -81,14 +81,21 @@ export async function GET(request: NextRequest) {
   );
 
   results.push(
-    await testEndpoint(
-      "contacts",
-      "/contacts?limit=5"
-    )
-  );
+  await testEndpoint(
+    "contacts",
+    "/contacts?limit=5"
+  )
+);
 
-  return NextResponse.json({
-    ok: true,
-    results,
-  });
+results.push(
+  await testEndpoint(
+    "creditNoteNumberTemplates",
+    "/number-templates?documentType=creditNote&limit=30"
+  )
+);
+
+return NextResponse.json({
+  ok: true,
+  results,
+});
 }
