@@ -53,60 +53,38 @@ export async function GET(request: NextRequest) {
   const results = [];
 
   results.push(
-    await testEndpoint(
-      "items",
-      "/items?limit=30"
-    )
-  );
+  await testEndpoint("items", "/items?limit=30")
+);
 
-  results.push(
-    await testEndpoint(
-      "taxes",
-      "/taxes?limit=30"
-    )
-  );
+results.push(
+  await testEndpoint("taxes", "/taxes?limit=30")
+);
 
-  results.push(
-    await testEndpoint(
-      "numberTemplates",
-      "/number-templates?limit=30"
-    )
-  );
+results.push(
+  await testEndpoint(
+    "numberTemplates",
+    "/number-templates?limit=30"
+  )
+);
 
-  results.push(
-    await testEndpoint(
-      "bankAccounts",
-      "/bank-accounts?limit=30"
-    )
-  );
+results.push(
+  await testEndpoint(
+    "bankAccounts",
+    "/bank-accounts?limit=30"
+  )
+);
 
-  results.push(
+results.push(
   await testEndpoint(
     "contacts",
     "/contacts?limit=5"
   )
 );
 
-results.push(
-  await testEndpoint(
-    "creditNoteNumberTemplates",
-    "/number-templates?documentType=creditNote&limit=30"
-  )
-);
-
-results.push(
-  await testEndpoint(
-    "creditNotes",
-    "/credit-notes?limit=30"
-  )
-);
-
-results.push(
-  await testEndpoint(
-    "creditNote1",
-    "/credit-notes/1"
-  )
-);
+return NextResponse.json({
+  ok: true,
+  results,
+});
 
 return NextResponse.json({
   ok: true,
