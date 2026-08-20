@@ -4,6 +4,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { issueAlegraCreditNote } from "@/lib/alegra/creditNotes";
+import { sendCancellationEmails } from "@/lib/email/sendCancellationEmails";
 
 type CancelBookingRow = {
   id: string;
@@ -22,6 +24,8 @@ type CancelBookingRow = {
   refunded_at: string | null;
   cancellation_token: string | null;
   cancellation_token_expires_at: string | null;
+customer_name: string | null;
+customer_email: string | null;
 };
 
 export const runtime = "nodejs";
@@ -126,6 +130,8 @@ export async function POST(request: NextRequest) {
     payment_method,
     payment_reference,
     revolut_order_id,
+customer_name,
+customer_email,
     cancel_until,
     cancelled_at,
     refund_status,
@@ -322,10 +328,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
+/*
+ * O refund Revolut já foi concluído e gravado.
+ *
+ * A partir daqui tentamos emitir a Factura Rectificativa
+ * correspondente na Alegra.
+ *
+ * IMPORTANTE:
+ * uma falha da Alegra nunca pode transformar um refund
+ * Revolut bem sucedido num cancelamento aparentemente falhado.
+ *
+ * O motor da Alegra guarda o erro na booking e permite
+ * recuperação posterior.
+ */
+let creditNoteResult: unknown = null;
+
+try {
+  creditNoteResult = await issueAlegraCreditNote(
+    booking.id,
+    amount
+  );
+
+try {
+  await sendCancellationEmails({
+    bookingCode: booking.booking_code,
+    customerName: booking.customer_name,
+    customerEmail: booking.customer_email,
+    amount,
+    currency,
+    reason,
+  });
+
+  console.log("CANCELLATION EMAILS SENT:", {
+    bookingCode: booking.booking_code,
+  });
+} catch (error) {
+  console.error("CANCELLATION EMAILS FAILED:", {
+    bookingCode: booking.booking_code,
+    error,
+  });
+}
+
+  console.log(
+    "ALEGRA AUTO CREDIT NOTE SUCCESS:",
+    {
+      bookingCode: booking.booking_code,
+      refundAmount: amount,
+      creditNoteResult,
+    }
+  );
+} catch (error) {
+  console.error(
+    "ALEGRA AUTO CREDIT NOTE FAILED:",
+    {
+      bookingCode: booking.booking_code,
+      refundAmount: amount,
+      error,
+    }
+  );
+}
+
     return NextResponse.json({
-      ok: true,
-      message: "Booking cancelled and refunded successfully.",
-    });
+  ok: true,
+  message:
+    "Booking cancelled and refunded successfully.",
+  creditNoteResult,
+});
   } catch (error) {
     console.error("Cancel booking error:", error);
 
