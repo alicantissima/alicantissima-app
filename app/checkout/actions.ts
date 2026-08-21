@@ -758,105 +758,152 @@ function buildInternalEmailHtml(params: {
   notes?: string | null;
 }) {
   const itemBlocks = params.items
-  .map((item) => {
-    const date = formatHumanDate(item.meta?.date);
-    const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
-    const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
-    const showerTime = formatShowerTimeRange(item.meta);
-const showerDuration = formatShowerDuration(item.meta?.showerDurationMinutes);
-const reservedForPeople = showerTime
-  ? formatReservedForPeople(getReservedForPeople(item))
-  : "";
-const comments =
-      typeof item.meta?.comments === "string" ? item.meta.comments.trim() : "";
-    const breakdown = getBreakdown(item.meta);
+    .map((item) => {
+      const date = formatHumanDate(item.meta?.date);
+      const dropOffTime = formatTimeRange(item.meta?.dropOffTime);
+      const pickUpTime = formatTimeRange(item.meta?.pickUpTime);
+      const showerTime = formatShowerTimeRange(item.meta);
+      const showerDuration = formatShowerDuration(
+        item.meta?.showerDurationMinutes
+      );
+      const reservedForPeople = showerTime
+        ? formatReservedForPeople(getReservedForPeople(item))
+        : "";
+      const comments =
+        typeof item.meta?.comments === "string"
+          ? item.meta.comments.trim()
+          : "";
+      const breakdown = getBreakdown(item.meta);
 
-    const titleLines =
-      breakdown.length > 0
-        ? breakdown
-            .map(
-              (part) => `
-                <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-                  ${part.quantity} × ${part.label} - € ${formatPrice(part.totalPrice)}
+      const titleLines =
+        breakdown.length > 0
+          ? breakdown
+              .map(
+                (part) => `
+                  <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+                    ${part.quantity} × ${part.label} - € ${formatPrice(part.totalPrice)}
+                  </p>
+                `
+              )
+              .join("")
+          : `
+              <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
+                ${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}
+              </p>
+            `;
+
+      return `
+        <div style="margin:0 0 18px 0; padding:0 0 18px 0; border-bottom:1px solid #e5e7eb;">
+          ${titleLines}
+          ${
+            date
+              ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Date: ${date}</p>`
+              : ""
+          }
+          ${
+            dropOffTime
+              ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Drop-off: ${dropOffTime}</p>`
+              : ""
+          }
+          ${
+            pickUpTime
+              ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Estimated pick-up: ${pickUpTime}</p>`
+              : ""
+          }
+          ${
+            showerTime
+              ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Shower time: ${showerTime}</p>`
+              : ""
+          }
+          ${
+            reservedForPeople
+              ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Reserved for: ${reservedForPeople}</p>`
+              : ""
+          }
+          ${
+            showerDuration
+              ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Total group duration: ${showerDuration}</p>`
+              : ""
+          }
+          ${
+            comments
+              ? `<p style="margin:4px 0; font-size:15px; line-height:22px; color:#374151;">Comments: ${comments}</p>`
+              : ""
+          }
+        </div>
+      `;
+    })
+    .join("");
+
+  return `
+    <div style="margin:0; padding:0; background:#f7f7f2;">
+      <div style="max-width:640px; margin:0 auto; padding:32px 20px;">
+        <div style="background:#ffffff; border-radius:20px; padding:32px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
+          <h1 style="margin:0 0 18px 0; font-size:30px; line-height:36px; color:#111827;">
+            New booking received
+          </h1>
+
+          <h2 style="margin:0 0 16px 0; font-size:22px; line-height:28px; color:#111827;">
+            Booking details
+          </h2>
+
+          ${itemBlocks}
+
+          <div style="margin:24px 0 24px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
+            <p style="margin:0; font-size:18px; line-height:28px; color:#111827; font-weight:700;">
+              Total: € ${formatPrice(params.totalAmount)}
+            </p>
+          </div>
+
+          ${
+            params.notes
+              ? `
+                <p style="margin:0 0 24px 0; font-size:15px; line-height:24px; color:#374151;">
+                  <strong>Notes:</strong> ${params.notes}
                 </p>
               `
-            )
-            .join("")
-        : `
-            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827; font-weight:700;">
-              ${item.quantity} × ${item.title} - € ${formatPrice(item.totalPrice)}
+              : ""
+          }
+
+          <div style="margin:0 0 28px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
+            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
+              <strong>Booking code:</strong> ${params.bookingCode}
             </p>
-          `;
 
-    return `
-  <div style="margin:0; padding:0; background:#f7f7f2;">
-    <div style="max-width:640px; margin:0 auto; padding:32px 20px;">
-      <div style="background:#ffffff; border-radius:20px; padding:32px; border:1px solid #e5e7eb; font-family:Arial,Helvetica,sans-serif;">
-        <h1 style="margin:0 0 18px 0; font-size:30px; line-height:36px; color:#111827;">
-          New booking received
-        </h1>
+            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
+              <strong>Customer:</strong> ${params.customerName}
+            </p>
 
-        <h2 style="margin:0 0 16px 0; font-size:22px; line-height:28px; color:#111827;">
-          Booking details
-        </h2>
+            ${
+              params.customerCity
+                ? `<p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>City:</strong> ${params.customerCity}</p>`
+                : ""
+            }
 
-        ${itemBlocks}
+            <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
+              <strong>Email:</strong> ${params.customerEmail}
+            </p>
 
-        <div style="margin:24px 0 24px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
-          <p style="margin:0; font-size:18px; line-height:28px; color:#111827; font-weight:700;">
-            Total: € ${formatPrice(params.totalAmount)}
-          </p>
-        </div>
+            ${
+              params.customerPhone
+                ? `<p style="margin:0; font-size:16px; line-height:24px; color:#111827;"><strong>Phone:</strong> ${params.customerPhone}</p>`
+                : ""
+            }
+          </div>
 
-        ${
-          params.notes
-            ? `
-          <p style="margin:0 0 24px 0; font-size:15px; line-height:24px; color:#374151;">
-            <strong>Notes:</strong> ${params.notes}
-          </p>
-        `
-            : ""
-        }
-
-        <div style="margin:0 0 28px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
-          <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
-            <strong>Booking code:</strong> ${params.bookingCode}
-          </p>
-
-          <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
-            <strong>Customer:</strong> ${params.customerName}
-          </p>
-
-          ${
-            params.customerCity
-              ? `<p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;"><strong>City:</strong> ${params.customerCity}</p>`
-              : ""
-          }
-
-          <p style="margin:0 0 8px 0; font-size:16px; line-height:24px; color:#111827;">
-            <strong>Email:</strong> ${params.customerEmail}
-          </p>
-
-          ${
-            params.customerPhone
-              ? `<p style="margin:0; font-size:16px; line-height:24px; color:#111827;"><strong>Phone:</strong> ${params.customerPhone}</p>`
-              : ""
-          }
-        </div>
-
-        <div style="text-align:center; margin:0;">
-          <img
-            src="${params.qrCodeUrl}"
-            alt="Booking QR Code"
-            width="220"
-            height="220"
-            style="display:block; margin:0 auto; border-radius:12px;"
-          />
+          <div style="text-align:center; margin:0;">
+            <img
+              src="${params.qrCodeUrl}"
+              alt="Booking QR Code"
+              width="220"
+              height="220"
+              style="display:block; margin:0 auto; border-radius:12px;"
+            />
+          </div>
         </div>
       </div>
     </div>
-  </div>
-`;
+  `;
 }
 
 async function sendEmail(params: {
