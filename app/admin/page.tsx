@@ -467,15 +467,22 @@ function renderSectionTable({
               const isFilteredMatch = codeFilter === booking.booking_code;
               const sourceRowClass = getSourceRowClass(booking.source ?? null);
               const isFinished = normalizedStatus === "completed";
+const isCancelledLike =
+  normalizedStatus === "cancelled" ||
+  normalizedStatus === "no_show" ||
+  normalizedStatus === "refunded";
+
 const bookingHref = `/desk/booking/${booking.id}?back=admin`;
 
-              const rowClass = cancelled
-                ? "bg-red-50/40"
-                : isFilteredMatch
-                ? "bg-blue-50 border-l-4 border-blue-400"
-                : normalizedStatus === "inside"
-                ? "bg-green-50 border-l-4 border-green-400"
-                : sourceRowClass;
+              const rowClass = isCancelledLike
+  ? "bg-red-50/60 border-l-4 border-red-400"
+  : cancelled
+  ? "bg-red-50/40"
+  : isFilteredMatch
+  ? "bg-blue-50 border-l-4 border-blue-400"
+  : normalizedStatus === "inside"
+  ? "bg-green-50 border-l-4 border-green-400"
+  : sourceRowClass;
 
               const cellLinkClass =
                 "block h-full w-full px-2 py-2 hover:bg-black/[0.03]";
@@ -771,7 +778,7 @@ if (bookingIds.length > 0) {
 
   type SourceKey = (typeof sourceKeys)[number];
 
-  const paymentKeys = ["card", "cash", "revolut", "viator"] as const;
+  const paymentKeys = ["unpaid", "card", "cash", "revolut", "viator"] as const;
   type PaymentKey = (typeof paymentKeys)[number];
 
   const sourceTodayCounts: Record<SourceKey, number> = {
@@ -801,6 +808,7 @@ if (bookingIds.length > 0) {
   };
 
   const paymentTodayCounts: Record<PaymentKey, number> = {
+  unpaid: 0,
   card: 0,
   cash: 0,
   revolut: 0,
@@ -808,6 +816,7 @@ if (bookingIds.length > 0) {
 };
 
 const paymentTodayRevenue: Record<PaymentKey, number> = {
+  unpaid: 0,
   card: 0,
   cash: 0,
   revolut: 0,
@@ -828,7 +837,8 @@ const paymentTodayRevenue: Record<PaymentKey, number> = {
 
       const currentSource = (booking.source ?? "choose") as SourceKey;
       const bookingRevenue = Number(booking.total_amount || 0);
-      const currentPayment = (booking.payment_method ?? "").toLowerCase() as PaymentKey;
+      const rawPayment = (booking.payment_method ?? "").toLowerCase().trim();
+const currentPayment = (rawPayment || "unpaid") as PaymentKey;
 
       revenueToday += bookingRevenue;
 
@@ -877,11 +887,11 @@ const bDate = getBookingDate(b, bMeta) || b.created_at;
     .slice(0, 12);
 
   const todayBookings: BookingRow[] = [];
-  const insideBookings: BookingRow[] = [];
-  const finishedBookings: BookingRow[] = [];
-  const cancelledBookings: BookingRow[] = [];
-  const tomorrowBookings: BookingRow[] = [];
-  const upcomingBookings: BookingRow[] = [];
+const insideBookings: BookingRow[] = [];
+const finishedBookings: BookingRow[] = [];
+const tomorrowBookings: BookingRow[] = [];
+const afterTomorrowBookings: BookingRow[] = [];
+const upcomingBookings: BookingRow[] = [];
 
 function getTomorrowString() {
   const now = new Date();
@@ -904,14 +914,40 @@ function getTomorrowString() {
   }).format(madridNow);
 }
 
+function getAfterTomorrowString() {
+  const now = new Date();
+  const madridNow = new Date(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Europe/Madrid",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now)
+  );
+
+  madridNow.setDate(madridNow.getDate() + 2);
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(madridNow);
+}
+
 function isTomorrow(date: string | null) {
   if (!date) return false;
   return date === getTomorrowString();
 }
 
+function isAfterTomorrow(date: string | null) {
+  if (!date) return false;
+  return date === getAfterTomorrowString();
+}
+
 function isUpcoming(date: string | null) {
   if (!date) return false;
-  return date > getTomorrowString();
+  return date > getAfterTomorrowString();
 }
 
   for (const booking of sortedBookings) {
@@ -919,48 +955,47 @@ function isUpcoming(date: string | null) {
   const date = getBookingDate(booking, meta);
   const status = normalizeStatus(booking.status);
 
-    if (status === "inside") {
-      insideBookings.push(booking);
-      continue;
-    }
+  if (status === "inside") {
+    insideBookings.push(booking);
+    continue;
+  }
 
-    if (status === "cancelled" || status === "no_show" || status === "refunded") {
-      if (isToday(date)) {
-        cancelledBookings.push(booking);
-      }
-      continue;
+  if (status === "completed") {
+    if (isToday(date)) {
+      finishedBookings.push(booking);
     }
+    continue;
+  }
 
-    if (status === "completed") {
+  if (status === "pending_payment") {
+    continue;
+  }
+
   if (isToday(date)) {
-    finishedBookings.push(booking);
-  }
-  continue;
-}
-
-if (status === "pending_payment") {
-  continue;
-}
-
-if (isToday(date)) {
-  todayBookings.push(booking);
-  continue;
-}
-
-    if (isTomorrow(date)) {
-  tomorrowBookings.push(booking);
-  continue;
-}
-
-if (isUpcoming(date)) {
-  upcomingBookings.push(booking);
-  continue;
-}
+    todayBookings.push(booking);
+    continue;
   }
 
-  sortByShowerTimeThenLuggage(todayBookings, bookingMetaMap);
+  if (isTomorrow(date)) {
+    tomorrowBookings.push(booking);
+    continue;
+  }
+
+  if (isAfterTomorrow(date)) {
+    afterTomorrowBookings.push(booking);
+    continue;
+  }
+
+  if (isUpcoming(date)) {
+    upcomingBookings.push(booking);
+    continue;
+  }
+}
+
+sortByShowerTimeThenLuggage(todayBookings, bookingMetaMap);
 sortByShowerTimeThenLuggage(insideBookings, bookingMetaMap);
 sortByShowerTimeThenLuggage(tomorrowBookings, bookingMetaMap);
+sortByShowerTimeThenLuggage(afterTomorrowBookings, bookingMetaMap);
 
   finishedBookings.sort((a, b) => {
     const aTime = a.check_out_time ? new Date(a.check_out_time).getTime() : 0;
@@ -983,6 +1018,19 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
     (sum, booking) => sum + Number(booking.total_amount || 0),
     0
   );
+
+const operationalTotals = revenueBookings.reduce(
+  (acc, booking) => {
+    const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
+
+    acc.bags += meta.bags;
+    acc.showers += meta.showers;
+    acc.combos += meta.combo;
+
+    return acc;
+  },
+  { bags: 0, showers: 0, combos: 0 }
+);
 
   const counts: Record<SourceKey, number> = {
     choose: 0,
@@ -1025,6 +1073,18 @@ function renderRevenueBar(bookingsList: BookingRow[], label: string) {
       <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs">
           <span className="mr-1 font-semibold text-gray-700">{label}</span>
+
+<span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-800">
+  bags: {operationalTotals.bags}
+</span>
+
+<span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-800">
+  shws: {operationalTotals.showers}
+</span>
+
+<span className="rounded-full bg-violet-50 px-2 py-0.5 text-violet-800">
+  combos: {operationalTotals.combos}
+</span>
 
           {sourceKeys
             .filter((key) => counts[key] > 0 || revenue[key] > 0)
@@ -1126,13 +1186,15 @@ function renderTodayResultsBar() {
               )
               .map((key) => {
                 const colorClass =
-                  key === "card"
-                    ? "bg-blue-100 text-blue-800"
-                    : key === "cash"
-                    ? "bg-amber-100 text-amber-800"
-                    : key === "revolut"
-                    ? "bg-gray-950 text-white"
-                    : "bg-green-100 text-green-800";
+  key === "unpaid"
+    ? "bg-red-100 text-red-800"
+    : key === "card"
+    ? "bg-blue-100 text-blue-800"
+    : key === "cash"
+    ? "bg-amber-100 text-amber-800"
+    : key === "revolut"
+    ? "bg-gray-950 text-white"
+    : "bg-green-100 text-green-800";
 
                 return (
                   <span
@@ -1279,9 +1341,20 @@ function renderTodayResultsBar() {
   topContent: renderRevenueBar(tomorrowBookings, "Results by source tomorrow"),
 })}
 
-      {upcomingBookings.length > 0 && <div className="border-t pt-3" />}
+{renderSectionTable({
+  title: "After tomorrow",
+  bookings: afterTomorrowBookings,
+  bookingMetaMap,
+  codeFilter,
+  topContent: renderRevenueBar(
+    afterTomorrowBookings,
+    "Results by source after tomorrow"
+  ),
+})}
 
-      {renderSectionTable({
+{upcomingBookings.length > 0 && <div className="border-t pt-3" />}
+
+{renderSectionTable({
   title: "Upcoming",
   bookings: upcomingBookings,
   bookingMetaMap,
