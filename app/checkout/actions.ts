@@ -426,7 +426,7 @@ lines.push(`Total items: ${totalItemsAll}`);
 lines.push(
   isWalkin
     ? "Payment pending. Please pay by card or cash with a member of our staff at reception to confirm your reservation."
-    : "Payment confirmed online."
+    : "Online payment received successfully."
 );
 if (params.cancellationUrl) {
   lines.push("");
@@ -627,7 +627,7 @@ ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; colo
     `
     : `
       <p style="margin:0; font-size:15px; line-height:23px; color:#047857; font-weight:700;">
-        Payment confirmed online.
+        Online payment received successfully.
       </p>
     `
 }
