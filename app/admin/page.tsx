@@ -416,7 +416,7 @@ function renderSectionTable({
   cancelled?: boolean;
   topContent?: React.ReactNode;
   showColumnTotals?: boolean;
-}) {{
+}) {
 
   if (!bookings.length && !topContent) return null;
 
