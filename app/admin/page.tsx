@@ -474,6 +474,9 @@ const isCancelledLike =
 
 const bookingHref = `/desk/booking/${booking.id}?back=admin`;
 
+const isUnpaidPayment =
+  (booking.payment_method ?? "").toLowerCase().trim() === "unpaid";
+
               const rowClass = isCancelledLike
   ? "bg-red-50/60 border-l-4 border-red-400"
   : cancelled
@@ -530,12 +533,24 @@ const bookingHref = `/desk/booking/${booking.id}?back=admin`;
                     />
                   </td>
 
-                  <td className="w-[116px] px-2 py-2 align-top">
-                    <AdminPaymentMethodSelect
-                      bookingId={booking.id}
-                      value={booking.payment_method ?? "unpaid"}
-                    />
-                  </td>
+                  <td
+  className={`w-[116px] px-2 py-2 align-top ${
+    isUnpaidPayment ? "bg-red-50" : ""
+  }`}
+>
+  <div
+    className={
+      isUnpaidPayment
+        ? "rounded-xl border-2 border-red-400 bg-red-100 p-1"
+        : ""
+    }
+  >
+    <AdminPaymentMethodSelect
+      bookingId={booking.id}
+      value={booking.payment_method ?? "unpaid"}
+    />
+  </div>
+</td>
 
                   <td className="w-[118px] px-2 py-2 align-top">
                     <AdminStatusSelect
