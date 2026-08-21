@@ -685,12 +685,6 @@ export async function issueAlegraCreditNote(
 
   items,
 
-  invoices: [
-    {
-      id: Number(booking.invoice_id),
-      amount: refundAmount,
-    },
-  ],
 
   type: "DIFFERENCE",
 
