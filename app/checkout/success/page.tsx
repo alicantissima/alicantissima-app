@@ -420,7 +420,7 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
   </div>
 ) : paymentConfirmed ? (
   <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-[14px] leading-6 text-emerald-700">
-    Payment confirmed. Your booking is confirmed.
+    Payment received successfully.
   </p>
 ) : (
   <p className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-[14px] leading-6 text-amber-700">
