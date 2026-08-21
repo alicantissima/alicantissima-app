@@ -700,8 +700,14 @@ export async function issueAlegraCreditNote(
     },
   ],
 
-  anotation:
-    `Reembolso reserva ${booking.booking_code}`,
+  anotation: [
+  `Reserva Alicantissima: ${booking.booking_code}`,
+  booking.invoice_number
+    ? `Factura rectificada: ${booking.invoice_number}`
+    : null,
+]
+  .filter(Boolean)
+  .join(" | "),
 
   observations: [
     `Reserva: ${booking.booking_code}`,
