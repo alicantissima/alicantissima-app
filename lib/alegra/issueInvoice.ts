@@ -487,6 +487,9 @@ const alegraPaymentMethod: "cash" | "credit-card" =
     }),
   ],
 
+  anotation:
+    `Reserva Alicantissima: ${booking.booking_code}`,
+
   observations: [
     `Reserva: ${booking.booking_code}`,
     booking.payment_reference
