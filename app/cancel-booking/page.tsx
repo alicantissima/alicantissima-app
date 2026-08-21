@@ -32,7 +32,7 @@ export default async function CancelBookingPage({
         </h1>
 
         <p className="mt-3 text-sm leading-6 text-zinc-600">
-          You can cancel this booking for free up to 24 hours before your booking time.
+          You can cancel this booking for free up to 24 hours before the start of your booking.
           If eligible, your online payment will be refunded automatically.
         </p>
 

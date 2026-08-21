@@ -349,6 +349,19 @@ try {
     amount
   );
 
+  console.log("ALEGRA AUTO CREDIT NOTE SUCCESS:", {
+    bookingCode: booking.booking_code,
+    refundAmount: amount,
+    creditNoteResult,
+  });
+} catch (error) {
+  console.error("ALEGRA AUTO CREDIT NOTE FAILED:", {
+    bookingCode: booking.booking_code,
+    refundAmount: amount,
+    error,
+  });
+}
+
 try {
   await sendCancellationEmails({
     bookingCode: booking.booking_code,
@@ -367,25 +380,6 @@ try {
     bookingCode: booking.booking_code,
     error,
   });
-}
-
-  console.log(
-    "ALEGRA AUTO CREDIT NOTE SUCCESS:",
-    {
-      bookingCode: booking.booking_code,
-      refundAmount: amount,
-      creditNoteResult,
-    }
-  );
-} catch (error) {
-  console.error(
-    "ALEGRA AUTO CREDIT NOTE FAILED:",
-    {
-      bookingCode: booking.booking_code,
-      refundAmount: amount,
-      error,
-    }
-  );
 }
 
     return NextResponse.json({

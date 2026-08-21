@@ -990,24 +990,123 @@ function getAppBaseUrl() {
   ).replace(/\/$/, "");
 }
 
-function getCancelUntil(items: Array<{ meta?: Record<string, unknown> }>) {
+function madridLocalDateTimeToUtc(date: string, time: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+
+  if (
+    !year ||
+    !month ||
+    !day ||
+    !Number.isFinite(hour) ||
+    !Number.isFinite(minute)
+  ) {
+    return null;
+  }
+
+  // Primeiro tratamos os valores como UTC apenas para obter
+  // o offset correto de Europe/Madrid nessa data.
+  const provisionalUtc = new Date(
+    Date.UTC(year, month - 1, day, hour, minute, 0)
+  );
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(provisionalUtc);
+
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
+  );
+
+  const madridAsUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+    0
+  );
+
+  const offsetMs = madridAsUtc - provisionalUtc.getTime();
+
+  return new Date(provisionalUtc.getTime() - offsetMs);
+}
+
+function getCancelUntil(
+  items: Array<{
+    productType?: string;
+    meta?: Record<string, unknown>;
+  }>
+) {
   const first = items[0];
-  const date = first?.meta?.date;
-  const time =
-    typeof first?.meta?.showerTime === "string"
-      ? first.meta.showerTime
-      : typeof first?.meta?.dropOffTime === "string"
-        ? first.meta.dropOffTime
-        : "10:00";
 
-  if (typeof date !== "string") return null;
+  if (!first) return null;
 
-  const normalizedTime = time.replace("h", ":").split("-")[0];
-  const cancelDate = new Date(`${date}T${normalizedTime}:00`);
-  if (Number.isNaN(cancelDate.getTime())) return null;
+  const date =
+    typeof first.meta?.date === "string"
+      ? first.meta.date.trim()
+      : "";
 
-  cancelDate.setHours(cancelDate.getHours() - 24);
-  return cancelDate.toISOString();
+  if (!date) return null;
+
+  const dropOffTime =
+    typeof first.meta?.dropOffTime === "string"
+      ? first.meta.dropOffTime.trim()
+      : "";
+
+  const showerTime =
+    typeof first.meta?.showerTime === "string"
+      ? first.meta.showerTime.trim()
+      : "";
+
+  /*
+   * Regra de cancelamento:
+   *
+   * luggage / booking → início do drop-off
+   * combo             → início do drop-off
+   * shower            → início do duche
+   */
+  let bookingStartTime = "";
+
+  if (first.productType === "shower") {
+    bookingStartTime = showerTime;
+  } else if (
+    first.productType === "combo" ||
+    first.productType === "booking"
+  ) {
+    bookingStartTime = dropOffTime;
+  }
+
+  // Fallback para reservas antigas/formato inesperado.
+  if (!bookingStartTime) {
+    bookingStartTime = dropOffTime || showerTime;
+  }
+
+  if (!bookingStartTime) return null;
+
+  const normalizedTime = bookingStartTime
+    .replace(/h/g, ":")
+    .split("-")[0]
+    .trim();
+
+  const bookingStart = madridLocalDateTimeToUtc(
+    date,
+    normalizedTime
+  );
+
+  if (!bookingStart) return null;
+
+  return new Date(
+    bookingStart.getTime() - 24 * 60 * 60 * 1000
+  ).toISOString();
 }
 
 async function createRevolutOrder(params: {
