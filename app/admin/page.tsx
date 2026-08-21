@@ -1326,14 +1326,6 @@ function renderTodayResultsBar() {
       })}
 
       {renderSectionTable({
-        title: "Cancelled / No show",
-        bookings: cancelledBookings,
-        bookingMetaMap,
-        codeFilter,
-        cancelled: true,
-      })}
-
-      {renderSectionTable({
   title: "Tomorrow",
   bookings: tomorrowBookings,
   bookingMetaMap,
