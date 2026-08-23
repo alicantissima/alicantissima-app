@@ -1016,21 +1016,39 @@ function isUpcoming(date: string | null) {
     continue;
   }
 
-  if (status === "completed") {
-    if (isToday(date)) {
-      finishedBookings.push(booking);
-    }
-    continue;
-  }
-
-  if (status === "pending_payment") {
-    continue;
-  }
-
+  if (
+  status === "completed" ||
+  status === "cancelled" ||
+  status === "no_show" ||
+  status === "refunded"
+) {
   if (isToday(date)) {
-    todayBookings.push(booking);
-    continue;
+    finishedBookings.push(booking);
   }
+
+  if (isTomorrow(date)) {
+    tomorrowBookings.push(booking);
+  }
+
+  if (isAfterTomorrow(date)) {
+    afterTomorrowBookings.push(booking);
+  }
+
+  if (isUpcoming(date)) {
+    upcomingBookings.push(booking);
+  }
+
+  continue;
+}
+
+if (status === "pending_payment") {
+  continue;
+}
+
+if (isToday(date)) {
+  todayBookings.push(booking);
+  continue;
+}
 
   if (isTomorrow(date)) {
     tomorrowBookings.push(booking);
