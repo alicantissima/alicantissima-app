@@ -396,9 +396,9 @@ function getLocalDateFromCreatedAt(createdAt: string) {
 }
 
 function getBookingDate(booking: BookingRow, meta: BookingMetaSummary) {
-  if (meta.date) return meta.date;
   if (booking.service_date) return booking.service_date;
   if (booking.booking_date) return booking.booking_date;
+  if (meta.date) return meta.date;
 
   return getLocalDateFromCreatedAt(booking.created_at);
 }
@@ -462,9 +462,12 @@ export default async function AdminHistoryPage({
   }
 
   const { data: bookings } = await supabase
-    .from("bookings")
-    .select("*")
-    .order("created_at", { ascending: false });
+  .from("bookings")
+  .select("*")
+  .eq("service_date", selectedDate)
+  .order("check_out_time", { ascending: false, nullsFirst: false })
+  .order("created_at", { ascending: false })
+  .limit(2000);
 
   const visibleBookings = ((bookings as BookingRow[]) ?? []).filter(
     (booking) => !isPendingPaymentBooking(booking)
@@ -589,21 +592,14 @@ export default async function AdminHistoryPage({
     });
   }
 
-  const historyBookings = [...visibleBookings]
-    .filter((booking) => {
-      const meta = bookingMetaMap.get(booking.id) ?? emptyMeta();
-      const bookingDate = getBookingDate(booking, meta);
+  const historyBookings = [...visibleBookings].sort((a, b) => {
+  const aTime = a.check_out_time ? new Date(a.check_out_time).getTime() : 0;
+  const bTime = b.check_out_time ? new Date(b.check_out_time).getTime() : 0;
 
-      return bookingDate === selectedDate;
-    })
-    .sort((a, b) => {
-      const aTime = a.check_out_time ? new Date(a.check_out_time).getTime() : 0;
-      const bTime = b.check_out_time ? new Date(b.check_out_time).getTime() : 0;
+  if (aTime !== bTime) return bTime - aTime;
 
-      if (aTime !== bTime) return bTime - aTime;
-
-      return b.created_at.localeCompare(a.created_at);
-    });
+  return b.created_at.localeCompare(a.created_at);
+});
 
   let bagsSelected = 0;
   let showersSelected = 0;
