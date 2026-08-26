@@ -81,6 +81,10 @@ function getTomorrowMadridDate() {
   return getMadridDatePlusDays(1);
 }
 
+function getAfterTomorrowMadridDate() {
+  return getMadridDatePlusDays(2);
+}
+
 function getMadridHour() {
   return Number(
     new Intl.DateTimeFormat("en-GB", {
@@ -606,6 +610,7 @@ export default async function DeskPage() {
 
   const todayMadrid = getTodayMadridDate();
   const tomorrowMadrid = getTomorrowMadridDate();
+  const afterTomorrowMadrid = getAfterTomorrowMadridDate();
   const madridHour = getMadridHour();
   const highlightTomorrow = madridHour >= 18;
 
@@ -630,7 +635,7 @@ export default async function DeskPage() {
 )
   `;
 
-  const [insideQuery, todayQuery, finishedQuery, tomorrowQuery] =
+  const [insideQuery, todayQuery, finishedQuery, tomorrowQuery, afterTomorrowQuery] =
     await Promise.all([
       supabase
         .from("bookings")
@@ -660,6 +665,13 @@ export default async function DeskPage() {
         .eq("service_date", tomorrowMadrid)
         .in("status", ["booked", "inside"])
         .order("created_at", { ascending: true }),
+
+      supabase
+        .from("bookings")
+        .select(selectFields)
+        .eq("service_date", afterTomorrowMadrid)
+        .in("status", ["booked", "inside"])
+        .order("created_at", { ascending: true }),
     ]);
 
   const inside = sortDeskByShowerTimeThenLuggage(
@@ -678,6 +690,10 @@ const finished = ((finishedQuery.data ?? []) as BookingRow[]).sort((a, b) => {
 });
 const tomorrow = sortDeskByShowerTimeThenLuggage(
   (tomorrowQuery.data ?? []) as BookingRow[]
+);
+
+const afterTomorrow = sortDeskByShowerTimeThenLuggage(
+  (afterTomorrowQuery.data ?? []) as BookingRow[]
 );
 
   return (
@@ -711,7 +727,7 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
 </div>
 </div>
 
-      <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
+      <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-5">
         <DeskTable
           title="Inside"
           rows={inside}
@@ -735,6 +751,12 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
           rows={tomorrow}
           emptyText="No bookings for tomorrow."
           highlight={highlightTomorrow}
+        />
+
+        <DeskTable
+          title="After tomorrow"
+          rows={afterTomorrow}
+          emptyText="No bookings for after tomorrow."
         />
       </section>
 
