@@ -515,12 +515,6 @@ function DeskTable({
         </span>
       </div>
 
-      {highlight && rows.length > 0 && (
-        <div className="mb-3 rounded-2xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-          Tomorrow is already in focus — a good time to plan the next day.
-        </div>
-      )}
-
       {rows.length === 0 ? (
         <p className="text-sm text-gray-500">{emptyText}</p>
       ) : (
