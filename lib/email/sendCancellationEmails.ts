@@ -161,9 +161,9 @@ export async function sendCancellationEmails({
    * INTERNAL EMAIL
    */
   const internalEmail =
-    process.env.BOOKING_NOTIFICATION_EMAIL ||
-    process.env.BOOKING_ADMIN_EMAIL ||
-    "info@alicantissima.es";
+  process.env.BOOKING_NOTIFICATION_EMAIL ||
+  process.env.BOOKING_ADMIN_EMAIL ||
+  "desk@alicantissima.es";
 
   const internalText = [
     "Booking cancelled & refunded",
