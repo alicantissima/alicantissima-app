@@ -495,24 +495,16 @@ function DeskTable({
 }) {
   return (
     <section
-      className={`rounded-3xl border bg-white p-4 shadow-sm ${
-        highlight ? "border-blue-200 ring-1 ring-blue-100" : ""
-      }`}
+      className="rounded-3xl border bg-white p-4 shadow-sm"
     >
       <div className="mb-3 flex items-center justify-between">
-        <h2 className={`text-lg font-bold ${highlight ? "text-blue-700" : ""}`}>
-          {title}
-        </h2>
+        <h2 className="text-lg font-bold text-gray-950">
+  {title}
+</h2>
 
-        <span
-          className={`rounded-full border px-2 py-0.5 text-xs font-medium ${
-            highlight
-              ? "border-blue-200 bg-blue-50 text-blue-700"
-              : "text-gray-600"
-          }`}
-        >
-          {rows.length}
-        </span>
+        <span className="rounded-full border px-2 py-0.5 text-xs font-medium text-gray-600">
+  {rows.length}
+</span>
       </div>
 
       {rows.length === 0 ? (
