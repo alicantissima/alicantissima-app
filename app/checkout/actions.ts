@@ -995,7 +995,7 @@ async function sendInternalBookingNotification(params: {
   notes?: string | null;
 }) {
   const notificationEmail =
-    process.env.BOOKING_NOTIFICATION_EMAIL || "info@alicantissima.es";
+  process.env.BOOKING_NOTIFICATION_EMAIL || "desk@alicantissima.es";
 
   const subject = `New booking received – ${params.bookingCode}`;
 
