@@ -684,12 +684,11 @@ export default async function AdminHistoryPage({
               className="flex flex-[2] gap-2 lg:flex-none"
             >
               <input
-                type="date"
-                name="date"
-                defaultValue={selectedDate}
-                max={getTodayString()}
-                className="h-12 min-w-0 flex-1 rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm lg:w-40"
-              />
+  type="date"
+  name="date"
+  defaultValue={selectedDate}
+  className="h-12 min-w-0 flex-1 rounded-2xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-800 shadow-sm lg:w-40"
+/>
 
               <button
                 type="submit"
