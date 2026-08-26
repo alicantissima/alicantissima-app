@@ -87,6 +87,16 @@ function getAfterTomorrowMadridDate() {
   return getMadridDatePlusDays(2);
 }
 
+function formatDeskDateLabel(dateString: string) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+
+  const weekdays = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  const weekday = weekdays[date.getUTCDay()];
+
+  return `${weekday}.${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}`;
+}
+
 function getMadridHour() {
   return Number(
     new Intl.DateTimeFormat("en-GB", {
@@ -613,6 +623,8 @@ export default async function DeskPage() {
   const todayMadrid = getTodayMadridDate();
   const tomorrowMadrid = getTomorrowMadridDate();
   const afterTomorrowMadrid = getAfterTomorrowMadridDate();
+  const tomorrowLabel = formatDeskDateLabel(tomorrowMadrid);
+  const afterTomorrowLabel = formatDeskDateLabel(afterTomorrowMadrid);
   const madridHour = getMadridHour();
   const highlightTomorrow = madridHour >= 18;
 
@@ -749,14 +761,14 @@ const afterTomorrow = sortDeskByShowerTimeThenLuggage(
         />
 
         <DeskTable
-          title="Tomorrow"
+          title={`Tomorrow · ${tomorrowLabel}`}
           rows={tomorrow}
           emptyText="No bookings for tomorrow."
           highlight={highlightTomorrow}
         />
 
         <DeskTable
-          title="After tomorrow"
+          title={`After tomorrow · ${afterTomorrowLabel}`}
           rows={afterTomorrow}
           emptyText="No bookings for after tomorrow."
         />
