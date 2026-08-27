@@ -28,5 +28,5 @@ export function getGmailClient() {
 }
 
 export function getGmailUserId() {
-  return process.env.GOOGLE_USER_EMAIL || "me";
+  return "me";
 }
