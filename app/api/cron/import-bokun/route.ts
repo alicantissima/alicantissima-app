@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     const userId = getGmailUserId();
     const supabase = createAdminClient();
 
-    const query = `from:no-reply@bokun.io subject:"New booking:" newer_than:2d`;
+    const query = `subject:"New booking" newer_than:2d`;
 
     const listRes = await gmail.users.messages.list({
       userId,
