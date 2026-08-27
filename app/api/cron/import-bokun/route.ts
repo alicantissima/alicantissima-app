@@ -41,7 +41,7 @@ const profile = await gmail.users.getProfile({
 
 console.log("GMAIL PROFILE:", profile.data);
 
-    const query = `in:anywhere "ALI-T143931857"`;
+    const query = `from:no-reply@bokun.io subject:"New booking:" newer_than:2d`;
 
     const listRes = await gmail.users.messages.list({
       userId,
