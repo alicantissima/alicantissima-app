@@ -35,6 +35,11 @@ export async function GET(req: NextRequest) {
     const gmail = getGmailClient();
     const userId = getGmailUserId();
     const supabase = createAdminClient();
+const profile = await gmail.users.getProfile({
+  userId: "me",
+});
+
+console.log("GMAIL PROFILE:", profile.data);
 
     const query = `in:anywhere "ALI-T143931857"`;
 
@@ -250,6 +255,7 @@ await sendPushToAll({
 
     return NextResponse.json({
   ok: true,
+  gmailAccount: profile.data.emailAddress,
   scanned,
   created,
   skipped,
