@@ -47,31 +47,28 @@ export async function GET(req: NextRequest) {
     const messages = listRes.data.messages || [];
 
     let scanned = 0;
-    let created = 0;
-    let skipped = 0;
-    const errors: Array<{ id?: string; reason: string }> = [];
+let created = 0;
+let skipped = 0;
+
+const skipReasons: Array<{
+  id?: string;
+  reason: string;
+  bookingCode?: string | null;
+}> = [];
+
+const errors: Array<{ id?: string; reason: string }> = [];
 
     for (const msg of messages) {
       scanned += 1;
 
       try {
-        if (!msg.id) {
-          skipped += 1;
-          continue;
-        }
-
-        const full = await gmail.users.messages.get({
-          userId,
-          id: msg.id,
-          format: "full",
-        });
-
-        const rawText = extractMessageText(full.data);
-
-        if (!rawText) {
-          skipped += 1;
-          continue;
-        }
+       if (!msg.id) {
+  skipped += 1;
+  skipReasons.push({
+    reason: "Missing Gmail message id",
+  });
+  continue;
+}
 
         const parsed = parseBokunEmail(rawText);
 
@@ -80,11 +77,11 @@ console.log("Parsed Bokun email", {
   parsed,
 });
 
-        if (!parsed.bookingCode) {
+        if (!rawText) {
   skipped += 1;
-  errors.push({
+  skipReasons.push({
     id: msg.id,
-    reason: `Missing booking code | preview: ${rawText.slice(0, 220).replace(/\s+/g, " ")}`,
+    reason: "Empty extracted email text",
   });
   continue;
 }
@@ -95,14 +92,15 @@ console.log("Parsed Bokun email", {
           .eq("booking_code", parsed.bookingCode)
           .maybeSingle();
 
-        if (existingError) {
-          throw existingError;
-        }
-
         if (existing) {
-          skipped += 1;
-          continue;
-        }
+  skipped += 1;
+  skipReasons.push({
+    id: msg.id,
+    reason: "Booking already exists",
+    bookingCode: parsed.bookingCode,
+  });
+  continue;
+}
 
 const productType =
   parsed.product === "combo" ||
@@ -229,12 +227,13 @@ await sendPushToAll({
     }
 
     return NextResponse.json({
-      ok: true,
-      scanned,
-      created,
-      skipped,
-      errors,
-    });
+  ok: true,
+  scanned,
+  created,
+  skipped,
+  skipReasons,
+  errors,
+});
     } catch (error: unknown) {
     console.error("Bokun cron fatal error", error);
 
