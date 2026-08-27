@@ -70,14 +70,15 @@ const errors: Array<{ id?: string; reason: string }> = [];
   continue;
 }
 
-        const parsed = parseBokunEmail(rawText);
-
-console.log("Parsed Bokun email", {
-  messageId: msg.id,
-  parsed,
+        const full = await gmail.users.messages.get({
+  userId,
+  id: msg.id,
+  format: "full",
 });
 
-        if (!rawText) {
+const rawText = extractMessageText(full.data);
+
+if (!rawText) {
   skipped += 1;
   skipReasons.push({
     id: msg.id,
@@ -86,13 +87,34 @@ console.log("Parsed Bokun email", {
   continue;
 }
 
-        const { data: existing, error: existingError } = await supabase
-          .from("bookings")
-          .select("id")
-          .eq("booking_code", parsed.bookingCode)
-          .maybeSingle();
+const parsed = parseBokunEmail(rawText);
 
-        if (existing) {
+console.log("Parsed Bokun email", {
+  messageId: msg.id,
+  parsed,
+});
+
+if (!parsed.bookingCode) {
+  skipped += 1;
+  skipReasons.push({
+    id: msg.id,
+    reason: "Missing booking code",
+    bookingCode: null,
+  });
+  continue;
+}
+
+const { data: existing, error: existingError } = await supabase
+  .from("bookings")
+  .select("id")
+  .eq("booking_code", parsed.bookingCode)
+  .maybeSingle();
+
+if (existingError) {
+  throw existingError;
+}
+
+if (existing) {
   skipped += 1;
   skipReasons.push({
     id: msg.id,
