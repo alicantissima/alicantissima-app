@@ -5,11 +5,12 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    id: "/",
-    name: "Alicantissima",
-    short_name: "Alicantissima",
-    description: "Luggage Storage & Shower Lounge",
-    start_url: "/",
+    id: "/walkin",
+    name: "Alicantissima Walk-in",
+    short_name: "Walk-in",
+    description: "Alicantissima Walk-in Booking",
+    start_url: "/walkin",
+    scope: "/",
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#ffffff",
