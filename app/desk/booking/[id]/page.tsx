@@ -492,13 +492,11 @@ const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
       serviceDate={booking.service_date}
     />
 
-    {profile.role === "admin" && (
-      <UpdateShowerRoomSelect
-        bookingId={booking.id}
-        itemId={item.id}
-        value={item.meta?.shower_room}
-      />
-    )}
+    <UpdateShowerRoomSelect
+  bookingId={booking.id}
+  itemId={item.id}
+  value={item.meta?.shower_room}
+/>
   </div>
 )}
                       </div>
