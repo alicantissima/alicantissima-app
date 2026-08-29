@@ -1,7 +1,7 @@
 
 
 
-import { redirect } from "next/navigation";
+import HomeClient from "@/components/home-client";
 
 export const metadata = {
   robots: {
@@ -11,5 +11,5 @@ export const metadata = {
 };
 
 export default function WalkinPage() {
-  redirect("/?source=walkin");
+  return <HomeClient forcedSource="walkin" />;
 }
