@@ -514,9 +514,9 @@ export async function updateBookingItemShowerRoom({
     throw new Error(profileError.message);
   }
 
-  if (!profile || profile.role !== "admin") {
-    throw new Error("Only admin can edit shower room.");
-  }
+  if (!profile || !["admin", "desk"].includes(profile.role)) {
+  throw new Error("Unauthorized");
+}
 
   const { data: item, error: itemError } = await supabase
     .from("booking_items")
