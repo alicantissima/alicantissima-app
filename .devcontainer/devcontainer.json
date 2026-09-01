@@ -1,6 +1,7 @@
 {
   "name": "Alicantissima",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "features": { "ghcr.io/devcontainers/features/git-lfs:1": {} },
   "forwardPorts": [3000],
   "portsAttributes": {
     "3000": {
