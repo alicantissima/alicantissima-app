@@ -1,0 +1,13 @@
+{
+  "name": "Alicantissima",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "features": { "ghcr.io/devcontainers/features/git-lfs:1": {} },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Alicantissima",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "npm ci --include=optional && node -e \"require('@tailwindcss/oxide')\" && rm -rf .next"
+}
