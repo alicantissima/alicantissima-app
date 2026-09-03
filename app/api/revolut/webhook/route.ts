@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { finalizePaidBookingByPaymentReference } from "@/app/checkout/actions";
 import { issueAlegraInvoice } from "@/lib/alegra/issueInvoice";
+import { issueAlegraCreditNote } from "@/lib/alegra/creditNotes";
+import { sendCancellationEmails } from "@/lib/email/sendCancellationEmails";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,14 +76,19 @@ function isPaidEvent(eventName: string, payload: Record<string, unknown>) {
 
 type RevolutOrder = {
   id?: string;
+  type?: string;
   state?: string;
+  related_order_id?: string;
+
   amount?: number;
   outstanding_amount?: number;
   refunded_amount?: number;
   currency?: string;
+
   merchant_order_data?: {
     reference?: string;
   };
+
   metadata?: Record<string, unknown>;
 };
 
@@ -130,22 +137,241 @@ export async function POST(request: NextRequest) {
     console.log("REVOLUT WEBHOOK:", JSON.stringify(payload));
 
     const eventName = getEventName(payload);
-    const orderId = getOrderIdFromPayload(payload);
+const orderId = getOrderIdFromPayload(payload);
 
-    if (!orderId) {
-      return NextResponse.json({ ok: true, ignored: "Missing order id." });
-    }
+if (!orderId) {
+  return NextResponse.json({
+    ok: true,
+    ignored: "Missing order id.",
+  });
+}
 
-    if (!isPaidEvent(eventName, payload)) {
-      return NextResponse.json({
-        ok: true,
-        ignored: "Not a paid event.",
-        eventName,
-        orderId,
-      });
-    }
+/*
+ * ORDER_COMPLETED pode ser:
+ *
+ * 1. uma order normal de pagamento;
+ * 2. uma nova order criada pelo Revolut para um refund.
+ *
+ * Por isso consultamos sempre a order real antes
+ * de decidir qual fluxo executar.
+ */
+const revolutOrder = await retrieveRevolutOrder(orderId);
 
-    const supabase = createAdminClient();
+const revolutOrderType = String(
+  revolutOrder.type || ""
+).toLowerCase();
+
+const revolutState = String(
+  revolutOrder.state || ""
+).toLowerCase();
+
+/*
+ * REFUND MANUAL NO REVOLUT
+ *
+ * O dinheiro já foi devolvido.
+ * NÃO voltamos a chamar o endpoint de refund.
+ *
+ * Apenas sincronizamos Alicantissima + Alegra + emails.
+ */
+if (
+  eventName.toUpperCase() === "ORDER_COMPLETED" &&
+  revolutOrderType === "refund" &&
+  revolutState === "completed"
+) {
+  const originalOrderId = String(
+    revolutOrder.related_order_id || ""
+  ).trim();
+
+  if (!originalOrderId) {
+    throw new Error(
+      `Refund order ${orderId} has no related_order_id.`
+    );
+  }
+
+  const supabase = createAdminClient();
+
+  const { data: booking, error: findRefundBookingError } =
+    await supabase
+      .from("bookings")
+      .select(`
+        id,
+        booking_code,
+        customer_name,
+        customer_email,
+        total_amount,
+        currency,
+        status,
+        payment_status,
+        refund_status,
+        refunded_at,
+        credit_note_id,
+        payment_reference,
+        revolut_order_id
+      `)
+      .or(
+        `payment_reference.eq.${originalOrderId},revolut_order_id.eq.${originalOrderId}`
+      )
+      .maybeSingle();
+
+  if (findRefundBookingError) {
+    throw new Error(
+      `Refund booking lookup failed: ${findRefundBookingError.message}`
+    );
+  }
+
+  if (!booking) {
+    console.error(
+      "REVOLUT REFUND ALERT: Booking not found",
+      {
+        refundOrderId: orderId,
+        originalOrderId,
+      }
+    );
+
+    return NextResponse.json({
+      ok: true,
+      ignored: "Refund booking not found.",
+      refundOrderId: orderId,
+      originalOrderId,
+    });
+  }
+
+  /*
+   * O amount da refund order vem em cêntimos.
+   */
+  const refundAmount =
+    Number(revolutOrder.amount || 0) / 100;
+
+  if (
+    !Number.isFinite(refundAmount) ||
+    refundAmount <= 0
+  ) {
+    throw new Error(
+      `Invalid refund amount for ${booking.booking_code}.`
+    );
+  }
+
+  /*
+   * Idempotência:
+   * o Revolut pode repetir webhooks.
+   *
+   * Se este refund já ficou registado, não repetimos
+   * emails nem criamos nova rectificativa.
+   */
+  if (
+    booking.refund_status === "succeeded" &&
+    booking.refunded_at
+  ) {
+    return NextResponse.json({
+      ok: true,
+      alreadyRefunded: true,
+      bookingCode: booking.booking_code,
+    });
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const { error: refundUpdateError } =
+    await supabase
+      .from("bookings")
+      .update({
+        status: "cancelled",
+        cancelled_at: nowIso,
+        cancellation_reason:
+          "Manual refund in Revolut",
+        refund_status: "succeeded",
+        refund_amount: refundAmount,
+        revolut_refund_order_id: orderId,
+        refunded_at: nowIso,
+        refund_error: null,
+      })
+      .eq("id", booking.id);
+
+  if (refundUpdateError) {
+    throw new Error(
+      `Refund booking update failed: ${refundUpdateError.message}`
+    );
+  }
+
+  let creditNoteResult: unknown = null;
+
+  try {
+    creditNoteResult =
+      await issueAlegraCreditNote(
+        booking.id,
+        refundAmount
+      );
+
+    console.log(
+      "ALEGRA MANUAL REVOLUT REFUND CREDIT NOTE SUCCESS:",
+      {
+        bookingCode: booking.booking_code,
+        creditNoteResult,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "ALEGRA MANUAL REVOLUT REFUND CREDIT NOTE FAILED:",
+      {
+        bookingCode: booking.booking_code,
+        error,
+      }
+    );
+  }
+
+  try {
+    await sendCancellationEmails({
+      bookingCode: booking.booking_code,
+      customerName: booking.customer_name,
+      customerEmail: booking.customer_email,
+      amount: refundAmount,
+      currency: String(
+        booking.currency || "EUR"
+      ).toUpperCase(),
+      reason: "Manual refund in Revolut",
+    });
+
+    console.log(
+      "MANUAL REVOLUT REFUND EMAILS SENT:",
+      {
+        bookingCode: booking.booking_code,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "MANUAL REVOLUT REFUND EMAILS FAILED:",
+      {
+        bookingCode: booking.booking_code,
+        error,
+      }
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    refundProcessed: true,
+    bookingCode: booking.booking_code,
+    refundOrderId: orderId,
+    originalOrderId,
+    refundAmount,
+    creditNoteResult,
+  });
+}
+
+/*
+ * A partir daqui continua o fluxo normal
+ * de pagamento que já tínhamos.
+ */
+if (!isPaidEvent(eventName, payload)) {
+  return NextResponse.json({
+    ok: true,
+    ignored: "Not a paid event.",
+    eventName,
+    orderId,
+  });
+}
+
+const supabase = createAdminClient();
 
 const { data: booking, error: findError } = await supabase
   .from("bookings")
@@ -197,11 +423,8 @@ if (booking.payment_status === "paid") {
  * O webhook apenas nos avisa de que algo aconteceu.
  * A API do Revolut é consultada diretamente antes de confirmar o pagamento.
  */
-const revolutOrder = await retrieveRevolutOrder(orderId);
-
 const revolutOrderId = String(revolutOrder.id || "");
 const revolutState = String(revolutOrder.state || "").toLowerCase();
-const revolutCurrency = String(revolutOrder.currency || "").toUpperCase();
 
 const revolutAmount = Number(revolutOrder.amount);
 const revolutOutstandingAmount = Number(
