@@ -353,11 +353,12 @@ const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
             {booking.status === "booked" && (
               <>
                 <CheckInBookingButton
-                  bookingId={booking.id}
-                  currentStatus={booking.status}
-                  serviceDate={booking.service_date}
-                  checkInTime={booking.check_in_time}
-                />
+  bookingId={booking.id}
+  currentStatus={booking.status}
+  serviceDate={booking.service_date}
+  checkInTime={booking.check_in_time}
+  source={booking.source}
+/>
                 <CancelBookingButton bookingId={booking.id} />
               </>
             )}
