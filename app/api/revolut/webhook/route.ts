@@ -424,9 +424,9 @@ if (booking.payment_status === "paid") {
  * A API do Revolut é consultada diretamente antes de confirmar o pagamento.
  */
 const revolutOrderId = String(revolutOrder.id || "");
-const revolutState = String(revolutOrder.state || "").toLowerCase();
 
 const revolutAmount = Number(revolutOrder.amount);
+
 const revolutOutstandingAmount = Number(
   revolutOrder.outstanding_amount ?? 0
 );
