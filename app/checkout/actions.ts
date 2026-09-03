@@ -1532,6 +1532,34 @@ const serviceDate = getServiceDateFromItems(items);
 const cancelUntil = getCancelUntil(items);
 const cancellationToken = isWalkin ? null : generateCancellationToken();
 
+const todayMadrid = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Madrid",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+}).format(new Date());
+
+if (!serviceDate) {
+  return {
+    ok: false,
+    error: "Missing service date.",
+  };
+}
+
+if (serviceDate < todayMadrid) {
+  console.error("PAST SERVICE DATE BLOCKED:", {
+    serviceDate,
+    todayMadrid,
+    source,
+    customerEmail,
+  });
+
+  return {
+    ok: false,
+    error: "The selected service date is no longer available. Please choose today or a future date.",
+  };
+}
+
 const showerItems = items.filter(
   (item) =>
     (item.productType === "shower" || item.productType === "combo") &&
@@ -1698,7 +1726,7 @@ cancellation_token_expires_at: isWalkin ? null : cancelUntil,
 payment_expires_at: isWalkin
   ? null
   : new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-service_date: serviceDate || new Date().toISOString().split("T")[0],
+service_date: serviceDate,
 language,
   })
   .select("id, booking_code")
