@@ -247,6 +247,8 @@ async function toggleShowerDone(formData: FormData) {
 
   revalidatePath("/desk");
   revalidatePath(`/desk/booking/${bookingId}`);
+
+  redirect("/desk");
 }
 
 export default async function DeskBookingPage({

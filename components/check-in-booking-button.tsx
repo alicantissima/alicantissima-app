@@ -81,6 +81,7 @@ export default function CheckInBookingButton({
       return;
     }
 
+    router.replace("/desk");
     router.refresh();
   }
 
