@@ -431,6 +431,10 @@ const revolutOutstandingAmount = Number(
   revolutOrder.outstanding_amount ?? 0
 );
 
+const revolutCurrency = String(
+  revolutOrder.currency || ""
+).toUpperCase();
+
 const expectedAmount = Math.round(
   Number(booking.total_amount) * 100
 );
