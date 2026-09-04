@@ -606,10 +606,12 @@ const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
 <InfoCard
   label="Source"
   value={
-    isPaidPartner(booking.source)
-      ? "viator · paid online"
-      : booking.source || "-"
-  }
+  isPaidPartner(booking.source)
+    ? "Viator · paid online"
+    : booking.source
+      ? booking.source.charAt(0).toUpperCase() + booking.source.slice(1)
+      : "-"
+}
 />
 
 <InfoCard
