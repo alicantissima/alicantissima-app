@@ -587,30 +587,41 @@ const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
           <section className="rounded-3xl border bg-white p-4 shadow-sm md:p-6">
             <h2 className="text-2xl font-bold">Administrative data</h2>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
               <InfoCard
                 label="Created at"
                 value={formatDateTime(booking.created_at)}
               />
 
               <InfoCard
-                label="Actual check-in"
-                value={formatDateTime(booking.check_in_time)}
-              />
+  label="Actual check-in"
+  value={formatDateTime(booking.check_in_time)}
+/>
 
-              <InfoCard
-                label="Actual check-out"
-                value={formatDateTime(booking.check_out_time)}
-              />
+<InfoCard
+  label="Actual check-out"
+  value={formatDateTime(booking.check_out_time)}
+/>
 
-              <InfoCard
-                label="Source"
-                value={
-                  isPaidPartner(booking.source)
-                    ? "viator · paid online"
-                    : booking.source || "-"
-                }
-              />
+<InfoCard
+  label="Source"
+  value={
+    isPaidPartner(booking.source)
+      ? "viator · paid online"
+      : booking.source || "-"
+  }
+/>
+
+<InfoCard
+  label="Payment"
+  value={
+    booking.payment_method
+      ? booking.payment_method.charAt(0).toUpperCase() +
+        booking.payment_method.slice(1)
+      : "-"
+  }
+/>
+
             </div>
           </section>
         </section>
