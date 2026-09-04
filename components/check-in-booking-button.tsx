@@ -80,7 +80,7 @@ export default function CheckInBookingButton({
 
       const consequence =
         paymentMethod === "unpaid"
-          ? "A reserva ficará marcada como UNPAID e NÃO será emitida fatura."
+          ? "A reserva ficará marcada como UNPAID."
           : `A reserva ficará marcada como paga por ${paymentLabel} e será emitida a fatura automaticamente.`;
 
       const confirmed = window.confirm(
@@ -138,9 +138,8 @@ export default function CheckInBookingButton({
             "CONFIRME ESTA RESERVA NO ADMIN."
         );
 
-        router.replace("/desk");
-        router.refresh();
-        return;
+        window.location.replace(`/desk?refresh=${Date.now()}`);
+return;
       }
 
       if (
@@ -154,11 +153,9 @@ export default function CheckInBookingButton({
       }
     }
 
-    setLoading(false);
+   setLoading(false);
 
-    router.replace("/desk");
-    router.refresh();
-  }
+window.location.replace(`/desk?refresh=${Date.now()}`);  }
 
   return (
     <div className="space-y-3">
