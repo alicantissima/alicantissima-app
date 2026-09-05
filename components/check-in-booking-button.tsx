@@ -225,7 +225,6 @@ const isWalkinAlreadyPaid =
   "Check-in was completed, but the payment could not be registered.\n\n" +
     "CHECK THIS BOOKING IN ADMIN."
 );
-        );
 
         window.location.replace(`/desk?refresh=${Date.now()}`);
 return;
