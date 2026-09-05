@@ -358,6 +358,7 @@ const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
   serviceDate={booking.service_date}
   checkInTime={booking.check_in_time}
   source={booking.source}
+  paymentMethod={booking.payment_method}
 />
                 <CancelBookingButton bookingId={booking.id} />
               </>
