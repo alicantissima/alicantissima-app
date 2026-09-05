@@ -50,6 +50,14 @@ const isFutureWalkin =
   !!serviceDate &&
   serviceDate > todayMadrid;
 
+  const normalizedCurrentPaymentMethod =
+  String(currentPaymentMethod || "").toLowerCase();
+
+const isWalkinAlreadyPaid =
+  isWalkin &&
+  (normalizedCurrentPaymentMethod === "card" ||
+    normalizedCurrentPaymentMethod === "cash");
+
     async function handleFuturePayment() {
   if (loading) return;
 
