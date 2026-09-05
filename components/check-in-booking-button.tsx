@@ -13,6 +13,7 @@ type Props = {
   serviceDate?: string | null;
   checkInTime?: string | null;
   source?: string | null;
+  paymentMethod?: string | null;
 };
 
 function getTodayMadridDate() {
@@ -30,6 +31,7 @@ export default function CheckInBookingButton({
   serviceDate,
   checkInTime,
   source,
+  paymentMethod: currentPaymentMethod,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] =
@@ -57,6 +59,14 @@ const isFutureWalkin =
     alert("Esta reserva não tem data de serviço definida.");
     return;
   }
+
+  const normalizedCurrentPaymentMethod =
+  String(currentPaymentMethod || "").toLowerCase();
+
+const isWalkinAlreadyPaid =
+  isWalkin &&
+  (normalizedCurrentPaymentMethod === "card" ||
+    normalizedCurrentPaymentMethod === "cash");
 
   const todayMadrid = getTodayMadridDate();
 
@@ -245,7 +255,7 @@ window.location.replace(`/desk?refresh=${Date.now()}`);  }
 
   return (
     <div className="space-y-3">
-      {isWalkin && (
+      {isWalkin && !isWalkinAlreadyPaid && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-3">
           <div className="mb-2 text-sm font-semibold text-amber-900">
             Pagamento do walk-in
@@ -295,14 +305,21 @@ window.location.replace(`/desk?refresh=${Date.now()}`);  }
       )}
 
       {isFutureWalkin ? (
-  <button
-    type="button"
-    onClick={handleFuturePayment}
-    disabled={loading}
-    className="rounded-xl border border-blue-700 bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
-  >
-    {loading ? "A registar pagamento..." : "Confirm payment"}
-  </button>
+  isWalkinAlreadyPaid ? (
+    <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+      Payment confirmed:{" "}
+      {normalizedCurrentPaymentMethod === "card" ? "Card" : "Cash"}
+    </div>
+  ) : (
+    <button
+      type="button"
+      onClick={handleFuturePayment}
+      disabled={loading}
+      className="rounded-xl border border-blue-700 bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+    >
+      {loading ? "A registar pagamento..." : "Confirm payment"}
+    </button>
+  )
 ) : (
   <button
     type="button"
@@ -312,7 +329,7 @@ window.location.replace(`/desk?refresh=${Date.now()}`);  }
   >
     {loading ? "A registar entrada..." : "Check-in"}
   </button>
-)}
+)}}
     </div>
   );
 }
