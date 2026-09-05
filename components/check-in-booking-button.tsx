@@ -329,7 +329,7 @@ window.location.replace(`/desk?refresh=${Date.now()}`);  }
   >
     {loading ? "A registar entrada..." : "Check-in"}
   </button>
-)}}
+)}
     </div>
   );
 }
