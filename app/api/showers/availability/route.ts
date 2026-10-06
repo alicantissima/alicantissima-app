@@ -9,6 +9,7 @@ import {
   getShowerEndTime,
   timeToMinutes,
 } from "@/lib/showers";
+import { getClosingTimeForDate } from "@/lib/time-slots";
 
 export const dynamic = "force-dynamic";
 
@@ -46,9 +47,9 @@ function minutesToTime(totalMinutes: number) {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
-function generateShowerStartTimes(durationMinutes: number) {
+function generateShowerStartTimes(durationMinutes: number, date: string) {
   const openingMinutes = timeToMinutes("10:00");
-  const closingMinutes = timeToMinutes("22:00");
+  const closingMinutes = timeToMinutes(getClosingTimeForDate(date));
   const stepMinutes = 15;
 
   const times: string[] = [];
@@ -250,7 +251,7 @@ const normalizedExistingShowerItems = existingShowerItems.map((item: any) => ({
       .filter((value) => value !== null);
 
     const requestedDuration = getShowerDurationMinutes(quantity);
-    const startTimes = generateShowerStartTimes(requestedDuration);
+    const startTimes = generateShowerStartTimes(requestedDuration, date);
 
     const slots = startTimes.map((startTime) => {
       const endTime = getShowerEndTime(startTime, quantity);
