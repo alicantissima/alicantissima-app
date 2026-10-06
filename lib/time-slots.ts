@@ -38,8 +38,8 @@ export function generateTimeSlots(startHour: number, endHour: number) {
         endM = 0;
       }
 
-      const start = `${pad(startH)"}h${pad(startM)"}`;
-      const end = `${pad(endH)"}h${pad(endM)"}`;
+      const start = `${pad(startH)}h${pad(startM)}`;
+      const end = `${pad(endH)}h${pad(endM)}`;
 
       slots.push(`${start}-${end}`);
     }
