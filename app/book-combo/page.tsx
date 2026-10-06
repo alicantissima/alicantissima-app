@@ -225,7 +225,9 @@ useEffect(() => {
   if (
     showerTime &&
     availableShowerSlots.length > 0 &&
-    !availableShowerSlots.some((slot) => slot.value === showerTime)
+    !availableShowerSlots.some(
+      (slot) => slot.value === showerTime && slot.available
+    )
   ) {
     setShowerTime("");
   }
