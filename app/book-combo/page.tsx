@@ -7,7 +7,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useBookingStore } from "../../store/bookingStore";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
-import { TIME_SLOTS } from "@/lib/time-slots";
+import { TIME_SLOTS, getTimeSlotLabel, isTimeSlotSelectable } from "@/lib/time-slots";
 import {
   getShowerDurationMinutes,
   getShowerEndTime,
@@ -225,7 +225,9 @@ useEffect(() => {
   if (
     showerTime &&
     availableShowerSlots.length > 0 &&
-    !availableShowerSlots.some((slot) => slot.value === showerTime)
+    !availableShowerSlots.some(
+      (slot) => slot.value === showerTime && slot.available
+    )
   ) {
     setShowerTime("");
   }
@@ -273,6 +275,11 @@ useEffect(() => {
 
     if (!showerTime) {
       alert(t.bookComboChooseShowerAlert);
+      return;
+    }
+
+    if (!isTimeSlotSelectable(dropOffTime, date)) {
+      alert("This luggage drop-off time is unavailable during the current opening hours.");
       return;
     }
 
@@ -406,8 +413,12 @@ function handleBack() {
     >
       <option value="">Choose time</option>
       {baseAvailableSlots.map((slot) => (
-        <option key={slot} value={slot}>
-          {slot}
+        <option
+          key={slot}
+          value={slot}
+          disabled={!isTimeSlotSelectable(slot, date)}
+        >
+          {getTimeSlotLabel(slot, date)}
         </option>
       ))}
     </select>

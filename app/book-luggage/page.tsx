@@ -7,7 +7,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
-import { TIME_SLOTS } from "@/lib/time-slots";
+import { TIME_SLOTS, getTimeSlotLabel, isTimeSlotSelectable } from "@/lib/time-slots";
 
 function getTodayString() {
   const now = new Date();
@@ -108,16 +108,24 @@ function BookLuggageContent() {
   }, [dropOff, baseAvailableSlots, timeSlots]);
 
   useEffect(() => {
-    if (dropOff && !baseAvailableSlots.includes(dropOff)) {
+    if (
+      dropOff &&
+      (!baseAvailableSlots.includes(dropOff) ||
+        !isTimeSlotSelectable(dropOff, date))
+    ) {
       setDropOff("");
     }
-  }, [dropOff, baseAvailableSlots]);
+  }, [dropOff, baseAvailableSlots, date]);
 
   useEffect(() => {
-    if (pickUp && !availablePickUpSlots.includes(pickUp)) {
+    if (
+      pickUp &&
+      (!availablePickUpSlots.includes(pickUp) ||
+        !isTimeSlotSelectable(pickUp, date))
+    ) {
       setPickUp("");
     }
-  }, [pickUp, availablePickUpSlots]);
+  }, [pickUp, availablePickUpSlots, date]);
 
   const unitPrice = 8;
   const totalPrice = luggage * unitPrice;
@@ -150,6 +158,11 @@ function BookLuggageContent() {
 
     if (!pickUp) {
       alert(t.bookLuggageChoosePickUpAlert);
+      return;
+    }
+
+    if (!isTimeSlotSelectable(dropOff, date) || !isTimeSlotSelectable(pickUp, date)) {
+      alert("This time is unavailable during the current opening hours.");
       return;
     }
 
@@ -240,8 +253,12 @@ function BookLuggageContent() {
           >
             <option value="">Choose time</option>
             {baseAvailableSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
+              <option
+                key={slot}
+                value={slot}
+                disabled={!isTimeSlotSelectable(slot, date)}
+              >
+                {getTimeSlotLabel(slot, date)}
               </option>
             ))}
           </select>
@@ -256,8 +273,12 @@ function BookLuggageContent() {
           >
             <option value="">Choose time</option>
             {availablePickUpSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
+              <option
+                key={slot}
+                value={slot}
+                disabled={!isTimeSlotSelectable(slot, date)}
+              >
+                {getTimeSlotLabel(slot, date)}
               </option>
             ))}
           </select>
