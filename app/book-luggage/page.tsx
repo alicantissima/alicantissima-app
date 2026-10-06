@@ -7,7 +7,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
-import { TIME_SLOTS } from "@/lib/time-slots";
+import { TIME_SLOTS, getTimeSlotLabel, isTimeSlotSelectable } from "@/lib/time-slots";
 
 function getTodayString() {
   const now = new Date();
@@ -153,6 +153,11 @@ function BookLuggageContent() {
       return;
     }
 
+    if (!isTimeSlotSelectable(dropOff, date) || !isTimeSlotSelectable(pickUp, date)) {
+      alert("This time is unavailable during the current opening hours.");
+      return;
+    }
+
     if (getSlotIndex(pickUp, timeSlots) < getSlotIndex(dropOff, timeSlots)) {
       alert("Pick-up time must be after drop-off time.");
       return;
@@ -240,8 +245,12 @@ function BookLuggageContent() {
           >
             <option value="">Choose time</option>
             {baseAvailableSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
+              <option
+                key={slot}
+                value={slot}
+                disabled={!isTimeSlotSelectable(slot, date)}
+              >
+                {getTimeSlotLabel(slot, date)}
               </option>
             ))}
           </select>
@@ -256,8 +265,12 @@ function BookLuggageContent() {
           >
             <option value="">Choose time</option>
             {availablePickUpSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
+              <option
+                key={slot}
+                value={slot}
+                disabled={!isTimeSlotSelectable(slot, date)}
+              >
+                {getTimeSlotLabel(slot, date)}
               </option>
             ))}
           </select>
