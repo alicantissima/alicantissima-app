@@ -278,6 +278,37 @@ function sortDeskByShowerTimeThenLuggage(bookings: BookingRow[]) {
   });
 }
 
+function sortDeskUpcoming(bookings: BookingRow[]) {
+  return bookings.sort((a, b) => {
+    const dateCompare = (a.service_date ?? "").localeCompare(
+      b.service_date ?? ""
+    );
+
+    if (dateCompare !== 0) return dateCompare;
+
+    const aRoomRank = getDeskShowerRoomRank(a);
+    const bRoomRank = getDeskShowerRoomRank(b);
+
+    if (aRoomRank !== bRoomRank) {
+      return aRoomRank - bRoomRank;
+    }
+
+    const aShowerTime = getDeskShowerSortTime(a);
+    const bShowerTime = getDeskShowerSortTime(b);
+
+    if (aShowerTime && bShowerTime) {
+      return getDeskSortableTime(aShowerTime).localeCompare(
+        getDeskSortableTime(bShowerTime)
+      );
+    }
+
+    if (aShowerTime && !bShowerTime) return -1;
+    if (!aShowerTime && bShowerTime) return 1;
+
+    return a.created_at.localeCompare(b.created_at);
+  });
+}
+
 function getDeskShowerSummary(booking: BookingRow) {
   const items = booking.booking_items ?? [];
 
@@ -487,11 +518,13 @@ function DeskTable({
   rows,
   emptyText,
   highlight = false,
+  showDate = false,
 }: {
   title: string;
   rows: BookingRow[];
   emptyText: string;
   highlight?: boolean;
+  showDate?: boolean;
 }) {
   return (
     <section
@@ -551,6 +584,12 @@ const showerDone = isDeskShowerDone(booking);
                         </div>
 
                         <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                          {showDate && booking.service_date && (
+                            <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-700">
+                              {formatDeskDateLabel(booking.service_date)}
+                            </span>
+                          )}
+
                           {getSourceBadge(booking.source)}
 
                           {bagSummary && (
@@ -635,8 +674,14 @@ export default async function DeskPage() {
 )
   `;
 
-  const [insideQuery, todayQuery, finishedQuery, tomorrowQuery, afterTomorrowQuery] =
-    await Promise.all([
+  const [
+    insideQuery,
+    todayQuery,
+    finishedQuery,
+    tomorrowQuery,
+    afterTomorrowQuery,
+    upcomingQuery,
+  ] = await Promise.all([
       supabase
         .from("bookings")
         .select(selectFields)
@@ -672,6 +717,14 @@ export default async function DeskPage() {
         .eq("service_date", afterTomorrowMadrid)
         .in("status", ["booked", "inside"])
         .order("created_at", { ascending: true }),
+
+      supabase
+        .from("bookings")
+        .select(selectFields)
+        .gt("service_date", afterTomorrowMadrid)
+        .in("status", ["booked", "inside"])
+        .order("service_date", { ascending: true })
+        .order("created_at", { ascending: true }),
     ]);
 
   const inside = sortDeskByShowerTimeThenLuggage(
@@ -694,6 +747,10 @@ const tomorrow = sortDeskByShowerTimeThenLuggage(
 
 const afterTomorrow = sortDeskByShowerTimeThenLuggage(
   (afterTomorrowQuery.data ?? []) as BookingRow[]
+);
+
+const upcoming = sortDeskUpcoming(
+  (upcomingQuery.data ?? []) as BookingRow[]
 );
 
   return (
@@ -757,6 +814,15 @@ const afterTomorrow = sortDeskByShowerTimeThenLuggage(
           title={`After tomorrow · ${afterTomorrowLabel}`}
           rows={afterTomorrow}
           emptyText="No bookings for after tomorrow."
+        />
+      </section>
+
+      <section>
+        <DeskTable
+          title="Upcoming"
+          rows={upcoming}
+          emptyText="No upcoming bookings."
+          showDate
         />
       </section>
 
