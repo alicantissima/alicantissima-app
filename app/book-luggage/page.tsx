@@ -108,16 +108,24 @@ function BookLuggageContent() {
   }, [dropOff, baseAvailableSlots, timeSlots]);
 
   useEffect(() => {
-    if (dropOff && !baseAvailableSlots.includes(dropOff)) {
+    if (
+      dropOff &&
+      (!baseAvailableSlots.includes(dropOff) ||
+        !isTimeSlotSelectable(dropOff, date))
+    ) {
       setDropOff("");
     }
-  }, [dropOff, baseAvailableSlots]);
+  }, [dropOff, baseAvailableSlots, date]);
 
   useEffect(() => {
-    if (pickUp && !availablePickUpSlots.includes(pickUp)) {
+    if (
+      pickUp &&
+      (!availablePickUpSlots.includes(pickUp) ||
+        !isTimeSlotSelectable(pickUp, date))
+    ) {
       setPickUp("");
     }
-  }, [pickUp, availablePickUpSlots]);
+  }, [pickUp, availablePickUpSlots, date]);
 
   const unitPrice = 8;
   const totalPrice = luggage * unitPrice;
