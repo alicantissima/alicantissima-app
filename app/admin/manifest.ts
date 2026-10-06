@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Admin",
     description: "Alicantissima Admin",
     start_url: "/admin",
-    scope: "/",
+    scope: "/admin",
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#ffffff",
