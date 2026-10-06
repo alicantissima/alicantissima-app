@@ -162,7 +162,9 @@ return availabilitySlots.filter((slot) => {
   if (
     showerTime &&
     visibleAvailabilitySlots.length > 0 &&
-    !visibleAvailabilitySlots.some((slot) => slot.value === showerTime)
+    !visibleAvailabilitySlots.some(
+      (slot) => slot.value === showerTime && slot.available
+    )
   ) {
     setShowerTime("");
   }
