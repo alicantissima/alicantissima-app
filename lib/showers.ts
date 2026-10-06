@@ -3,7 +3,7 @@
 
 export function getShowerDurationMinutes(quantity: number) {
   if (!quantity || quantity <= 1) return 15;
-  if (quantity <= 4) return 30;
+  if (quantity <= 3) return 30;
   if (quantity <= 7) return 45;
   return 60;
 }
