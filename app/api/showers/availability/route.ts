@@ -47,16 +47,16 @@ function minutesToTime(totalMinutes: number) {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
-function generateShowerStartTimes(durationMinutes: number, date: string) {
+function generateShowerStartTimes(durationMinutes: number) {
   const openingMinutes = timeToMinutes("10:00");
-  const closingMinutes = timeToMinutes(getClosingTimeForDate(date));
+  const masterClosingMinutes = timeToMinutes("22:00");
   const stepMinutes = 15;
 
   const times: string[] = [];
 
   for (
     let start = openingMinutes;
-    start + durationMinutes <= closingMinutes;
+    start + durationMinutes <= masterClosingMinutes;
     start += stepMinutes
   ) {
     times.push(minutesToTime(start));
@@ -251,24 +251,33 @@ const normalizedExistingShowerItems = existingShowerItems.map((item: any) => ({
       .filter((value) => value !== null);
 
     const requestedDuration = getShowerDurationMinutes(quantity);
-    const startTimes = generateShowerStartTimes(requestedDuration, date);
+    const startTimes = generateShowerStartTimes(requestedDuration);
+    const closingMinutes = timeToMinutes(getClosingTimeForDate(date));
 
     const slots = startTimes.map((startTime) => {
       const endTime = getShowerEndTime(startTime, quantity);
+      const withinOpeningHours = timeToMinutes(endTime) <= closingMinutes;
 
-      const availableRoom = getFreeShowerRoom({
+      const availableRoom = withinOpeningHours
+        ? getFreeShowerRoom({
         startTime,
         endTime,
         existingBookings: normalizedExistingShowerItems,
         showerBlocks: showerBlocks ?? [],
-      });
+      })
+        : null;
 
-      const isAvailable = availableRoom !== null;
+      const isAvailable = withinOpeningHours && availableRoom !== null;
       const baseLabel = getDynamicShowerSlotLabel(startTime, quantity);
+      const label = !withinOpeningHours
+        ? `${baseLabel} · Unavailable`
+        : isAvailable
+          ? baseLabel
+          : `${baseLabel} · Reserved`;
 
       return {
         value: startTime,
-        label: isAvailable ? baseLabel : `${baseLabel} · Reserved`,
+        label,
         startTime,
         endTime,
         available: isAvailable,
