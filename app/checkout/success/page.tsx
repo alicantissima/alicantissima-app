@@ -3,6 +3,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
+import { getPromoMessages } from "@/lib/promo-messages";
 import Link from "next/link";
 
 type SuccessSearchParams = Promise<{ code?: string }>;
@@ -198,13 +199,14 @@ export default async function CheckoutSuccessPage({
   const { data: booking } = await supabase
   .from("bookings")
   .select(
-    "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id, source"
+    "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id, source, promo_code, subtotal_amount, discount_percent, discount_amount"
   )
   .eq("booking_code", code)
   .single();
 
   const language = normalizeLanguage(booking?.language);
 const t = getMessages(language);
+const promoText = getPromoMessages(normalizeLanguage(language));
 const isWalkin = booking?.source === "walkin";
 
 let paymentConfirmed =
@@ -399,6 +401,10 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
     <span className="font-medium text-zinc-700">{totalItemsAll}</span>
   </div>
 
+  {booking.promo_code && <div className="mb-3 space-y-1 text-sm">
+    <p>{promoText.subtotal}: € {Number(booking.subtotal_amount).toFixed(2)}</p>
+    <p className="text-green-700">{booking.promo_code} · {promoText.discount} ({Number(booking.discount_percent)}%): −€ {Number(booking.discount_amount).toFixed(2)}</p>
+  </div>}
   <div className="flex items-center justify-between gap-4">
     <p className="text-lg font-semibold text-zinc-900">
       {t.totalLabel}

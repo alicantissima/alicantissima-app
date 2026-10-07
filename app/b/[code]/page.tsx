@@ -18,6 +18,10 @@ type BookingRow = {
   customer_email: string;
   notes?: string | null;
   total_amount: number;
+  promo_code?: string | null;
+  subtotal_amount?: number | null;
+  discount_percent?: number | null;
+  discount_amount?: number | null;
   currency: string;
   status: string;
   service_date?: string | null;
@@ -184,6 +188,10 @@ export default async function BookingPage({ params }: PageProps) {
             </div>
 
             <div className="text-right">
+              {booking.promo_code && <p className="text-xs text-white/60">
+                € {formatPrice(booking.subtotal_amount)} · {booking.promo_code} −{booking.discount_percent}%<br />
+                −€ {formatPrice(booking.discount_amount)}
+              </p>}
               <p className="text-sm text-white/50">{t.totalLabel}</p>
               <p className="text-lg font-semibold">
                 € {formatPrice(booking.total_amount)}
