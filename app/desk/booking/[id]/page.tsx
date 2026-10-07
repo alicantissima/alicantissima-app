@@ -456,7 +456,7 @@ const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
                         </div>
 
                         <div className="text-right">
-                          <div className="text-sm text-gray-500">Total</div>
+                          <div className="text-sm text-gray-500">{hasDiscount ? "Total before discount" : "Total"}</div>
                           <div className="text-lg font-semibold">
                             {Number(item.line_total ?? 0).toFixed(2)} €
                           </div>
