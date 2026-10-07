@@ -1270,12 +1270,18 @@ function renderTodayResultsBar() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
   <div>
     <h1 className="text-2xl font-bold">Admin · Reservas</h1>
-    <Link href="/admin/partners" className="rounded-xl border px-4 py-2">Partners · Promo codes</Link>
     <p className="text-sm text-gray-500">Sessão: {profile.email}</p>
   </div>
 
   <div className="w-full lg:w-auto">
     <div className="flex flex-wrap items-center gap-3">
+  <Link
+    href="/admin/partners"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+  >
+    Partners · Promo codes
+  </Link>
+
   <Link
     href="/desk"
     className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
