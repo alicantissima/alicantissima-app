@@ -133,7 +133,8 @@ function getProductConfig(
 }
 
 function buildInvoiceItem(
-  bookingItem: BookingItemForAlegraInvoice
+  bookingItem: BookingItemForAlegraInvoice,
+  discountPercent = getItemDiscount(bookingItem.meta)
 ): AlegraInvoiceItemInput {
   const product = getProductConfig(
     bookingItem.product_type
@@ -153,7 +154,7 @@ function buildInvoiceItem(
     id: product.itemId,
     quantity,
     price: priceWithoutTax(unitPriceWithTax),
-    ...(getItemDiscount(bookingItem.meta) ? { discount: getItemDiscount(bookingItem.meta) } : {}),
+    ...(discountPercent ? { discount: discountPercent } : {}),
 
     tax: [
       {
@@ -217,6 +218,10 @@ async function loadBooking(bookingId: string) {
       customer_email,
       customer_phone,
       total_amount,
+      promo_code,
+      discount_percent,
+      discount_amount,
+      subtotal_amount,
       currency,
       service_date,
       source,
@@ -459,6 +464,9 @@ const alegraPaymentMethod: "cash" | "credit-card" =
     : "credit-card";
 
 
+    const discountPercent = Number(booking.discount_percent ?? 0);
+    if (!Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent >= 100) throw new Error("Invalid booking invoice discount.");
+    if (booking.promo_code && discountPercent !== 15) throw new Error("Partner booking is missing its 15% invoice discount.");
     const invoicePayload: CreateAlegraInvoiceInput = {
   date: invoiceDate,
   dueDate: invoiceDate,
@@ -475,10 +483,10 @@ const alegraPaymentMethod: "cash" | "credit-card" =
 
   items: bookingItems.flatMap((item) => {
     // Preserve existing invoice behaviour for bookings without a partner discount.
-    if (!getItemDiscount(item.meta) || item.product_type !== "combo" || !Array.isArray(item.meta?.breakdown)) return [buildInvoiceItem(item)];
+    if (!discountPercent || item.product_type !== "combo" || !Array.isArray(item.meta?.breakdown)) return [buildInvoiceItem(item, discountPercent)];
     return item.meta.breakdown.map((raw, index) => {
       const part = raw as { quantity: number; unitPrice: number; totalPrice: number; label: string };
-      return buildInvoiceItem({ ...item, product_type: index === 0 ? "combo" : Number(part.unitPrice) === 8 ? "luggage" : "shower", quantity: Number(part.quantity), unit_price: Number(part.unitPrice), line_total: Number(part.totalPrice), title: part.label });
+      return buildInvoiceItem({ ...item, product_type: index === 0 ? "combo" : Number(part.unitPrice) === 8 ? "luggage" : "shower", quantity: Number(part.quantity), unit_price: Number(part.unitPrice), line_total: Number(part.totalPrice), title: part.label }, discountPercent);
     });
   }),
 
@@ -496,7 +504,7 @@ const alegraPaymentMethod: "cash" | "credit-card" =
 
   anotation:
     `Reserva Alicantissima: ${booking.booking_code}` +
-    (getItemDiscount(bookingItems[0]?.meta) ? ` | Promo ${String(bookingItems[0].meta?.partnerPromoCode)}: ${getItemDiscount(bookingItems[0].meta)}% descuento` : ""),
+    (discountPercent ? ` | Promo ${booking.promo_code}: ${discountPercent}% descuento` : ""),
 
   observations: [
     `Reserva: ${booking.booking_code}`,
@@ -507,6 +515,12 @@ const alegraPaymentMethod: "cash" | "credit-card" =
     .filter(Boolean)
     .join(" | "),
 };
+
+    if (discountPercent) {
+      const expectedCents = Math.round(invoicePayload.items.reduce((sum, item) =>
+        sum + item.price * item.quantity * (1 - Number(item.discount ?? 0) / 100) * (1 + IVA_RATE / 100), 0) * 100);
+      if (expectedCents !== Math.round(totalAmount * 100)) throw new Error("Invoice total does not match discounted payment. Invoice was not issued.");
+    }
 
     const invoice =
       await createAlegraInvoice(

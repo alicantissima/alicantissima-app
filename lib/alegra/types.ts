@@ -183,6 +183,10 @@ payment_method: string | null;
   customer_phone: string | null;
 
   total_amount: string | number;
+  promo_code?: string | null;
+  discount_percent?: string | number | null;
+  discount_amount?: string | number | null;
+  subtotal_amount?: string | number | null;
   currency: string | null;
   service_date: string | null;
   source: string | null;

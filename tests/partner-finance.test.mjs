@@ -52,6 +52,8 @@ test("invoice keeps full tariff before tax and sends explicit 15% discount", () 
     assert.equal(Math.round(line.price * 1.21 * (1 - line.discount / 100) * 100), Math.round(price * .85 * 100));
   }
   assert.equal(invoice.buildInvoiceItem({ ...item("shower", 12), meta: {} }).discount, undefined);
+  assert.equal(invoice.buildInvoiceItem({ ...item("shower", 12), meta: {} }, 15).discount, 15);
+  assert.equal(invoice.buildInvoiceItem(item("shower", 12), 0).discount, undefined);
 });
 
 test("full and partial refunds across discounted items equal the refund amount", () => {
