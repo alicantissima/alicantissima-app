@@ -4,7 +4,7 @@ Online checkout supports one active partner code per booking. The discount is 15
 
 ## Release order
 
-1. Run `supabase/migrations/20261007120000_partner_promotions.sql` in the existing Supabase project before deploying this branch. This adds a private partners table and nullable booking columns; existing bookings remain unchanged.
+1. Run `supabase/migrations/20261007120000_partner_promotions.sql` in the existing Supabase project before deploying this branch. This extends the existing partners table with nullable unique promo_code, discount_percent and promo_active columns, and adds nullable booking discount columns. The existing bookings.partner_id, partner status, commissions, data and permissions remain unchanged. New partners created here receive a unique required slug and an explicit zero commission; the pre-existing 20% default is not used. Existing partners can be assigned a code through Save code. Promo activation does not change partner status; pending and suspended partners cannot use their codes.
 2. Deploy the branch to a preview and create a partner code through Admin → Partners.
 3. Check valid/invalid/inactive codes, changing or clearing a code, and bookings without a code. Verify all products and a combo with extras.
 4. Validate an online test booking through the configured Revolut environment and inspect the resulting Alegra invoice/PDF. Confirm original prices, explicit 15% discount, IVA 21%, and identical paid/invoiced totals. Example: combo + one luggage extra + one shower extra = €38 gross, €5.70 discount, €32.30 payable. Live financial APIs were not called during local verification.

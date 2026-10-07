@@ -12,7 +12,7 @@ export default async function PartnersPage() {
   if (!user) redirect("/login");
   const { data: profile } = await client.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "admin") redirect("/desk");
-  const { data: partners, error } = await createAdminClient().from("partners").select("id, name, promo_code, active").order("name");
+  const { data: partners, error } = await createAdminClient().from("partners").select("id, name, promo_code, promo_active, status").order("name");
   return <main className="mx-auto max-w-3xl space-y-6 p-6">
     <Link href="/admin">← Admin</Link>
     <h1 className="text-2xl font-bold">Partners · 15% promo codes</h1>
@@ -23,11 +23,16 @@ export default async function PartnersPage() {
         <button className="rounded border px-4 py-2">Create partner</button>
       </form>
       <div className="space-y-3">{partners?.map(partner => <div key={partner.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
-        <div><strong>{partner.name}</strong><p>{partner.promo_code} · 15% · {partner.active ? "Active" : "Inactive"}</p></div>
+        <div><strong>{partner.name}</strong><p>{partner.promo_code || "No promo code"} · 15% · {partner.promo_active ? "Promo active" : "Promo inactive"} · Partner: {partner.status}</p></div>
+        <form action={savePartner} className="flex gap-2">
+          <input type="hidden" name="id" value={partner.id} />
+          <input aria-label={`Promo code for ${partner.name}`} name="code" defaultValue={partner.promo_code || ""} placeholder="Promo code" pattern="[A-Za-z0-9_-]{2,40}" maxLength={40} required className="min-w-0 rounded border bg-transparent p-2" />
+          <button className="rounded border px-4 py-2">Save code</button>
+        </form>
         <form action={savePartner}>
           <input type="hidden" name="id" value={partner.id} />
-          <input type="hidden" name="active" value={String(!partner.active)} />
-          <button className="rounded border px-4 py-2">{partner.active ? "Deactivate" : "Activate"}</button>
+          <input type="hidden" name="active" value={String(!partner.promo_active)} />
+          <button className="rounded border px-4 py-2">{partner.promo_active ? "Deactivate" : "Activate"}</button>
         </form>
       </div>)}</div>
     </>}

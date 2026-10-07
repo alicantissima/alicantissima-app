@@ -19,13 +19,17 @@ const refund = loadFunctions("../lib/alegra/creditNotes.ts", ["buildCreditNoteIt
 const item = (type, price, quantity = 1) => ({ id: type, product_type: type, title: type, quantity, unit_price: price, line_total: price * quantity, meta: { partnerDiscountPercent: 15 } });
 
 test("server accepts only active stored partner codes and fails closed on database errors", async () => {
-  let result = { data: { id: "partner-1", name: "Partner", promo_code: "MARINA15", discount_percent: 15, active: true }, error: null };
+  let result = { data: { id: "partner-1", name: "Partner", promo_code: "MARINA15", discount_percent: 15, promo_active: true, status: "active" }, error: null };
   let requestedCode;
   const query = { select() { return this; }, eq(_column, value) { requestedCode = value; return this; }, async maybeSingle() { return result; } };
   const partner = loadFunctions("../lib/partner-promo.ts", ["resolvePartnerPromo"], { normalizePromoCode, createAdminClient: () => ({ from: () => query }) });
   assert.equal((await partner.resolvePartnerPromo(" marina15 ")).percent, 15);
   assert.equal(requestedCode, "MARINA15");
-  result = { ...result, data: { ...result.data, active: false } };
+  result = { ...result, data: { ...result.data, promo_active: false } };
+  await assert.rejects(partner.resolvePartnerPromo("MARINA15"));
+  result = { ...result, data: { ...result.data, promo_active: true, status: "suspended" } };
+  await assert.rejects(partner.resolvePartnerPromo("MARINA15"));
+  result = { ...result, data: { ...result.data, status: "pending" } };
   await assert.rejects(partner.resolvePartnerPromo("MARINA15"));
   result = { data: null, error: null };
   await assert.rejects(partner.resolvePartnerPromo("UNKNOWN"));
