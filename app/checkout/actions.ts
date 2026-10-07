@@ -3,6 +3,8 @@
 
 "use server";
 
+import { resolvePartnerPromo } from "@/lib/partner-promo";
+import { calculateDiscount } from "@/lib/promotions";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
@@ -32,6 +34,7 @@ type CheckoutPayload = {
   notes?: string;
   language?: string;
   source?: string;
+  promoCode?: string;
   items: CheckoutItem[];
 };
 
@@ -96,6 +99,14 @@ function isFutureDate(value?: string | null) {
   if (Number.isNaN(date.getTime())) return false;
 
   return date.getTime() > Date.now();
+}
+
+function promotionEmailSummary(params: { items: Array<{ totalPrice: number; meta?: Record<string, unknown> }>; totalAmount: number }) {
+  const meta = params.items.find(item => item.meta?.partnerDiscountPercent)?.meta;
+  if (!meta) return "";
+  const subtotal = params.items.reduce((sum, item) => sum + item.totalPrice, 0);
+  // Codes are server-normalized and restricted to letters, digits, - and _.
+  return `Subtotal: € ${subtotal.toFixed(2)} · Promo ${String(meta.partnerPromoCode)} (${Number(meta.partnerDiscountPercent)}%): −€ ${(subtotal - params.totalAmount).toFixed(2)}`;
 }
 
 function formatPrice(value: number) {
@@ -421,6 +432,7 @@ const totalItemsAll = params.items.reduce((sum, item) => {
 
 lines.push(`Total items: ${totalItemsAll}`);
 
+  if (promotionEmailSummary(params)) lines.push(promotionEmailSummary(params));
   lines.push(`${t.totalLabel} € ${formatPrice(params.totalAmount)}`);
   lines.push("");
 lines.push(
@@ -597,6 +609,7 @@ ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; colo
           </p>
 
           ${itemBlocks}
+          ${promotionEmailSummary(params) ? `<p style="font-size:14px;color:#166534;">${promotionEmailSummary(params)}</p>` : ""}
 
           <p style="margin:0 0 10px 0; font-size:14px; line-height:21px; color:#6b7280;">
   Total items: ${totalItemsAll}
@@ -729,6 +742,7 @@ if (params.customerCity) {
   lines.push("Booking details:");
   lines.push(...buildBookingLines({ items: params.items }));
   lines.push("");
+  if (promotionEmailSummary(params)) lines.push(promotionEmailSummary(params));
   lines.push(`Total: € ${formatPrice(params.totalAmount)}`);
 
   if (params.notes) {
@@ -848,6 +862,7 @@ function buildInternalEmailHtml(params: {
           </h2>
 
           ${itemBlocks}
+          ${promotionEmailSummary(params) ? `<p style="font-size:14px;color:#166534;">${promotionEmailSummary(params)}</p>` : ""}
 
           <div style="margin:24px 0 24px 0; padding:18px 20px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px;">
             <p style="margin:0; font-size:18px; line-height:28px; color:#111827; font-weight:700;">
@@ -1524,7 +1539,42 @@ return {
 };
     });
 
-    const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+    const subtotalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+    const promo = payload.promoCode?.trim() ? await resolvePartnerPromo(payload.promoCode) : null;
+    if (promo && source !== "site") throw new Error("Promo codes are available for online bookings only.");
+    const discount = calculateDiscount(subtotalAmount, promo?.percent ?? 0);
+    const totalAmount = discount.total;
+    if (promo) {
+      // Revalidate tariff prices before accepting a discount. Never trust browser amounts.
+      for (const item of items) {
+        const price = item.productType === "luggage" ? 8 : item.productType === "shower" ? 12 : item.productType === "combo" ? 18 : 0;
+        if (!price || !Number.isSafeInteger(item.quantity)) throw new Error("Invalid promotion item.");
+        const parts = getBreakdown(item.meta);
+        let expected = item.quantity * price;
+        if (item.productType === "combo" && parts.length) {
+          // The existing combo form sends main combo first, followed by optional extras.
+          const main = parts[0];
+          if (main.quantity !== item.quantity || main.unitPrice !== 18) throw new Error("Invalid combo price.");
+          expected = 0;
+          for (const [index, part] of parts.entries()) {
+            if (!Number.isSafeInteger(part.quantity) || part.quantity <= 0 ||
+                (index > 0 && ![8, 12].includes(part.unitPrice)) ||
+                Math.round(part.totalPrice * 100) !== Math.round(part.quantity * part.unitPrice * 100)) throw new Error("Invalid combo extras.");
+            expected += part.quantity * part.unitPrice;
+          }
+        }
+        if (Math.round(item.totalPrice * 100) !== Math.round(expected * 100) || Math.abs(item.unitPrice * item.quantity - expected) > 0.001) throw new Error("Booking price has changed. Please select your services again.");
+        item.meta = { ...item.meta, partnerPromoCode: promo.code, partnerDiscountPercent: promo.percent };
+      }
+    }
+    else {
+      // Discard promotion metadata supplied by a browser without a valid code.
+      for (const item of items) {
+        const { partnerPromoCode, partnerDiscountPercent, ...cleanMeta } = item.meta;
+        void partnerPromoCode; void partnerDiscountPercent;
+        item.meta = cleanMeta;
+      }
+    }
 
     const supabase = createAdminClient();
 const bookingCode = generateBookingCode();
@@ -1714,6 +1764,7 @@ if (showerItems.length > 0) {
     customer_phone: customerPhone,
     notes,
     total_amount: totalAmount,
+    ...(promo ? { partner_id: promo.id, promo_code: promo.code, subtotal_amount: discount.subtotal, discount_percent: promo.percent, discount_amount: discount.discountAmount } : {}),
     currency: "EUR",
     source,
     payment_method: isWalkin ? "unpaid" : "revolut",

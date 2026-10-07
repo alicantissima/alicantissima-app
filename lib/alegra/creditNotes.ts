@@ -328,7 +328,6 @@ function buildCreditNoteItems(params: {
 }): AlegraInvoiceItemInput[] {
   const {
     bookingItems,
-    bookingTotal,
     refundAmount,
   } = params;
 
@@ -395,7 +394,7 @@ function buildCreditNoteItems(params: {
       } else {
         const proportion =
           originalLineTotal /
-          bookingTotal;
+          bookingItems.reduce((sum, item) => sum + Number(item.line_total), 0);
 
         refundGrossForLine =
           roundMoney(

@@ -5,6 +5,9 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { validatePartnerPromo } from "@/app/checkout/promo-actions";
+import { calculateDiscount } from "@/lib/promotions";
+import { getPromoMessages } from "@/lib/promo-messages";
 import { submitCheckout as submitCheckoutAction } from "@/app/checkout/actions";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { useBookingStore } from "@/store/bookingStore";
@@ -122,6 +125,10 @@ export default function CheckoutClient() {
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; percent: number } | null>(null);
+  const [promoPending, setPromoPending] = useState(false);
+  const [promoError, setPromoError] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -139,13 +146,31 @@ export default function CheckoutClient() {
   }, [searchParams]);
 
   const t = getMessages(language);
+  const promoText = getPromoMessages(language);
 
   const total = useMemo(() => {
     return items.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
   }, [items]);
 
+  const discount = calculateDiscount(total, appliedPromo?.percent ?? 0);
+
+  async function applyPromo() {
+    setPromoPending(true);
+    setPromoError(false);
+    try {
+      const result = await validatePartnerPromo(promoCode);
+      if (result.ok) setAppliedPromo({ code: result.code, percent: result.percent });
+      else { setAppliedPromo(null); setPromoError(true); }
+    } catch { setAppliedPromo(null); setPromoError(true); }
+    finally { setPromoPending(false); }
+  }
+
   async function handleSubmit(formData: FormData) {
-    if (pending) return;
+    if (pending || promoPending) return;
+    if (source === "site" && promoCode.trim() && !appliedPromo) {
+      setPromoError(true);
+      return;
+    }
 
     setError(null);
 
@@ -159,6 +184,7 @@ export default function CheckoutClient() {
       notes: "",
       language,
       source,
+      promoCode: source === "site" ? appliedPromo?.code : undefined,
       items: items.map((item) => {
   const quantity = Number(item.quantity || 1);
   const productType = item.productCode;
@@ -337,6 +363,23 @@ setError("Could not complete booking.");
           />
         </div>
 
+        {source === "site" && (
+          <div className="space-y-2">
+            <label htmlFor="promoCode" className="block text-sm font-medium">{promoText.code}</label>
+            <div className="flex gap-2">
+              <input id="promoCode" value={promoCode} maxLength={40} autoCapitalize="characters" autoComplete="off"
+                disabled={pending || promoPending}
+                onChange={(event) => { setPromoCode(event.target.value.toUpperCase()); setAppliedPromo(null); setPromoError(false); }}
+                className="min-w-0 flex-1 rounded-xl border border-zinc-300 bg-transparent px-3 py-2" />
+              <button type="button" disabled={pending || promoPending || !promoCode.trim()} onClick={applyPromo}
+                className="rounded-xl border border-zinc-300 px-4 py-2 disabled:opacity-50">{promoPending ? "…" : promoText.apply}</button>
+            </div>
+            <p aria-live="polite" className={promoError ? "text-sm text-red-600" : "text-sm text-green-600"}>
+              {promoError ? promoText.invalid : appliedPromo ? `${appliedPromo.code}: ${promoText.discount} 15%` : ""}
+            </p>
+          </div>
+        )}
+
         {error && (
           <div className="rounded-xl border border-red-400 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500 dark:bg-red-950/40 dark:text-red-300">
             {error}
@@ -345,8 +388,8 @@ setError("Could not complete booking.");
 
         <button
           type="submit"
-          disabled={pending}
-          aria-disabled={pending}
+          disabled={pending || promoPending}
+          aria-disabled={pending || promoPending}
           className="w-full rounded-xl border border-zinc-900 bg-zinc-900 px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#AFC3BE] dark:bg-[#AFC3BE] dark:text-black"
         >
           {pending ? t.creatingBooking : t.createBooking}
@@ -445,11 +488,15 @@ setError("Could not complete booking.");
         </div>
 
         <div className="mt-5 border-t border-zinc-300 pt-4">
+          {appliedPromo && <div className="mb-3 text-sm">
+            <p>{promoText.subtotal}: € {discount.subtotal.toFixed(2)}</p>
+            <p className="text-green-600">{promoText.discount} ({appliedPromo.percent}%): −€ {discount.discountAmount.toFixed(2)}</p>
+          </div>}
           <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             {t.totalLabel}
           </p>
           <p className="text-2xl font-bold text-zinc-900 dark:text-white">
-            € {total.toFixed(2)}
+            € {discount.total.toFixed(2)}
           </p>
         </div>
       </aside>

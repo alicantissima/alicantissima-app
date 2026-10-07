@@ -1,6 +1,7 @@
 
 
 
+import { getItemDiscount } from "@/lib/promotions";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
@@ -152,6 +153,7 @@ function buildInvoiceItem(
     id: product.itemId,
     quantity,
     price: priceWithoutTax(unitPriceWithTax),
+    ...(getItemDiscount(bookingItem.meta) ? { discount: getItemDiscount(bookingItem.meta) } : {}),
 
     tax: [
       {
@@ -471,9 +473,14 @@ const alegraPaymentMethod: "cash" | "credit-card" =
 
   paymentMethod: alegraPaymentMethod,
 
-  items: bookingItems.map(
-    buildInvoiceItem
-  ),
+  items: bookingItems.flatMap((item) => {
+    // Preserve existing invoice behaviour for bookings without a partner discount.
+    if (!getItemDiscount(item.meta) || item.product_type !== "combo" || !Array.isArray(item.meta?.breakdown)) return [buildInvoiceItem(item)];
+    return item.meta.breakdown.map((raw, index) => {
+      const part = raw as { quantity: number; unitPrice: number; totalPrice: number; label: string };
+      return buildInvoiceItem({ ...item, product_type: index === 0 ? "combo" : Number(part.unitPrice) === 8 ? "luggage" : "shower", quantity: Number(part.quantity), unit_price: Number(part.unitPrice), line_total: Number(part.totalPrice), title: part.label });
+    });
+  }),
 
   payments: [
     buildAlegraInvoicePayment({
@@ -488,7 +495,8 @@ const alegraPaymentMethod: "cash" | "credit-card" =
   ],
 
   anotation:
-    `Reserva Alicantissima: ${booking.booking_code}`,
+    `Reserva Alicantissima: ${booking.booking_code}` +
+    (getItemDiscount(bookingItems[0]?.meta) ? ` | Promo ${String(bookingItems[0].meta?.partnerPromoCode)}: ${getItemDiscount(bookingItems[0].meta)}% descuento` : ""),
 
   observations: [
     `Reserva: ${booking.booking_code}`,

@@ -68,6 +68,7 @@ export type AlegraInvoiceItemInput = {
    * preço sem IVA = preço final / 1.21
    */
   price: number;
+  discount?: number;
 
   /**
    * Impostos aplicados à linha.
