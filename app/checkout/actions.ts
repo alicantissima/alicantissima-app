@@ -1541,7 +1541,6 @@ return {
 
     const subtotalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
     const promo = payload.promoCode?.trim() ? await resolvePartnerPromo(payload.promoCode) : null;
-    if (promo && source !== "site") throw new Error("Promo codes are available for online bookings only.");
     const discount = calculateDiscount(subtotalAmount, promo?.percent ?? 0);
     const totalAmount = discount.total;
     if (promo) {
