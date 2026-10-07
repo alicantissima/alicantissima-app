@@ -167,7 +167,7 @@ export default function CheckoutClient() {
 
   async function handleSubmit(formData: FormData) {
     if (pending || promoPending) return;
-    if (source === "site" && promoCode.trim() && !appliedPromo) {
+    if (promoCode.trim() && !appliedPromo) {
       setPromoError(true);
       return;
     }
@@ -184,7 +184,7 @@ export default function CheckoutClient() {
       notes: "",
       language,
       source,
-      promoCode: source === "site" ? appliedPromo?.code : undefined,
+      promoCode: appliedPromo?.code,
       items: items.map((item) => {
   const quantity = Number(item.quantity || 1);
   const productType = item.productCode;
@@ -363,7 +363,7 @@ setError("Could not complete booking.");
           />
         </div>
 
-        {source === "site" && (
+        {(
           <div className="space-y-2">
             <label htmlFor="promoCode" className="block text-sm font-medium">{promoText.code}</label>
             <div className="flex gap-2">

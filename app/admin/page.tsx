@@ -19,6 +19,9 @@ type BookingRow = {
   customer_name: string;
   customer_email: string;
   total_amount: number;
+  promo_code?: string | null;
+  discount_percent?: number | string | null;
+  discount_amount?: number | string | null;
   currency: string;
   status: string;
   source?: string | null;
@@ -634,9 +637,10 @@ const isUnpaidPayment =
                     </Link>
                   </td>
 
-                  <td className="align-top text-[12px] font-medium whitespace-nowrap">
+                  <td className={`align-top text-[12px] font-medium whitespace-nowrap ${Number(booking.discount_amount) > 0 ? "bg-emerald-50 text-emerald-900" : ""}`}>
                     <Link href={bookingHref} className={cellLinkClass}>
                       {formatCurrency(Number(booking.total_amount), booking.currency)}
+                      {Number(booking.discount_amount) > 0 && <div className="mt-1 text-[11px] font-semibold">−{Number(booking.discount_percent)}% · {booking.promo_code || "Discount"}</div>}
                     </Link>
                   </td>
                 </tr>

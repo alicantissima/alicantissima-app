@@ -3,6 +3,7 @@
 
 import BookingQr from "@/components/booking-qr";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import CancelBookingButton from "@/components/cancel-booking-button";
@@ -283,6 +284,12 @@ export default async function DeskBookingPage({
     .maybeSingle();
 
   if (error || !booking) notFound();
+
+  const { data: referralPartner } = booking.referral_partner_id
+    ? await createAdminClient().from("partners").select("name").eq("id", booking.referral_partner_id).maybeSingle()
+    : { data: null };
+  const hasDiscount = Number(booking.discount_amount) > 0;
+  const formatBookingMoney = (amount: unknown) => new Intl.NumberFormat("en-IE", { style: "currency", currency: booking.currency || "EUR" }).format(Number(amount || 0));
 
   const { data: bookingItemsData } = await supabase
   .from("booking_items")
@@ -626,6 +633,20 @@ const backLabel = cameFromAdmin ? "← Back to Admin" : "← Back to Desk";
 />
 
             </div>
+            {(booking.referral_partner_id || hasDiscount) && (
+              <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
+                <h3 className="font-semibold">Referral &amp; discount</h3>
+                <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {booking.referral_partner_id && <div><dt className="text-xs text-emerald-800">Referral partner</dt><dd className="break-words font-medium">{referralPartner?.name || "Partner unavailable"}</dd></div>}
+                  {booking.promo_code && <div><dt className="text-xs text-emerald-800">Promo code</dt><dd className="font-medium">{booking.promo_code}</dd></div>}
+                  {hasDiscount && <>
+                    <div><dt className="text-xs text-emerald-800">Subtotal</dt><dd>{formatBookingMoney(booking.subtotal_amount)}</dd></div>
+                    <div><dt className="text-xs text-emerald-800">Discount ({Number(booking.discount_percent)}%)</dt><dd>−{formatBookingMoney(booking.discount_amount)}</dd></div>
+                    <div><dt className="text-xs text-emerald-800">Booking total after discount</dt><dd className="font-bold">{formatBookingMoney(booking.total_amount)}</dd></div>
+                  </>}
+                </dl>
+              </div>
+            )}
           </section>
         </section>
 
