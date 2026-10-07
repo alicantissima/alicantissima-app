@@ -1764,7 +1764,7 @@ if (showerItems.length > 0) {
     customer_phone: customerPhone,
     notes,
     total_amount: totalAmount,
-    ...(promo ? { partner_id: promo.id, promo_code: promo.code, subtotal_amount: discount.subtotal, discount_percent: promo.percent, discount_amount: discount.discountAmount } : {}),
+    ...(promo ? { referral_partner_id: promo.id, promo_code: promo.code, subtotal_amount: discount.subtotal, discount_percent: promo.percent, discount_amount: discount.discountAmount } : {}),
     currency: "EUR",
     source,
     payment_method: isWalkin ? "unpaid" : "revolut",

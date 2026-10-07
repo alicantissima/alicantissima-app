@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { canReferGuests, isPartnerType } from "@/lib/partner-types";
 import { normalizePromoCode } from "@/lib/promotions";
 
 export async function savePartner(formData: FormData) {
@@ -15,6 +16,16 @@ export async function savePartner(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const admin = createAdminClient();
   if (id) {
+    const type = formData.get("partnerType");
+    if (type !== null) {
+      if (!isPartnerType(type)) throw new Error("Select a valid partner type.");
+      const { error } = await admin.from("partners").update({ partner_type: type }).eq("id", id);
+      if (error) throw new Error("Could not classify partner.");
+      revalidatePath("/admin/partners");
+      return;
+    }
+    const { data: partner, error: lookupError } = await admin.from("partners").select("partner_type").eq("id", id).single();
+    if (lookupError || !partner || !canReferGuests(partner.partner_type)) throw new Error("Only Referral or Both partners can manage promo codes.");
     const code = normalizePromoCode(formData.get("code"));
     if (code && !/^[A-Z0-9_-]{2,40}$/.test(code)) throw new Error("Enter a valid promo code.");
     const update = code
@@ -30,6 +41,7 @@ export async function savePartner(formData: FormData) {
       name,
       slug: `${code.toLowerCase()}-${randomUUID().slice(0, 8)}`,
       status: "active",
+      partner_type: "referral",
       commission_type: "percent",
       commission_value: 0,
       promo_code: code,
