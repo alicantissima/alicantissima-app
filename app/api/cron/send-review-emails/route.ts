@@ -108,18 +108,18 @@ function buildReviewEmailText(params: {
   };
 
   const goodByLanguage: Record<string, string> = {
-    es: "⭐ Genial — dejar una reseña en Google",
-    en: "⭐ Great — leave a Google review",
-    fr: "⭐ Super — laisser un avis Google",
-    it: "⭐ Ottimo — lascia una recensione su Google",
-    no: "⭐ Flott — legg igjen en Google-anmeldelse",
-    de: "⭐ Super — Google-Bewertung hinterlassen",
-    pl: "⭐ Świetnie — zostaw opinię w Google",
-    sv: "⭐ Toppen — lämna en Google-recension",
-    fi: "⭐ Hienoa — jätä Google-arvostelu",
-    da: "⭐ Super — skriv en Google-anmeldelse",
-    hu: "⭐ Nagyszerű — írj Google-értékelést",
-    pt: "⭐ Excelente — deixar uma review no Google",
+    es: "⭐ Genial — dejar una reseña en Tripadvisor",
+    en: "⭐ Great — leave a review on Tripadvisor",
+    fr: "⭐ Super — laisser un avis sur Tripadvisor",
+    it: "⭐ Ottimo — lascia una recensione su Tripadvisor",
+    no: "⭐ Flott — legg igjen en anmeldelse på Tripadvisor",
+    de: "⭐ Super — Bewertung auf Tripadvisor hinterlassen",
+    pl: "⭐ Świetnie — zostaw opinię na Tripadvisor",
+    sv: "⭐ Toppen — lämna en recension på Tripadvisor",
+    fi: "⭐ Hienoa — jätä arvostelu Tripadvisorissa",
+    da: "⭐ Super — skriv en anmeldelse på Tripadvisor",
+    hu: "⭐ Nagyszerű — írj értékelést a Tripadvisoron",
+    pt: "⭐ Excelente — deixar uma avaliação no Tripadvisor",
   };
 
   const improveByLanguage: Record<string, string> = {
@@ -186,18 +186,18 @@ function buildReviewEmailHtml(params: {
   };
 
   const goodByLanguage: Record<string, string> = {
-    es: "⭐ Genial — dejar una reseña en Google",
-    en: "⭐ Great — leave a Google review",
-    fr: "⭐ Super — laisser un avis Google",
-    it: "⭐ Ottimo — lascia una recensione su Google",
-    no: "⭐ Flott — legg igjen en Google-anmeldelse",
-    de: "⭐ Super — Google-Bewertung hinterlassen",
-    pl: "⭐ Świetnie — zostaw opinię w Google",
-    sv: "⭐ Toppen — lämna en Google-recension",
-    fi: "⭐ Hienoa — jätä Google-arvostelu",
-    da: "⭐ Super — skriv en Google-anmeldelse",
-    hu: "⭐ Nagyszerű — írj Google-értékelést",
-    pt: "⭐ Excelente — deixar uma review no Google",
+    es: "⭐ Genial — dejar una reseña en Tripadvisor",
+    en: "⭐ Great — leave a review on Tripadvisor",
+    fr: "⭐ Super — laisser un avis sur Tripadvisor",
+    it: "⭐ Ottimo — lascia una recensione su Tripadvisor",
+    no: "⭐ Flott — legg igjen en anmeldelse på Tripadvisor",
+    de: "⭐ Super — Bewertung auf Tripadvisor hinterlassen",
+    pl: "⭐ Świetnie — zostaw opinię na Tripadvisor",
+    sv: "⭐ Toppen — lämna en recension på Tripadvisor",
+    fi: "⭐ Hienoa — jätä arvostelu Tripadvisorissa",
+    da: "⭐ Super — skriv en anmeldelse på Tripadvisor",
+    hu: "⭐ Nagyszerű — írj értékelést a Tripadvisoron",
+    pt: "⭐ Excelente — deixar uma avaliação no Tripadvisor",
   };
 
   const improveByLanguage: Record<string, string> = {
