@@ -14,9 +14,7 @@ export default function ReviewPageClient() {
   const booking = searchParams.get("booking");
   const lang = searchParams.get("lang");
 
-  const googleReviewUrl =
-    process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL ||
-    "https://g.page/r/YOUR_GOOGLE_REVIEW_ID/review";
+  const reviewUrl = "https://www.tripadvisor.com/UserReviewEdit-g1064230-d33074627-Alicantissima_Luggage_Storage_Shower_Lounge-Alicante_Costa_Blanca_Province_of_Alicante_Val.html";
 
   useEffect(() => {
     console.log("REVIEW PAGE OPENED", {
@@ -50,12 +48,12 @@ export default function ReviewPageClient() {
 
       <div className="flex flex-col gap-4">
   <a
-    href={googleReviewUrl}
+    href={reviewUrl}
     target="_blank"
     rel="noreferrer"
     className="rounded-xl bg-black py-4 text-lg font-semibold text-white hover:opacity-90"
   >
-    ⭐ Great — leave a Google review
+    ⭐ Leave a review on Tripadvisor
   </a>
 
   <a
