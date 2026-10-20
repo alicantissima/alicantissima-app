@@ -199,7 +199,7 @@ export default async function CheckoutSuccessPage({
   const { data: booking } = await supabase
   .from("bookings")
   .select(
-    "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id, source, promo_code, subtotal_amount, discount_percent, discount_amount"
+    "id, booking_code, customer_name, total_amount, currency, language, status, payment_status, revolut_order_id, source, payment_provider, promo_code, subtotal_amount, discount_percent, discount_amount"
   )
   .eq("booking_code", code)
   .single();
@@ -208,9 +208,9 @@ export default async function CheckoutSuccessPage({
 const t = getMessages(language);
 const promoText = getPromoMessages(normalizeLanguage(language));
 const isWalkin = booking?.source === "walkin";
+const isPayOnArrival = booking?.payment_provider === "on_arrival";
 
-let paymentConfirmed =
-  booking?.payment_status === "paid" || booking?.status === "booked";
+let paymentConfirmed = booking?.payment_status === "paid";
 
 let revolutState = "";
 
@@ -423,6 +423,11 @@ const totalItemsAll = bookingItems.reduce((sum, item) => {
     <p className="mt-1 text-sm leading-6 text-orange-700">
       Please pay by card or cash with a member of our staff at reception to confirm your reservation.
     </p>
+  </div>
+) : isPayOnArrival && !paymentConfirmed ? (
+  <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+    <p className="font-semibold text-orange-800">Booking confirmed — payment due on arrival</p>
+    <p className="mt-1 text-sm leading-6 text-orange-700">Please pay at reception on arrival. Cash is accepted; card payments depend on service availability.</p>
   </div>
 ) : paymentConfirmed ? (
   <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-[14px] leading-6 text-emerald-700">
