@@ -190,6 +190,7 @@ payment_method: string | null;
   currency: string | null;
   service_date: string | null;
   source: string | null;
+  payment_provider: string | null;
 
   payment_status: string | null;
   payment_reference: string | null;
