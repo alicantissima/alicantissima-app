@@ -120,7 +120,7 @@ function getReservedForPeopleLabel(quantity: number) {
   return quantity === 1 ? "1 person" : `${quantity} people`;
 }
 
-export default function CheckoutClient() {
+export default function CheckoutClient({ payOnArrival = false }: { payOnArrival?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -386,13 +386,19 @@ setError("Could not complete booking.");
           </div>
         )}
 
+        {source === "site" && payOnArrival && (
+          <p className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-900">
+            Your booking is confirmed now. Payment is due at reception on arrival. Cash is accepted; card payments depend on service availability.
+          </p>
+        )}
+
         <button
           type="submit"
           disabled={pending || promoPending}
           aria-disabled={pending || promoPending}
           className="w-full rounded-xl border border-zinc-900 bg-zinc-900 px-6 py-3 text-base font-semibold uppercase tracking-wide text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#AFC3BE] dark:bg-[#AFC3BE] dark:text-black"
         >
-          {pending ? t.creatingBooking : t.createBooking}
+          {pending ? t.creatingBooking : source === "site" && payOnArrival ? "CONFIRM BOOKING — PAY ON ARRIVAL" : t.createBooking}
         </button>
       </form>
 

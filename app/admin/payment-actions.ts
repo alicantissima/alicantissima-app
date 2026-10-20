@@ -38,6 +38,7 @@ export async function updateBookingPaymentMethod(params: {
       id,
       booking_code,
       source,
+      payment_provider,
       payment_method,
       payment_status,
       paid_at,
@@ -67,6 +68,8 @@ export async function updateBookingPaymentMethod(params: {
 
   const isWalkin =
     String(booking.source || "").toLowerCase() === "walkin";
+  const isPayOnArrival = booking.source === "site" && booking.payment_provider === "walkin";
+  const isReceptionPayment = isWalkin || isPayOnArrival;
 
   const isPaidWalkinMethod =
     paymentMethod === "card" ||
@@ -77,7 +80,7 @@ export async function updateBookingPaymentMethod(params: {
    * preservamos o comportamento antigo:
    * apenas alteramos payment_method.
    */
-  if (!isWalkin) {
+  if (!isReceptionPayment) {
     const { error } = await supabase
       .from("bookings")
       .update({
@@ -118,7 +121,7 @@ export async function updateBookingPaymentMethod(params: {
 
     if (paymentError) {
       console.error(
-        "Walk-in payment update error:",
+        "Reception payment update error:",
         paymentError
       );
 
@@ -139,7 +142,7 @@ export async function updateBookingPaymentMethod(params: {
         await issueAlegraInvoice(booking.id);
 
       console.log(
-        "ALEGRA WALKIN AUTO INVOICE SUCCESS:",
+        "ALEGRA RECEPTION AUTO INVOICE SUCCESS:",
         {
           bookingCode: booking.booking_code,
           paymentMethod,
@@ -154,7 +157,7 @@ export async function updateBookingPaymentMethod(params: {
       };
     } catch (invoiceError) {
       console.error(
-        "ALEGRA WALKIN AUTO INVOICE FAILED:",
+        "ALEGRA RECEPTION AUTO INVOICE FAILED:",
         {
           bookingCode: booking.booking_code,
           paymentMethod,

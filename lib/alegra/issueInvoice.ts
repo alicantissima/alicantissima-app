@@ -225,6 +225,7 @@ async function loadBooking(bookingId: string) {
       currency,
       service_date,
       source,
+      payment_provider,
       payment_status,
       payment_reference,
 payment_status,
@@ -434,32 +435,33 @@ const totalAmount = toPositiveNumber(
 
 const isWalkin =
   String(booking.source ?? "").toLowerCase() === "walkin";
+const isReceptionPayment = isWalkin || (booking.source === "site" && booking.payment_provider === "walkin");
 
 const bookingPaymentMethod =
   String(booking.payment_method ?? "").toLowerCase();
 
 if (
-  isWalkin &&
+  isReceptionPayment &&
   bookingPaymentMethod !== "card" &&
   bookingPaymentMethod !== "cash"
 ) {
   throw new Error(
-    `Walk-in ${booking.booking_code} cannot be invoiced with payment method ${booking.payment_method}.`
+    `Reception payment ${booking.booking_code} cannot be invoiced with payment method ${booking.payment_method}.`
   );
 }
 
-const numberTemplateId = isWalkin
+const numberTemplateId = isReceptionPayment
   ? requiredEnv("ALEGRA_WALKIN_NUMBER_TEMPLATE_ID")
   : requiredEnv("ALEGRA_NUMBER_TEMPLATE_ID");
 
-const bankAccountId = isWalkin
+const bankAccountId = isReceptionPayment
   ? bookingPaymentMethod === "cash"
     ? requiredEnv("ALEGRA_WALKIN_CASH_ACCOUNT_ID")
     : requiredEnv("ALEGRA_WALKIN_CARD_ACCOUNT_ID")
   : requiredEnv("ALEGRA_BANK_ACCOUNT_ID");
 
 const alegraPaymentMethod: "cash" | "credit-card" =
-  isWalkin && bookingPaymentMethod === "cash"
+  isReceptionPayment && bookingPaymentMethod === "cash"
     ? "cash"
     : "credit-card";
 

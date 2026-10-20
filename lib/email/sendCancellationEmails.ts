@@ -7,6 +7,7 @@ type CancellationEmailParams = {
   amount: number;
   currency?: string | null;
   reason?: string | null;
+  refunded?: boolean;
 };
 
 async function sendEmail(params: {
@@ -72,6 +73,7 @@ export async function sendCancellationEmails({
   amount,
   currency = "EUR",
   reason,
+  refunded = true,
 }: CancellationEmailParams) {
   const formattedAmount = money(
     amount,
@@ -98,9 +100,11 @@ export async function sendCancellationEmails({
       "",
       `Your booking ${bookingCode} has been cancelled successfully.`,
       "",
-      `Refund processed: ${formattedAmount}`,
+      refunded ? `Refund processed: ${formattedAmount}` : "No payment was collected.",
       "",
-      "The refund has been processed to your original payment method. Depending on your bank or card provider, it may take some time to appear in your account.",
+      refunded
+        ? "The refund has been processed to your original payment method. Depending on your bank or card provider, it may take some time to appear in your account."
+        : "No refund is needed because you had not paid for this booking.",
       "",
       "Alicantissima | Luggage Storage & Shower Lounge",
     ].join("\n");
@@ -125,7 +129,7 @@ export async function sendCancellationEmails({
               Your booking <strong>${bookingCode}</strong> has been cancelled successfully.
             </p>
 
-            <div style="margin:28px 0;padding:22px 24px;background:#f7f7f7;border-radius:18px;">
+            ${refunded ? `<div style="margin:28px 0;padding:22px 24px;background:#f7f7f7;border-radius:18px;">
               <div style="font-size:14px;color:#666;margin-bottom:7px;">
                 Refund processed
               </div>
@@ -133,12 +137,12 @@ export async function sendCancellationEmails({
               <div style="font-size:28px;font-weight:700;color:#111;">
                 ${formattedAmount}
               </div>
-            </div>
+            </div>` : ""}
 
             <p style="font-size:15px;line-height:24px;color:#5b6470;">
-              The refund has been processed to your original payment method.
+              ${refunded ? `The refund has been processed to your original payment method.
               Depending on your bank or card provider, it may take some time
-              to appear in your account.
+              to appear in your account.` : "No refund is needed because you had not paid for this booking."}
             </p>
 
             <p style="margin-top:32px;font-size:14px;color:#777;">
@@ -166,33 +170,33 @@ export async function sendCancellationEmails({
   "desk@alicantissima.es";
 
   const internalText = [
-    "Booking cancelled & refunded",
+    refunded ? "Booking cancelled & refunded" : "Booking cancelled (unpaid)",
     "",
     `Booking: ${bookingCode}`,
     `Customer: ${customerName || "-"}`,
     `Email: ${email || "-"}`,
-    `Refund: ${formattedAmount}`,
+    refunded ? `Refund: ${formattedAmount}` : "Payment: not collected",
     `Reason: ${reason || "Customer cancelled online"}`,
     "",
-    "The Revolut refund was processed successfully.",
+    refunded ? "The Revolut refund was processed successfully." : "No payment or refund was processed.",
   ].join("\n");
 
   const internalHtml = `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:680px;margin:0 auto;padding:32px;">
-      <h1>Booking cancelled &amp; refunded</h1>
+      <h1>${refunded ? "Booking cancelled &amp; refunded" : "Booking cancelled (unpaid)"}</h1>
 
       <div style="background:#f5f5f5;border-radius:18px;padding:22px 24px;">
         <p><strong>Booking:</strong> ${bookingCode}</p>
         <p><strong>Customer:</strong> ${customerName || "-"}</p>
         <p><strong>Email:</strong> ${email || "-"}</p>
-        <p><strong>Refund:</strong> ${formattedAmount}</p>
+        <p><strong>${refunded ? "Refund" : "Payment"}:</strong> ${refunded ? formattedAmount : "Not collected"}</p>
         <p><strong>Reason:</strong> ${
           reason || "Customer cancelled online"
         }</p>
       </div>
 
       <p style="margin-top:24px;">
-        The Revolut refund was processed successfully.
+        ${refunded ? "The Revolut refund was processed successfully." : "No payment or refund was processed."}
       </p>
     </div>
   `;
@@ -200,7 +204,9 @@ export async function sendCancellationEmails({
   await sendEmail({
     to: internalEmail,
     subject:
-      `Booking cancelled & refunded – ${bookingCode} – ${formattedAmount}`,
+      refunded
+        ? `Booking cancelled & refunded – ${bookingCode} – ${formattedAmount}`
+        : `Booking cancelled (unpaid) – ${bookingCode}`,
     text: internalText,
     html: internalHtml,
   });
