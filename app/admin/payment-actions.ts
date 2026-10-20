@@ -68,7 +68,7 @@ export async function updateBookingPaymentMethod(params: {
 
   const isWalkin =
     String(booking.source || "").toLowerCase() === "walkin";
-  const isPayOnArrival = booking.payment_provider === "on_arrival";
+  const isPayOnArrival = booking.source === "site" && booking.payment_provider === "walkin";
   const isReceptionPayment = isWalkin || isPayOnArrival;
 
   const isPaidWalkinMethod =
