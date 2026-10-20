@@ -33,7 +33,7 @@ export default async function CancelBookingPage({
 
         <p className="mt-3 text-sm leading-6 text-zinc-600">
           You can cancel this booking for free up to 24 hours before the start of your booking.
-          If eligible, your online payment will be refunded automatically.
+          If you paid online and qualify, your payment will be refunded automatically. No refund is needed for unpaid bookings.
         </p>
 
         {code ? (
