@@ -89,7 +89,7 @@ export default function CancelBookingClient({
           >
             {isPending
               ? "Cancelling booking..."
-              : "Cancel booking and refund payment"}
+              : "Cancel booking"}
           </button>
 
           <p className="mt-4 text-xs leading-5 text-zinc-500">
