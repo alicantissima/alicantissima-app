@@ -435,7 +435,7 @@ const totalAmount = toPositiveNumber(
 
 const isWalkin =
   String(booking.source ?? "").toLowerCase() === "walkin";
-const isReceptionPayment = isWalkin || booking.payment_provider === "on_arrival";
+const isReceptionPayment = isWalkin || (booking.source === "site" && booking.payment_provider === "walkin");
 
 const bookingPaymentMethod =
   String(booking.payment_method ?? "").toLowerCase();
