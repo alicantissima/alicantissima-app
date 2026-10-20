@@ -344,6 +344,7 @@ function buildConfirmationEmailText(params: {
   cancellationUrl?: string | null;
   cancelUntil?: string | null;
   isWalkin?: boolean;
+  payOnArrival?: boolean;
   items: Array<{
     title: string;
     quantity: number;
@@ -438,7 +439,9 @@ lines.push(`Total items: ${totalItemsAll}`);
 lines.push(
   isWalkin
     ? "Payment pending. Please pay by card or cash with a member of our staff at reception to confirm your reservation."
-    : "Online payment received successfully."
+    : params.payOnArrival
+      ? "Your booking is confirmed. Please pay at reception on arrival. Cash is accepted; card payments depend on service availability."
+      : "Online payment received successfully."
 );
 if (params.cancellationUrl) {
   lines.push("");
@@ -475,6 +478,7 @@ function buildConfirmationEmailHtml(params: {
   cancellationUrl?: string | null;
   cancelUntil?: string | null;
   isWalkin?: boolean;
+  payOnArrival?: boolean;
   qrCodeUrl: string;
   items: Array<{
     title: string;
@@ -627,14 +631,14 @@ ${comments ? `<p style="margin:6px 0 0 0; font-size:15px; line-height:22px; colo
 </table>
 
           ${
-  isWalkin
+  (isWalkin || params.payOnArrival)
     ? `
       <div style="margin:0; padding:14px 16px; background:#fff7ed; border:1px solid #fed7aa; border-radius:14px;">
         <p style="margin:0 0 5px 0; font-size:15px; line-height:23px; color:#9a3412; font-weight:700;">
-          Payment pending
+          ${params.payOnArrival ? "Payment due on arrival" : "Payment pending"}
         </p>
         <p style="margin:0; font-size:14px; line-height:21px; color:#9a3412;">
-          Please pay by card or cash with a member of our staff at reception to confirm your reservation.
+          ${params.payOnArrival ? "Your booking is confirmed. Please pay at reception on arrival. Cash is accepted; card payments depend on service availability." : "Please pay by card or cash with a member of our staff at reception to confirm your reservation."}
         </p>
       </div>
     `
@@ -967,6 +971,7 @@ async function sendBookingConfirmationEmail(params: {
   cancellationUrl?: string | null;
   cancelUntil?: string | null;
 isWalkin?: boolean;
+  payOnArrival?: boolean;
   items: Array<{
     title: string;
     quantity: number;
@@ -1424,6 +1429,8 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const language = normalizeLanguage(payload.language);
     const source = normalizeSource(payload.source);
     const isWalkin = source === "walkin";
+    const payOnArrival = source === "site" && process.env.BOOKING_PAYMENT_MODE === "on_arrival";
+    const usesArrivalPayment = isWalkin || payOnArrival;
 
     if (!customerName) {
       return { ok: false, error: "Missing name." };
@@ -1767,14 +1774,14 @@ if (showerItems.length > 0) {
     ...(promo ? { referral_partner_id: promo.id, promo_code: promo.code, subtotal_amount: discount.subtotal, discount_percent: promo.percent, discount_amount: discount.discountAmount } : {}),
     currency: "EUR",
     source,
-    payment_method: isWalkin ? "unpaid" : "revolut",
-status: isWalkin ? "booked" : "pending_payment",
-payment_status: isWalkin ? "unpaid" : "pending_payment",
-payment_provider: isWalkin ? "walkin" : "revolut",
+    payment_method: usesArrivalPayment ? "unpaid" : "revolut",
+status: usesArrivalPayment ? "booked" : "pending_payment",
+payment_status: usesArrivalPayment ? "unpaid" : "pending_payment",
+payment_provider: isWalkin ? "walkin" : payOnArrival ? "on_arrival" : "revolut",
 cancel_until: isWalkin ? null : cancelUntil,
 cancellation_token: isWalkin ? null : cancellationToken,
 cancellation_token_expires_at: isWalkin ? null : cancelUntil,
-payment_expires_at: isWalkin
+payment_expires_at: usesArrivalPayment
   ? null
   : new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 service_date: serviceDate,
@@ -1835,8 +1842,12 @@ language,
 const customerBookingUrl = `${appBaseUrl}/b/${booking.booking_code}`;
 const adminBookingUrl = `${appBaseUrl}/admin/booking/${booking.id}`;
 const qrCodeUrl = getQrCodeUrl(customerBookingUrl);
+const arrivalCancellationUrl =
+  !isWalkin && cancellationToken && isFutureDate(cancelUntil)
+    ? `${appBaseUrl}/cancel-booking?code=${encodeURIComponent(booking.booking_code)}&token=${encodeURIComponent(cancellationToken)}`
+    : null;
 
-if (isWalkin) {
+if (usesArrivalPayment) {
   try {
     await sendBookingConfirmationEmail({
       customerName,
@@ -1844,9 +1855,10 @@ if (isWalkin) {
       bookingCode: booking.booking_code,
       bookingUrl: customerBookingUrl,
       qrCodeUrl,
-      cancellationUrl: null,
-      cancelUntil: null,
-      isWalkin: true,
+      cancellationUrl: arrivalCancellationUrl,
+      cancelUntil: isWalkin ? null : cancelUntil,
+      isWalkin,
+      payOnArrival,
       items,
       totalAmount,
       notes,
@@ -1866,7 +1878,7 @@ if (isWalkin) {
       notes,
     });
   } catch (emailError) {
-    console.error("walkin email error:", emailError);
+    console.error("arrival payment booking email error:", emailError);
   }
 
   return {
