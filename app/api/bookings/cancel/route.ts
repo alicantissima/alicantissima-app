@@ -230,6 +230,46 @@ customer_email,
       );
     }
 
+    // Site bookings using the emergency pay-on-arrival mode have not taken payment.
+    // Cancel them without calling Revolut or issuing a credit note.
+    if (booking.payment_provider === "on_arrival" && booking.payment_status === "unpaid") {
+      const { data: cancelled, error: cancelError } = await supabase
+        .from("bookings")
+        .update({
+          status: "cancelled",
+          cancelled_at: new Date().toISOString(),
+          cancellation_reason: reason || "Customer cancelled online",
+        })
+        .eq("id", booking.id)
+        .eq("status", "booked")
+        .select("id")
+        .maybeSingle();
+
+      if (cancelError || !cancelled) {
+        return NextResponse.json({ ok: false, error: "Could not cancel booking. Please contact us." }, { status: 409 });
+      }
+
+      try {
+        await sendCancellationEmails({
+          bookingCode: booking.booking_code,
+          customerName: booking.customer_name,
+          customerEmail: booking.customer_email,
+          amount: 0,
+          currency: booking.currency,
+          reason,
+          refunded: false,
+        });
+      } catch (emailError) {
+        console.error("Unpaid booking cancellation email error:", emailError);
+      }
+
+      return NextResponse.json({
+        ok: true,
+        refunded: false,
+        message: "Your booking has been cancelled successfully. No payment was collected.",
+      });
+    }
+
     if (booking.payment_status !== "paid") {
       return NextResponse.json(
         {
