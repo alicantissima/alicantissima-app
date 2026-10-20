@@ -184,6 +184,7 @@ export default function CheckoutClient({ payOnArrival = false }: { payOnArrival?
       notes: "",
       language,
       source,
+      expectedPaymentMode: payOnArrival ? "on_arrival" as const : "online" as const,
       promoCode: source === "site" ? appliedPromo?.code : undefined,
       items: items.map((item) => {
   const quantity = Number(item.quantity || 1);
