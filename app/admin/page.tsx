@@ -1276,6 +1276,13 @@ function renderTodayResultsBar() {
   <div className="w-full lg:w-auto">
     <div className="flex flex-wrap items-center gap-3">
   <Link
+    href="/admin/situation-room"
+    className="inline-flex h-11 items-center justify-center rounded-xl border border-amber-300 bg-amber-50 px-5 text-sm font-semibold text-amber-950 shadow-sm hover:bg-amber-100"
+  >
+    Situation Room
+  </Link>
+
+  <Link
     href="/admin/partners"
     className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
   >
