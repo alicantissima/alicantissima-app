@@ -1777,7 +1777,7 @@ if (showerItems.length > 0) {
     payment_method: usesArrivalPayment ? "unpaid" : "revolut",
 status: usesArrivalPayment ? "booked" : "pending_payment",
 payment_status: usesArrivalPayment ? "unpaid" : "pending_payment",
-payment_provider: isWalkin ? "walkin" : payOnArrival ? "on_arrival" : "revolut",
+payment_provider: usesArrivalPayment ? "walkin" : "revolut",
 cancel_until: isWalkin ? null : cancelUntil,
 cancellation_token: isWalkin ? null : cancellationToken,
 cancellation_token_expires_at: isWalkin ? null : cancelUntil,
