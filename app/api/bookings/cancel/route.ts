@@ -14,6 +14,7 @@ type CancelBookingRow = {
   total_amount: number | string | null;
   currency: string | null;
   payment_status: string | null;
+  source: string | null;
   payment_provider: string | null;
   payment_method: string | null;
   payment_reference: string | null;
@@ -126,6 +127,7 @@ export async function POST(request: NextRequest) {
     total_amount,
     currency,
     payment_status,
+    source,
     payment_provider,
     payment_method,
     payment_reference,
@@ -232,7 +234,7 @@ customer_email,
 
     // Site bookings using the emergency pay-on-arrival mode have not taken payment.
     // Cancel them without calling Revolut or issuing a credit note.
-    if (booking.payment_provider === "on_arrival" && booking.payment_status === "unpaid") {
+    if (booking.source === "site" && booking.payment_provider === "walkin" && booking.payment_status === "unpaid") {
       const { data: cancelled, error: cancelError } = await supabase
         .from("bookings")
         .update({
