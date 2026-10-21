@@ -7,6 +7,7 @@ import { resolvePartnerPromo } from "@/lib/partner-promo";
 import { calculateDiscount } from "@/lib/promotions";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getBookingPaymentMode, type BookingPaymentMode } from "@/lib/booking-payment-mode";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { sendPushToAll } from "@/lib/push/send-push";
 import {
@@ -35,6 +36,7 @@ type CheckoutPayload = {
   language?: string;
   source?: string;
   promoCode?: string;
+  expectedPaymentMode?: BookingPaymentMode;
   items: CheckoutItem[];
 };
 
@@ -1429,7 +1431,11 @@ export async function submitCheckout(payload: CheckoutPayload) {
     const language = normalizeLanguage(payload.language);
     const source = normalizeSource(payload.source);
     const isWalkin = source === "walkin";
-    const payOnArrival = source === "site" && process.env.BOOKING_PAYMENT_MODE === "on_arrival";
+    const activeMode = await getBookingPaymentMode();
+    if (source === "site" && payload.expectedPaymentMode && payload.expectedPaymentMode !== activeMode) {
+      return { ok: false, error: "Payment options have changed. Please reload checkout before booking." };
+    }
+    const payOnArrival = source === "site" && activeMode === "on_arrival";
     const usesArrivalPayment = isWalkin || payOnArrival;
 
     if (!customerName) {
