@@ -25,5 +25,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Check installed patched framework
         run: npm ls next --depth=0
+      - name: Generate disposable VAPID keys for isolated CI build
+        run: |
+          node -e "const fs=require('fs'); const keys=require('web-push').generateVAPIDKeys(); fs.appendFileSync(process.env.GITHUB_ENV,'NEXT_PUBLIC_VAPID_PUBLIC_KEY='+keys.publicKey+'\\nVAPID_PRIVATE_KEY='+keys.privateKey+'\\n')"
       - name: Build
         run: npm run build
