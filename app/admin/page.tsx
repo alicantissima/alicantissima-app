@@ -1276,20 +1276,6 @@ function renderTodayResultsBar() {
   <div className="w-full lg:w-auto">
     <div className="flex flex-wrap items-center gap-3">
   <Link
-    href="/admin/situation-room"
-    className="inline-flex h-11 items-center justify-center rounded-xl border border-amber-300 bg-amber-50 px-5 text-sm font-semibold text-amber-950 shadow-sm hover:bg-amber-100"
-  >
-    Situation Room
-  </Link>
-
-  <Link
-    href="/admin/partners"
-    className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
-  >
-    Partners · Promo codes
-  </Link>
-
-  <Link
     href="/desk"
     className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
   >
@@ -1420,7 +1406,20 @@ showColumnTotals: true,
 showColumnTotals: true,
 })}
 
-<section className="mt-8 flex justify-center opacity-70">
+<section className="mt-8 flex flex-wrap items-center justify-center gap-3">
+    <Link
+      href="/admin/situation-room"
+      className="inline-flex h-11 items-center justify-center rounded-xl border border-amber-300 bg-amber-50 px-5 text-sm font-semibold text-amber-950 shadow-sm hover:bg-amber-100"
+    >
+      Situation Room
+    </Link>
+  
+    <Link
+      href="/admin/partners"
+      className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+    >
+      Partners · Promo codes
+    </Link>
   <div className="[&_button]:h-11 [&_button]:rounded-xl [&_button]:border [&_button]:border-gray-300 [&_button]:bg-white [&_button]:px-5 [&_button]:text-sm [&_button]:font-semibold [&_button]:text-gray-900 [&_button]:shadow-sm [&_button:hover]:bg-gray-50">
     <LogoutButton />
   </div>
