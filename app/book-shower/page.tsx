@@ -310,6 +310,11 @@ function handleBack() {
       }}
     />
   </div>
+        {date === "2026-11-13" && (
+          <p role="note" className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-950">
+            <strong>Special hours — Friday 13 November:</strong> Luggage must be collected and showers must finish by 18:00. Normal hours resume Saturday.
+          </p>
+        )}
 
   <div>
     <label className={labelClass}>{t.numberOfShowers}</label>

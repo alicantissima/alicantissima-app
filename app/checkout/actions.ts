@@ -8,6 +8,7 @@ import { calculateDiscount } from "@/lib/promotions";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getBookingPaymentMode, type BookingPaymentMode } from "@/lib/booking-payment-mode";
+import { EARLY_CLOSING_DATE, EARLY_CLOSING_TIME, isTimeSlotSelectable } from "@/lib/time-slots";
 import { getMessages, normalizeLanguage } from "@/lib/i18n";
 import { sendPushToAll } from "@/lib/push/send-push";
 import {
@@ -1621,6 +1622,56 @@ if (serviceDate < todayMadrid) {
     ok: false,
     error: "The selected service date is no longer available. Please choose today or a future date.",
   };
+}
+
+// Friday 13 November 2026: do not let cached or manually crafted checkout
+// requests bypass the exceptional 18:00 closing time.
+for (const item of items) {
+  const itemDate =
+    typeof item.meta?.date === "string" ? item.meta.date : serviceDate;
+
+  if (itemDate !== EARLY_CLOSING_DATE) continue;
+
+  const dropOff = typeof item.meta?.dropOffTime === "string" ? item.meta.dropOffTime : "";
+  const pickUp = typeof item.meta?.pickUpTime === "string" ? item.meta.pickUpTime : "";
+
+  if (
+    (item.productType === "luggage" || item.productType === "combo") &&
+    ((dropOff && !isTimeSlotSelectable(dropOff, itemDate)) ||
+      (pickUp && !isTimeSlotSelectable(pickUp, itemDate)))
+  ) {
+    return {
+      ok: false,
+      error: "On Friday 13 November, luggage drop-off and collection must finish by 18:00. Please select an earlier slot.",
+    };
+  }
+
+  if (item.productType === "luggage" && source === "site" && !pickUp) {
+    return {
+      ok: false,
+      error: "Please choose a luggage collection time no later than 18:00 on Friday 13 November.",
+    };
+  }
+
+  if (item.productType === "shower" || item.productType === "combo") {
+    const start = typeof item.meta?.showerTime === "string" ? item.meta.showerTime : "";
+    if (!start && source === "site") {
+      return { ok: false, error: "Please select a shower time for Friday 13 November." };
+    }
+    if (start) {
+      const showerQuantity = Number(item.meta?.showerQuantity || item.quantity || 1);
+      const end = getShowerEndTime(start, showerQuantity);
+      if (
+        !Number.isFinite(timeToMinutes(end)) ||
+        timeToMinutes(end) > timeToMinutes(EARLY_CLOSING_TIME)
+      ) {
+        return {
+          ok: false,
+          error: "On Friday 13 November, all showers must finish by 18:00. Please select an earlier slot.",
+        };
+      }
+    }
+  }
 }
 
 const showerItems = items.filter(
