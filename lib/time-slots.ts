@@ -54,8 +54,16 @@ export const LOW_SEASON_LAST_DATE = "2027-03-31";
 export const LOW_SEASON_CLOSING_TIME = "20:00";
 export const HIGH_SEASON_CLOSING_TIME = "22:00";
 
+// One-day exceptional early closing. Automatically expires the next day.
+export const EARLY_CLOSING_DATE = "2026-11-13";
+export const EARLY_CLOSING_TIME = "18:00";
+
 export function getClosingTimeForDate(date?: string) {
   const effectiveDate = date || getMadridDateString();
+
+  if (effectiveDate === EARLY_CLOSING_DATE) {
+    return EARLY_CLOSING_TIME;
+  }
 
   return effectiveDate <= LOW_SEASON_LAST_DATE
     ? LOW_SEASON_CLOSING_TIME
@@ -69,6 +77,13 @@ export function getSlotStartTime(slot: string) {
 export function isTimeSlotSelectable(slot: string, date?: string) {
   const slotStartMinutes = timeStringToMinutes(getSlotStartTime(slot));
   const closingMinutes = timeStringToMinutes(getClosingTimeForDate(date));
+
+  // The 13 November exception requires the ENTIRE 30-minute slot to end by 18:00.
+  // Preserve the existing start-time rules on all other dates.
+  if (date === EARLY_CLOSING_DATE) {
+    const slotEndMinutes = timeStringToMinutes(slot.split("-")[1] || "");
+    return slotStartMinutes < closingMinutes && slotEndMinutes <= closingMinutes;
+  }
 
   return slotStartMinutes < closingMinutes;
 }
