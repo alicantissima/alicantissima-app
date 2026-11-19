@@ -132,6 +132,79 @@ function getProductConfig(
   );
 }
 
+function getBreakdownProductType(
+  label: unknown,
+  explicitType?: unknown
+): "luggage" | "shower" | "combo" {
+  const explicit = String(explicitType ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (explicit) {
+    if (
+      explicit === "luggage" ||
+      explicit === "shower" ||
+      explicit === "combo"
+    ) {
+      return explicit;
+    }
+
+    throw new Error(
+      `Unsupported breakdown product type: ${explicit}`
+    );
+  }
+
+  const normalized = String(label ?? "")
+    .normalize("NFKC")
+    .trim()
+    .toLowerCase();
+
+  const knownLabels: Record<
+    string,
+    "luggage" | "shower" | "combo"
+  > = {
+    "additional luggage": "luggage",
+    "equipaje adicional": "luggage",
+    "bagage supplémentaire": "luggage",
+    "bagaglio aggiuntivo": "luggage",
+    "dodatkowy bagaż": "luggage",
+    "ekstra bagasje": "luggage",
+    "extra csomag": "luggage",
+    "zusätzliches gepäck": "luggage",
+
+    "additional shower": "shower",
+    "ducha adicional": "shower",
+    "douche supplémentaire": "shower",
+    "doccia aggiuntiva": "shower",
+    "dodatkowy prysznic": "shower",
+    "lisäsuihku": "shower",
+    "extra zuhany": "shower",
+    "zusätzliche dusche": "shower",
+
+    "luggage + shower": "combo",
+    "equipaje + ducha": "combo",
+    "bagages + douche": "combo",
+    "bagagli + doccia": "combo",
+    "bagagem + duche": "combo",
+    "bagasje + dusj": "combo",
+    "bagaż + prysznic": "combo",
+    "gepäck + dusche": "combo",
+    "matkatavarat + suihku": "combo",
+    "bagage + dusch": "combo",
+    "csomag + zuhany": "combo",
+  };
+
+  const productType = knownLabels[normalized];
+
+  if (!productType) {
+    throw new Error(
+      `Unknown invoice breakdown product: "${normalized}".`
+    );
+  }
+
+  return productType;
+}
+
 function buildInvoiceItem(
   bookingItem: BookingItemForAlegraInvoice,
   discountPercent = getItemDiscount(bookingItem.meta)
@@ -402,6 +475,8 @@ export async function issueAlegraInvoice(
     );
   }
 
+    let alegraRequestStarted = false;
+
   try {
   const bookingItems =
     await loadBookingItems(booking.id);
@@ -481,14 +556,62 @@ const alegraPaymentMethod: "cash" | "credit-card" =
 
   paymentMethod: alegraPaymentMethod,
 
-  items: bookingItems.flatMap((item) => {
-    // Preserve existing invoice behaviour for bookings without a partner discount.
-    if (!discountPercent || item.product_type !== "combo" || !Array.isArray(item.meta?.breakdown)) return [buildInvoiceItem(item, discountPercent)];
-    return item.meta.breakdown.map((raw, index) => {
-      const part = raw as { quantity: number; unitPrice: number; totalPrice: number; label: string };
-      return buildInvoiceItem({ ...item, product_type: index === 0 ? "combo" : Number(part.unitPrice) === 8 ? "luggage" : "shower", quantity: Number(part.quantity), unit_price: Number(part.unitPrice), line_total: Number(part.totalPrice), title: part.label }, discountPercent);
-    });
-  }),
+  
+items: bookingItems.flatMap((item) => {
+  const breakdown = item.meta?.breakdown;
+
+  if (!Array.isArray(breakdown) || breakdown.length === 0) {
+    return [buildInvoiceItem(item, discountPercent)];
+  }
+
+  
+
+  const parts = breakdown.map((raw) => {
+    const part = raw as {
+      label?: string;
+      quantity?: number;
+      unitPrice?: number;
+      totalPrice?: number;
+    };
+
+    const quantity = Number(part.quantity);
+    const unitPrice = Number(part.unitPrice);
+    const totalPrice = Number(part.totalPrice);
+
+    if (
+      !Number.isInteger(quantity) ||
+      quantity <= 0 ||
+      !Number.isFinite(unitPrice) ||
+      unitPrice <= 0 ||
+      !Number.isFinite(totalPrice) ||
+      Math.round(quantity * unitPrice * 100) !==
+        Math.round(totalPrice * 100)
+    ) {
+      throw new Error(
+        `Invalid invoice breakdown for ${booking.booking_code}.`
+      );
+    }
+
+        const productType = getBreakdownProductType(
+      part.label,
+      (raw as { productType?: unknown }).productType
+    );
+
+    return buildInvoiceItem(
+      {
+        ...item,
+        product_type: productType,
+        title: part.label ?? item.title,
+        quantity,
+        unit_price: unitPrice,
+        line_total: totalPrice,
+      },
+      discountPercent
+    );
+  });
+
+  return parts;
+}),
 
   payments: [
     buildAlegraInvoicePayment({
@@ -515,12 +638,33 @@ const alegraPaymentMethod: "cash" | "credit-card" =
     .filter(Boolean)
     .join(" | "),
 };
+      
+const expectedCents = invoicePayload.items.reduce(
+  (sum, item) => {
+    const grossUnitPrice =
+      item.price * (1 + IVA_RATE / 100);
 
-    if (discountPercent) {
-      const expectedCents = Math.round(invoicePayload.items.reduce((sum, item) =>
-        sum + item.price * item.quantity * (1 - Number(item.discount ?? 0) / 100) * (1 + IVA_RATE / 100), 0) * 100);
-      if (expectedCents !== Math.round(totalAmount * 100)) throw new Error("Invoice total does not match discounted payment. Invoice was not issued.");
-    }
+    const lineGross =
+      grossUnitPrice *
+      Number(item.quantity) *
+      (1 - Number(item.discount ?? 0) / 100);
+
+    return sum + Math.round(lineGross * 100);
+  },
+  0
+);
+
+const paidCents = Math.round(totalAmount * 100);
+
+if (expectedCents !== paidCents) {
+  throw new Error(
+    `Alegra invoice mismatch for ${booking.booking_code}: ` +
+    `expected ${expectedCents} cents, ` +
+    `paid ${paidCents} cents. Invoice not issued.`
+  );
+}
+
+        alegraRequestStarted = true;
 
     const invoice =
       await createAlegraInvoice(
@@ -647,11 +791,19 @@ const alegraPaymentMethod: "cash" | "credit-card" =
         () => null
       );
 
-    if (!currentBooking?.invoice_id) {
-      await saveInvoiceError(
-        booking.id,
-        error
-      );
+        if (!currentBooking?.invoice_id) {
+      if (alegraRequestStarted) {
+        console.error(
+          `Alegra invoice outcome uncertain for ${booking.booking_code}. ` +
+          `Manual reconciliation required before retry.`,
+          error
+        );
+      } else {
+        await saveInvoiceError(
+          booking.id,
+          error
+        );
+      }
     }
 
     throw error;
